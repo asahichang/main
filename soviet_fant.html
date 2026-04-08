@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Викторина: Советская и российская фантастика</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a18;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 640px; width: 100%; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 0.35rem; color: #1a1a18; }
+  .subtitle { font-size: 14px; color: #888780; margin-bottom: 1.75rem; }
+  .q-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+  }
+  .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+  .q-counter { font-size: 13px; color: #888780; }
+  .dots-row { display: flex; gap: 5px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #d3d1c7; display: inline-block; }
+  .dot.correct { background: #3B6D11; }
+  .dot.wrong { background: #A32D2D; }
+  .q-progress { height: 3px; background: #f1efe8; border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+  .q-progress-fill { height: 100%; background: #1D9E75; border-radius: 2px; transition: width 0.4s ease; }
+  .q-category {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #1D9E75;
+    margin-bottom: 0.5rem;
+  }
+  .q-text { font-size: 15px; line-height: 1.55; margin-bottom: 1.25rem; color: #1a1a18; }
+  .q-options { display: flex; flex-direction: column; gap: 8px; }
+  .q-option {
+    padding: 10px 14px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a18;
+    cursor: pointer;
+    background: transparent;
+    text-align: left;
+    line-height: 1.45;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+  }
+  .q-option:hover:not(:disabled) { background: #f5f4f0; border-color: rgba(0,0,0,0.35); }
+  .q-option.correct { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option.wrong { background: #FCEBEB; border-color: #E24B4A; color: #A32D2D; }
+  .q-option.reveal { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option:disabled { cursor: default; }
+  .q-explain {
+    margin-top: 1rem;
+    padding: 10px 14px;
+    background: #f5f4f0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #5f5e5a;
+    line-height: 1.6;
+    border-left: 2px solid #1D9E75;
+    display: none;
+  }
+  .q-next {
+    margin-top: 1.25rem;
+    padding: 9px 20px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    display: none;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .q-next:hover { background: #f5f4f0; }
+  .result-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  .result-score { font-size: 52px; font-weight: 500; color: #1a1a18; margin-bottom: 0.25rem; }
+  .result-label { font-size: 15px; color: #888780; margin-bottom: 1.25rem; }
+  .result-grid { display: grid; gap: 5px; max-width: 260px; margin: 0 auto 1.5rem; }
+  .result-dot { width: 100%; aspect-ratio: 1; border-radius: 4px; }
+  .result-comment { font-size: 14px; color: #5f5e5a; line-height: 1.65; max-width: 400px; margin: 0 auto 1.75rem; }
+  .restart-btn {
+    padding: 9px 24px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .restart-btn:hover { background: #f5f4f0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Советская и российская фантастика</h1>
+  <p class="subtitle">10 вопросов об авторах, книгах и нарративных механиках</p>
+  <div id="quiz-main"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    category: "Стругацкие — «Пикник на обочине»",
+    q: "В финале «Пикника на обочине» Рэдрик Шухарт добирается до Золотого шара. Что происходит в последних строках романа?",
+    opts: [
+      "Он просит вернуть мёртвую дочь к жизни",
+      "Шар не реагирует — Зона оказывается пустой",
+      "Рэдрик не успевает сформулировать своё желание и произносит слова погибшего Артура: «Счастье для всех, даром»",
+      "Он просит уничтожить Зону навсегда"
+    ],
+    correct: 2,
+    explain: "Финал принципиально открыт и трагичен: Рэдрик — человек, всю жизнь думавший только о себе — в решающий момент не находит собственных слов и повторяет альтруистический порыв юноши, которого только что случайно убил. Стругацкие говорили, что не знают, сбудется ли это желание — и в этом весь смысл."
+  },
+  {
+    category: "Иван Ефремов",
+    q: "До того как стать писателем, Ефремов основал новую научную дисциплину. Какую?",
+    opts: [
+      "Астробиологию",
+      "Тафономию — науку о закономерностях захоронения организмов",
+      "Палеоклиматологию",
+      "Геобиохимию"
+    ],
+    correct: 1,
+    explain: "Ефремов создал тафономию в 1940-х — раздел палеонтологии, изучающий, как организмы превращаются в ископаемые. Это сформировало его мышление: он привык строить модели больших систем на основе неполных данных. Та же системность отличает его НФ — «Туманность Андромеды» (1957) была не просто утопией, а попыткой спроектировать работающую цивилизацию."
+  },
+  {
+    category: "Псевдонимы и биографии",
+    q: "Кир Булычёв — псевдоним. Из чего он составлен?",
+    opts: [
+      "Из имени жены (Кира) и девичьей фамилии матери (Булычёва)",
+      "Из названий двух городов, где он жил в детстве",
+      "Это аббревиатура его настоящего имени и отчества",
+      "Из имён персонажей его первых опубликованных рассказов"
+    ],
+    correct: 0,
+    explain: "Игорь Всеволодович Можейко взял псевдоним, соединив имя жены Киры и девичью фамилию матери — Булычёва. Псевдоним был нужен: он работал в Институте востоковедения АН СССР и публиковал научные труды под настоящим именем. Двойная жизнь раскрылась в 1982-м, когда он получил Государственную премию."
+  },
+  {
+    category: "Стругацкие — «Трудно быть богом»",
+    q: "«Трудно быть богом» ставит вопрос о праве вмешиваться в ход истории. Чем заканчивается путь Руматы — и почему это не катарсис?",
+    opts: [
+      "Он уходит, не вмешавшись — и это показано как мудрость",
+      "Он спасает учёных и выполняет миссию, но теряет веру в людей",
+      "Он нарушает запрет, устраивает резню — но история Арканара всё равно идёт своим путём",
+      "Он остаётся на планете и становится тираном ради порядка"
+    ],
+    correct: 2,
+    explain: "Румата срывается после гибели Киры и убивает множество людей — но это не меняет ничего. Арканар погружается в мрак с такой же неотвратимостью. Стругацкие говорили, что книга не о том, можно ли вмешиваться, а о цене гуманности: невмешательство — это тоже выбор, и он тоже разрушает человека."
+  },
+  {
+    category: "Метод и процесс",
+    q: "Аркадий жил в Москве, Борис — в Ленинграде. Как братья Стругацкие физически работали над совместными текстами?",
+    opts: [
+      "Аркадий писал черновики, Борис их редактировал и дописывал",
+      "Они обменивались главами по почте, потом сводили версии",
+      "Встречались на сессиях по несколько недель и работали вместе за одной пишущей машинкой",
+      "Диктовали текст друг другу по телефону и записывали независимо"
+    ],
+    correct: 2,
+    explain: "По воспоминаниям Бориса Стругацкого («Комментарии к пройденному»): они встречались несколько раз в год — кто-то приезжал к кому-то — и работали вместе, физически сидя рядом. Один диктовал, другой печатал, потом менялись. Никаких «разделённых глав» — каждое предложение проходило через обоих одновременно."
+  },
+  {
+    category: "Эзопов язык",
+    q: "«Улитка на склоне» Стругацких (1966–68) выходила по частям и фактически была запрещена. Что в ней считалось крамольным?",
+    opts: [
+      "Прямая аллегория на советскую бюрократию как абсурдную непостижимую систему",
+      "Положительный образ западного учёного как главного героя",
+      "Открытая критика советской науки и академических институтов",
+      "Намёки на события венгерского восстания 1956 года"
+    ],
+    correct: 0,
+    explain: "«Улитка» — двойной роман о двух людях, застрявших в непонятных системах: Перец в Управлении (явная метафора советской бюрократии), Кандид в Лесу (загадочная биологическая цивилизация). Обе системы непрозрачны, нелогичны и поглощают человека. Цензоры прочли аллегорию безошибочно — полное издание вышло только в 1988-м."
+  },
+  {
+    category: "Лукьяненко — «Ночной Дозор»",
+    q: "«Ночной Дозор» (1998) построен на противостоянии Светлых и Тёмных Иных. Что делает эту оппозицию нетривиальной с точки зрения нарратива?",
+    opts: [
+      "Тёмные оказываются правы в финале",
+      "Договор между силами превращает Светлых и Тёмных в симметричных бюрократов, где добро и зло становятся функциями, а не сущностями",
+      "Граница между ними определяется генетикой, а не моральным выбором",
+      "Главный герой в итоге оказывается Тёмным"
+    ],
+    correct: 1,
+    explain: "Антон Городецкий — Светлый, который работает в структуре, нарушающей то, во что верит. Договор обязывает Ночной Дозор (Светлых) следить за Тёмными — и наоборот. Оба Дозора делают одну работу: поддерживают баланс, а не побеждают зло. Это бюрократическая антиутопия внутри городского фэнтези — и именно это сделало книгу неожиданной для жанра."
+  },
+  {
+    category: "Советская НФ — эволюция жанра",
+    q: "В советской НФ 1920–30-х годов доминировала «ближняя фантастика» — истории о реальных технических изобретениях в ближайшем будущем. Кто из авторов первым последовательно нарушил этот канон, уйдя в далёкое космическое будущее?",
+    opts: [
+      "Александр Беляев в «Человеке-амфибии» (1928)",
+      "Алексей Толстой в «Аэлите» (1923)",
+      "Иван Ефремов в «Туманности Андромеды» (1957)",
+      "Георгий Мартынов в «Гианэе» (1963)"
+    ],
+    correct: 2,
+    explain: "«Аэлита» и Беляев работали в рамках приключенческой и технической НФ с земными масштабами. Ефремов первым создал масштабную картину далёкого коммунистического будущего, где действие разворачивается в масштабах Галактики — и сделал это художественно убедительно, а не как агитационный плакат. «Туманность» стала прорывом и дала разрешение советской НФ говорить о большом."
+  },
+  {
+    category: "Стругацкие — эволюция",
+    q: "Критики часто делят творчество Стругацких на два периода. Если ранние книги («Страна багровых туч», «Путь на Амальтею») спрашивали «каким будет светлое будущее?», то поздние задавали другой вопрос. Какой?",
+    opts: [
+      "«Существует ли внеземной разум и можно ли с ним договориться?»",
+      "«Возможен ли технический прогресс без нравственного?»",
+      "«Как победить зло, если оно внутри самой системы?»",
+      "«Что остаётся от человека, когда система делает его своим инструментом?»"
+    ],
+    correct: 3,
+    explain: "«Град обречённый», «Жук в муравейнике», «Волны гасят ветер», «Отягощённые злом» — поздние Стругацкие исследуют человека под давлением непонятных и непреодолимых сил. Максим Каммерер, Лев Абалкин, Румата — все они в какой-то момент перестают понимать, чем являются: субъектом или объектом истории. Это уже не вопрос будущего, а вопрос природы человека."
+  },
+  {
+    category: "Современная российская фантастика",
+    q: "Михаил и Сергей Дяченко известны тем, что используют фантастическое допущение иначе, чем большинство жанровых авторов. В чём их характерный приём?",
+    opts: [
+      "Фантастический элемент — это буквальная метафора психологического состояния героя, развёрнутая в сюжет",
+      "Они избегают объяснения природы фантастического, сохраняя максимальную неопределённость",
+      "Фантастика у них всегда имеет строгое научное обоснование",
+      "Они используют фантастику исключительно для социальной сатиры"
+    ],
+    correct: 0,
+    explain: "У Дяченко фантастическое допущение часто является буквализацией внутреннего состояния: в «Vita Nostra» страх и боль учёбы материализуются в трансформацию тела; в «Ритуале» дракон — это отношения власти и зависимости. Фантастика не декорация и не аллегория — она и есть сам психологический процесс, разыгранный буквально. Это отличает их от большинства русскоязычных фантастов."
+  }
+];
+
+let current = 0, score = 0, answered = false;
+let answers = new Array(questions.length).fill(null);
+
+function render() {
+  const container = document.getElementById('quiz-main');
+  if (current >= questions.length) { renderResult(container); return; }
+  const q = questions[current];
+  const pct = (current / questions.length) * 100;
+  const dotsHtml = questions.map((_, i) => {
+    let cls = 'dot';
+    if (answers[i] === true) cls += ' correct';
+    else if (answers[i] === false) cls += ' wrong';
+    return `<span class="${cls}"></span>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="q-card">
+      <div class="q-header">
+        <span class="q-counter">Вопрос ${current + 1} из ${questions.length}</span>
+        <div class="dots-row">${dotsHtml}</div>
+      </div>
+      <div class="q-progress"><div class="q-progress-fill" style="width:${pct}%"></div></div>
+      <div class="q-category">${q.category}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.opts.map((opt, i) => `<button class="q-option" data-i="${i}">${opt}</button>`).join('')}
+      </div>
+      <div id="explain" class="q-explain"></div>
+      <button class="q-next" id="next-btn">${current < questions.length - 1 ? 'Следующий вопрос →' : 'Посмотреть результат →'}</button>
+    </div>`;
+
+  document.querySelectorAll('.q-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (answered) return;
+      answered = true;
+      const chosen = parseInt(this.dataset.i);
+      document.querySelectorAll('.q-option').forEach((b, i) => {
+        b.disabled = true;
+        if (i === q.correct) b.classList.add('reveal');
+        else if (i === chosen && chosen !== q.correct) b.classList.add('wrong');
+      });
+      answers[current] = (chosen === q.correct);
+      if (chosen === q.correct) score++;
+      const exp = document.getElementById('explain');
+      exp.style.display = 'block';
+      exp.textContent = q.explain;
+      document.getElementById('next-btn').style.display = 'inline-block';
+    });
+  });
+
+  document.getElementById('next-btn').addEventListener('click', () => {
+    current++; answered = false; render();
+  });
+}
+
+function renderResult(container) {
+  const labels = ['Зона только начинается', 'Зона только начинается', 'Зона только начинается', 'Прогрессор-новобранец', 'Прогрессор-новобранец', 'Прогрессор-новобранец', 'Читатель с Понедельника', 'Читатель с Понедельника', 'Читатель с Понедельника', 'Борис Натанович одобряет', 'Борис Натанович одобряет'];
+  const comments = {
+    'Зона только начинается': 'Советская и российская фантастика — отдельная вселенная, плотно связанная с историей страны. Начните со Стругацких — любой книги — и она сама потянет за собой остальных.',
+    'Прогрессор-новобранец': 'Хорошая база. Вы знаете ключевые имена и книги, но некоторые детали ускользнули. «Комментарии к пройденному» Бориса Стругацкого — отличное следующее чтение: это документ эпохи.',
+    'Читатель с Понедельника': 'Крепкое знание. Вы явно не просто читали, но и думали о том, как эти книги устроены и почему они написаны именно так.',
+    'Борис Натанович одобряет': 'Редкая глубина знания жанра — и советского контекста, и нарративных приёмов, и биографических деталей. Вы читали не только книги, но и то, что вокруг них.'
+  };
+  const label = labels[score];
+  const gridHtml = answers.map(a => `<div class="result-dot" style="background:${a ? '#639922' : '#E24B4A'}"></div>`).join('');
+
+  container.innerHTML = `
+    <div class="result-card">
+      <div class="result-score">${score}/${questions.length}</div>
+      <div class="result-label">${label}</div>
+      <div class="result-grid" style="grid-template-columns:repeat(${questions.length},1fr)">${gridHtml}</div>
+      <div class="result-comment">${comments[label]}</div>
+      <button class="restart-btn" id="restart">Пройти снова</button>
+    </div>`;
+
+  document.getElementById('restart').addEventListener('click', () => {
+    current = 0; score = 0; answered = false;
+    answers = new Array(questions.length).fill(null);
+    render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
