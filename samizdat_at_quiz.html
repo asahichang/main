@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Самиздат и Author.Today — викторина</title>
+
+<!-- Open Graph -->
+<meta property="og:title" content="Насколько хорошо ты знаешь самиздат и АТ?" />
+<meta property="og:description" content="17 вопросов о самиздате, истории жанра и платформе Author.Today. Проверь свои знания." />
+<meta property="og:image" content="https://asahi-chang.github.io/writer-quizzes/preview.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://asahi-chang.github.io/writer-quizzes/samizdat_at_quiz.html" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Насколько хорошо ты знаешь самиздат и АТ?" />
+<meta name="twitter:description" content="17 вопросов о самиздате, истории жанра и платформе Author.Today." />
+<meta name="twitter:image" content="https://asahi-chang.github.io/writer-quizzes/preview.jpg" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a18;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 640px; width: 100%; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 0.35rem; color: #1a1a18; }
+  .subtitle { font-size: 14px; color: #888780; margin-bottom: 1.75rem; }
+  .q-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+  }
+  .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+  .q-counter { font-size: 13px; color: #888780; }
+  .dots-row { display: flex; gap: 4px; flex-wrap: wrap; max-width: 160px; justify-content: flex-end; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #d3d1c7; display: inline-block; }
+  .dot.correct { background: #3B6D11; }
+  .dot.wrong { background: #A32D2D; }
+  .q-progress { height: 3px; background: #f1efe8; border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+  .q-progress-fill { height: 100%; background: #BA7517; border-radius: 2px; transition: width 0.4s ease; }
+  .q-category {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #BA7517;
+    margin-bottom: 0.5rem;
+  }
+  .q-text { font-size: 15px; line-height: 1.55; margin-bottom: 1.25rem; color: #1a1a18; }
+  .q-options { display: flex; flex-direction: column; gap: 8px; }
+  .q-option {
+    padding: 10px 14px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a18;
+    cursor: pointer;
+    background: transparent;
+    text-align: left;
+    line-height: 1.45;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+  }
+  .q-option:hover:not(:disabled) { background: #f5f4f0; border-color: rgba(0,0,0,0.35); }
+  .q-option.correct { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option.wrong { background: #FCEBEB; border-color: #E24B4A; color: #A32D2D; }
+  .q-option.reveal { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option:disabled { cursor: default; }
+  .q-explain {
+    margin-top: 1rem;
+    padding: 10px 14px;
+    background: #f5f4f0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #5f5e5a;
+    line-height: 1.6;
+    border-left: 2px solid #BA7517;
+    display: none;
+  }
+  .q-next {
+    margin-top: 1.25rem;
+    padding: 9px 20px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    display: none;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .q-next:hover { background: #f5f4f0; }
+  .result-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  .result-score { font-size: 52px; font-weight: 500; color: #1a1a18; margin-bottom: 0.25rem; }
+  .result-label { font-size: 15px; color: #888780; margin-bottom: 1.25rem; }
+  .result-grid { display: grid; gap: 5px; max-width: 300px; margin: 0 auto 1.5rem; }
+  .result-dot { width: 100%; aspect-ratio: 1; border-radius: 4px; }
+  .result-comment { font-size: 14px; color: #5f5e5a; line-height: 1.65; max-width: 420px; margin: 0 auto 1.75rem; }
+  .restart-btn {
+    padding: 9px 24px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .restart-btn:hover { background: #f5f4f0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Самиздат и Author.Today</h1>
+  <p class="subtitle">17 вопросов о самопубликации, истории жанра и платформе АТ</p>
+  <div id="quiz-main"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    category: "Самиздат — понятие",
+    q: "Что такое самиздат в современном понимании?",
+    opts: [
+      "Подпольное издание книг",
+      "Самостоятельная публикация без издательства",
+      "Пиратское распространение",
+      "Создание своих текстов на основе чужих"
+    ],
+    correct: 1,
+    explain: "Сегодня уже нет подпольного незаконного издания книг, также как и все остальные ответы не являются верными."
+  },
+  {
+    category: "История самиздата",
+    q: "Какая платформа считается первопроходцем русскоязычного литературного самиздата в интернете?",
+    opts: [
+      "diary.ru",
+      "Автор Тудей",
+      "samlib.ru",
+      "proza.ru"
+    ],
+    correct: 2,
+    explain: "СамИздат от Lib.ru (Максима Мошкова) запущен в 1994 году. Там начинали многие авторы, ставшие потом коммерчески успешными, включая Лукьяненко."
+  },
+  {
+    category: "История самиздата",
+    q: "Кто автор фразы «Самиздат: сам сочиняю, сам редактирую, сам цензурирую, сам издаю, сам распространяю, сам и отсиживаю за него»?",
+    opts: [
+      "Иосиф Сталин",
+      "Андрей Сахаров",
+      "Александр Солженицын",
+      "Владимир Буковский"
+    ],
+    correct: 3,
+    explain: "Владимир Константинович Буковский — советский, британский и российский правозащитник, писатель, публицист и общественный деятель. Один из основателей и активный участник диссидентского движения в СССР. Получил известность на Западе тем, что предал гласности практику карательной психиатрии в СССР."
+  },
+  {
+    category: "История самиздата",
+    q: "Кто автор термина «самиздат»?",
+    opts: [
+      "Филолог Владимир Яковлевич Пропп",
+      "Поэт Николай Глазков",
+      "Поэт Владимир Маяковский",
+      "Писатель Михаил Булгаков"
+    ],
+    correct: 1,
+    explain: "В 1940-е годы Глазков собственноручно переплетал сборники своих стихов и ставил на них ироничный штамп «Самсебяиздат»."
+  },
+  {
+    category: "История самиздата",
+    q: "Какие произведения, сегодня считающиеся классикой, никогда не распространялись в виде «самиздата» или «рукописных списков»?",
+    opts: [
+      "«Горе от ума» А.С. Грибоедова",
+      "«Доктор Живаго» Б.Л. Пастернака",
+      "«Мы» Е. Замятина",
+      "«Собачье сердце» М.А. Булгакова"
+    ],
+    correct: 2,
+    explain: "Роман Замятина — это «тамиздат», так как был напечатан в типографии за границей. Написан в 1920–1921 годах, впервые опубликован на английском языке в Нью-Йорке в 1924 году, на русском — в Праге в 1927-м. В СССР под строжайшим запретом, и нет свидетельств широкого распространения в виде машинописных копий. Комедия Грибоедова разошлась в тысячах списков до первой публикации, а романы Пастернака и Булгакова стали доступны советскому читателю именно благодаря самиздату."
+  },
+  {
+    category: "Самиздат — практика",
+    q: "Что важнее в самиздате?",
+    opts: [
+      "Идеальный стиль автора",
+      "Скорость + вовлечение + история",
+      "Длина книги",
+      "Количество персонажей и первая глава"
+    ],
+    correct: 1,
+    explain: "Скорость публикации, насколько вовлечён читатель и насколько интересна ему история — вот три главных фактора успеха."
+  },
+  {
+    category: "Author.Today — основы",
+    q: "В каком году появился АТ?",
+    opts: [
+      "2010",
+      "2015",
+      "2017",
+      "2020"
+    ],
+    correct: 2,
+    explain: "Author.Today — социальная сеть, которая объединяет творческих людей, появилась в 2017 году."
+  },
+  {
+    category: "Author.Today — жанры",
+    q: "Какие жанры исторически приобрели наибольшую популярность и доминируют в топах платформы Author.Today?",
+    opts: [
+      "Мужская литература",
+      "Детективы и современная проза",
+      "ЛитРПГ, РеалРПГ, бояръ-аниме, попаданцы и боевое фэнтези",
+      "Научная фантастика, тёмное фэнтези, мистика"
+    ],
+    correct: 2,
+    explain: "Именно с этих жанров и начался АТ — они до сих пор формируют основу топов платформы."
+  },
+  {
+    category: "Коммерческий статус",
+    q: "Что не требуется при подаче на коммерческий статус АТ?",
+    opts: [
+      "300 просмотров ежедневно в течение 14 дней",
+      "300 библиотек книги",
+      "300 лайков книги",
+      "30 часов чтения каждый день в течение 14 дней"
+    ],
+    correct: 2,
+    explain: "В отличие от всех остальных показателей, наличие у книги определённого количества лайков не обязательно."
+  },
+  {
+    category: "Author.Today — термины",
+    q: "Что такое «прода»?",
+    opts: [
+      "Продажа книги",
+      "Продолжение книги",
+      "Продюсер книги",
+      "Продвижение книги"
+    ],
+    correct: 1,
+    explain: "В терминологии авторов «писать проду» означает писать новую главу (продолжение)."
+  },
+  {
+    category: "Author.Today — алгоритмы",
+    q: "Что не влияет на популярность книги на АТ?",
+    opts: [
+      "Обложка",
+      "Жанр",
+      "Активность читателей (лайки, комментарии, библиотека)",
+      "Объём текста"
+    ],
+    correct: 3,
+    explain: "Несмотря на то что рассказы и повести объективно не так популярны, как романы, формально размер текста роли не играет. Однако не рекомендуется создавать произведения более 1 млн знаков. Все остальные параметры косвенно или напрямую влияют на популярность книги."
+  },
+  {
+    category: "Author.Today — интерфейс",
+    q: "Что такое виджет на АТ?",
+    opts: [
+      "Возможность добавить ссылку на свою книгу на собственный сайт",
+      "Блок из книг на главной странице",
+      "Главная страница сайта",
+      "Блок комментариев и обсуждений на главной странице"
+    ],
+    correct: 1,
+    explain: "На главной странице есть несколько таких блоков. Блок «Популярное» (из 6 книг и 3 пролистывания) называется в народе «виджет Популярное». Также есть виджет «Главные новинки» — это основные виджеты, на которые смотрят писатели."
+  },
+  {
+    category: "Author.Today — термины",
+    q: "Что такое «буст» на АТ?",
+    opts: [
+      "Рекламное продвижение книги",
+      "Размещение книги на главной странице АТ",
+      "Специальный термин, когда авторы продвигают друг друга (добавляют в библиотеку, пишут комментарий или ставят лайк)",
+      "Автор даёт в конце книги рекомендацию на другого автора"
+    ],
+    correct: 3,
+    explain: "По правилам АТ буст возможен только для циклов и добавляется в специальном поле в настройках, его длина не более 200 символов включая ссылку. Авторы самостоятельно договариваются между собой и таким образом бесплатно делятся своей аудиторией. Получить буст от популярного автора вполне реально."
+  },
+  {
+    category: "Author.Today — алгоритмы",
+    q: "Почему регулярность выкладки важна?",
+    opts: [
+      "Алгоритмы и ожидание читателей",
+      "Это правило платформы",
+      "Иначе текст удаляют",
+      "Не влияет"
+    ],
+    correct: 0,
+    explain: "Все остальные пункты неверны в принципе. Алгоритмы сайта учитывают то, как хорошо читают вашу книгу — а это напрямую зависит от ожиданий читателя и регулярности обновлений."
+  },
+  {
+    category: "Коммерческий статус",
+    q: "Если автор успешно получил коммерческий статус, какой процент от дохода (роялти) он будет получать?",
+    opts: [
+      "35%",
+      "50%",
+      "70%",
+      "80%"
+    ],
+    correct: 2,
+    explain: "70% — верный ответ. А при эксклюзиве — 85%."
+  },
+  {
+    category: "Коммерческий статус",
+    q: "Сколько автор получает с донатов?",
+    opts: [
+      "100%",
+      "90%",
+      "80%",
+      "70%"
+    ],
+    correct: 1,
+    explain: "90% дохода получает автор."
+  },
+  {
+    category: "Author.Today — инструменты",
+    q: "Для чего нужна Яндекс Метрика автору на АТ?",
+    opts: [
+      "Чтобы поисковик Яндекса показывал вашу книгу в поиске выше других",
+      "Чтобы настроить таргетированную рекламу в Яндексе",
+      "Чтобы автор мог смотреть статистику посещений книги и настраивать конверсии",
+      "Чтобы смотреть переходы между главами на сайте АТ"
+    ],
+    correct: 2,
+    explain: "Для всего остального Метрика не нужна. Чтобы её получить, надо подать заявку на коммерческий статус и выбрать «Только Награды» — это называется ограниченный КС. После этого также можно подать на полный КС."
+  }
+];
+
+let current = 0, score = 0, answered = false;
+let answers = new Array(questions.length).fill(null);
+
+function render() {
+  const container = document.getElementById('quiz-main');
+  if (current >= questions.length) { renderResult(container); return; }
+  const q = questions[current];
+  const pct = (current / questions.length) * 100;
+  const dotsHtml = questions.map((_, i) => {
+    let cls = 'dot';
+    if (answers[i] === true) cls += ' correct';
+    else if (answers[i] === false) cls += ' wrong';
+    return `<span class="${cls}"></span>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="q-card">
+      <div class="q-header">
+        <span class="q-counter">Вопрос ${current + 1} из ${questions.length}</span>
+        <div class="dots-row">${dotsHtml}</div>
+      </div>
+      <div class="q-progress"><div class="q-progress-fill" style="width:${pct}%"></div></div>
+      <div class="q-category">${q.category}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.opts.map((opt, i) => `<button class="q-option" data-i="${i}">${opt}</button>`).join('')}
+      </div>
+      <div id="explain" class="q-explain"></div>
+      <button class="q-next" id="next-btn">${current < questions.length - 1 ? 'Следующий вопрос →' : 'Посмотреть результат →'}</button>
+    </div>`;
+
+  document.querySelectorAll('.q-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (answered) return;
+      answered = true;
+      const chosen = parseInt(this.dataset.i);
+      document.querySelectorAll('.q-option').forEach((b, i) => {
+        b.disabled = true;
+        if (i === q.correct) b.classList.add('reveal');
+        else if (i === chosen && chosen !== q.correct) b.classList.add('wrong');
+      });
+      answers[current] = (chosen === q.correct);
+      if (chosen === q.correct) score++;
+      const exp = document.getElementById('explain');
+      exp.style.display = 'block';
+      exp.textContent = q.explain;
+      document.getElementById('next-btn').style.display = 'inline-block';
+    });
+  });
+
+  document.getElementById('next-btn').addEventListener('click', () => {
+    current++; answered = false; render();
+  });
+}
+
+function renderResult(container) {
+  const n = questions.length;
+  const pct = score / n;
+  let label, comment;
+  if (pct >= 0.88) {
+    label = 'Матёрый автор АТ';
+    comment = 'Вы знаете платформу изнутри — от алгоритмов до истории термина «самиздат». Осталось только написать бестселлер.';
+  } else if (pct >= 0.65) {
+    label = 'Начинающий самиздатчик';
+    comment = 'Крепкая база. Несколько деталей ускользнули — но вы явно понимаете, как работает платформа и зачем на ней быть.';
+  } else if (pct >= 0.4) {
+    label = 'Любопытный читатель';
+    comment = 'Читать и публиковать — разные навыки. Пора глубже погрузиться в механику АТ: виджеты, буст, КС и прода ждут вас.';
+  } else {
+    label = 'Новичок в Зоне';
+    comment = 'Author.Today — целая экосистема со своим языком и правилами. Этот тест — хорошая карта того, что стоит изучить.';
+  }
+
+  const gridHtml = answers.map(a => `<div class="result-dot" style="background:${a ? '#639922' : '#E24B4A'}"></div>`).join('');
+
+  container.innerHTML = `
+    <div class="result-card">
+      <div class="result-score">${score}/${n}</div>
+      <div class="result-label">${label}</div>
+      <div class="result-grid" style="grid-template-columns:repeat(${n},1fr)">${gridHtml}</div>
+      <div class="result-comment">${comment}</div>
+      <button class="restart-btn" id="restart">Пройти снова</button>
+    </div>`;
+
+  document.getElementById('restart').addEventListener('click', () => {
+    current = 0; score = 0; answered = false;
+    answers = new Array(questions.length).fill(null);
+    render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
