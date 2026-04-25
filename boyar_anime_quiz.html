@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Бояръ-аниме — викторина</title>
+
+<!-- Open Graph -->
+<meta property="og:title" content="Насколько хорошо ты знаешь бояръ-аниме?" />
+<meta property="og:description" content="11 вопросов о самобытном поджанре русской сетевой литературы — тропах, архетипах и механике жанра." />
+<meta property="og:image" content="https://asahi-chang.github.io/writer-quizzes/preview.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://asahi-chang.github.io/writer-quizzes/boyar_anime_quiz.html" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Насколько хорошо ты знаешь бояръ-аниме?" />
+<meta name="twitter:description" content="11 вопросов о тропах, архетипах и механике жанра." />
+<meta name="twitter:image" content="https://asahi-chang.github.io/writer-quizzes/preview.jpg" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a18;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 640px; width: 100%; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 0.35rem; color: #1a1a18; }
+  .subtitle { font-size: 14px; color: #888780; margin-bottom: 1.75rem; }
+  .q-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+  }
+  .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+  .q-counter { font-size: 13px; color: #888780; }
+  .dots-row { display: flex; gap: 4px; flex-wrap: wrap; max-width: 160px; justify-content: flex-end; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #d3d1c7; display: inline-block; }
+  .dot.correct { background: #3B6D11; }
+  .dot.wrong { background: #A32D2D; }
+  .q-progress { height: 3px; background: #f1efe8; border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+  .q-progress-fill { height: 100%; background: #B0405A; border-radius: 2px; transition: width 0.4s ease; }
+  .q-category {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #B0405A;
+    margin-bottom: 0.5rem;
+  }
+  .q-text { font-size: 15px; line-height: 1.55; margin-bottom: 1.25rem; color: #1a1a18; }
+  .q-options { display: flex; flex-direction: column; gap: 8px; }
+  .q-option {
+    padding: 10px 14px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a18;
+    cursor: pointer;
+    background: transparent;
+    text-align: left;
+    line-height: 1.45;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+  }
+  .q-option:hover:not(:disabled) { background: #f5f4f0; border-color: rgba(0,0,0,0.35); }
+  .q-option.correct { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option.wrong { background: #FCEBEB; border-color: #E24B4A; color: #A32D2D; }
+  .q-option.reveal { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option:disabled { cursor: default; }
+  .q-explain {
+    margin-top: 1rem;
+    padding: 10px 14px;
+    background: #f5f4f0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #5f5e5a;
+    line-height: 1.6;
+    border-left: 2px solid #B0405A;
+    display: none;
+  }
+  .q-next {
+    margin-top: 1.25rem;
+    padding: 9px 20px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    display: none;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .q-next:hover { background: #f5f4f0; }
+  .result-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  .result-score { font-size: 52px; font-weight: 500; color: #1a1a18; margin-bottom: 0.25rem; }
+  .result-label { font-size: 15px; color: #888780; margin-bottom: 1.25rem; }
+  .result-grid { display: grid; gap: 5px; max-width: 300px; margin: 0 auto 1.5rem; }
+  .result-dot { width: 100%; aspect-ratio: 1; border-radius: 4px; }
+  .result-comment { font-size: 14px; color: #5f5e5a; line-height: 1.65; max-width: 420px; margin: 0 auto 1.75rem; }
+  .restart-btn {
+    padding: 9px 24px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .restart-btn:hover { background: #f5f4f0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Бояръ-аниме</h1>
+  <p class="subtitle">11 вопросов о тропах, архетипах и механике жанра</p>
+  <div id="quiz-main"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    category: "Происхождение жанра",
+    q: "Бояръ-аниме вдохновлено...",
+    opts: [
+      "Славянской мифологией и русским духом",
+      "Японской манга-эстетикой",
+      "Жанром о попаданцах в русском сеттинге",
+      "Желанием переписать историю страны на свой лад"
+    ],
+    correct: 1,
+    explain: "Бояръ-аниме — самобытный поджанр русской сетевой литературы, сложившийся в 2010-х и расцветший в 2020-х. Это синтез японской аниме/манга-эстетики с русской исторической, фольклорной и альтернативно-исторической тематикой. Вместо японских школьников в фэнтезийных мирах с эльфами — русские дворяне, бояре, казаки и купцы с магией и клановой системой. Японские оригиналы: «Sword Art Online», «Re:Zero», «Overlord»."
+  },
+  {
+    category: "Терминология",
+    q: "Как называется поджанр японской фэнтези, в котором герой попадает в другой мир, обычно обретая невероятные способности или особое значение?",
+    opts: [
+      "Ранобэ",
+      "Исекай",
+      "Уся",
+      "Сенсай"
+    ],
+    correct: 1,
+    explain: "Исекай (異世界, «другой мир») — поджанр японской фэнтези, где герой переносится в параллельный мир. Именно из исекай выросло бояръ-аниме — но с русским сеттингом вместо японского."
+  },
+  {
+    category: "Тропы",
+    q: "Что такое «рояль» в бояръ-аниме?",
+    opts: [
+      "Троп «чеховского ружья наоборот» — деталь, которая так и не сыграла в сюжете",
+      "Незаслуженно удобное сюжетное везение — предмет, способность или обстоятельство, подброшенное герою без подготовки",
+      "Персонаж, притворяющийся слабым и скрывающий истинный ранг",
+      "Штамп, когда наставник оказывается основателем клана, уничтожившего род героя"
+    ],
+    correct: 1,
+    explain: "От выражения «рояль в кустах» — нечто, появляющееся внезапно и необоснованно. В бояръ-аниме это предмет, способность или удачное стечение обстоятельств, которое автор подкладывает герою в нужный момент без должной нарративной подготовки."
+  },
+  {
+    category: "Жанровые черты",
+    q: "Что не является характерной чертой бояръ-аниме?",
+    opts: [
+      "Аристократия с кланами и родами",
+      "Наличие магической системы",
+      "Ранговая иерархия",
+      "Герои зарабатывают очки, проходя уровни и уничтожая монстров"
+    ],
+    correct: 3,
+    explain: "Прокачка через убийство монстров и очки опыта — это характерно для ЛитРПГ, а не бояръ-аниме. В бояъ-аниме рост происходит через развитие магии, укрепление рода и клановые конфликты."
+  },
+  {
+    category: "Архетипы героев",
+    q: "Какой архетип героя не используется в бояръ-аниме?",
+    opts: [
+      "Возрождённый — умер и воскрес в молодом теле себя или предка",
+      "Падший аристократ — отпрыск великого рода, потерявший всё, начинающий с нуля",
+      "Восходящий — изгнан из секты, через культивацию и техники стремится к бессмертию, движущая сила — месть",
+      "Бастард — незаконнорождённый, вынужденный доказывать право на место"
+    ],
+    correct: 2,
+    explain: "Этот архетип относится к «сянься» — китайскому жанру, построенному на даосской философии: гармония с природой, путь к бессмертию, баланс инь-ян, карма и духовный рост. Именно поэтому эти два жанра часто путают — в обоих есть культивация и рост. Но в сянься герой растёт духовно, а в бояръ-аниме — социально и кланово."
+  },
+  {
+    category: "Тропы",
+    q: "Что такое «скрытый имба»?",
+    opts: [
+      "Реальное, а не сверхъестественное преимущество: абсолютная память или знание алхимии",
+      "Уникальная способность, система или знание из прошлой жизни, позволяющая разрушать устоявшиеся иерархии",
+      "Покровительство свыше — герой слаб сам по себе, но за ним стоит могущественный дух-предок или артефакт",
+      "Герой знает будущее или историю мира — как попаданец или возрождённый"
+    ],
+    correct: 1,
+    explain: "Скрытая имба неотчуждаема — она часть героя. Реальное преимущество лишь позволяет эффективнее использовать систему, но враги могут нейтрализовать его превосходством в магии. Покровительство можно отнять. Знание будущего — информационное преимущество, а не силовое. Скрытая имба ломает систему изнутри."
+  },
+  {
+    category: "Жанровые черты",
+    q: "Что не используется в жанре бояръ-аниме?",
+    opts: [
+      "Казачество как отдельная воинская традиция с магическим уклоном",
+      "Православная символика: обереги, колокола, «крестная сила» как магический концепт",
+      "Фольклорные существа: лешие, водяные, берегини, упыри, навьи",
+      "Отсылки к реальной истории — Иван Грозный, Смута, Петровские реформы, но без магии"
+    ],
+    correct: 3,
+    explain: "Реальная история без магии — это исторический роман, а не бояръ-аниме. Жанр обязательно добавляет магическое, фантастическое или аниме-элементы поверх исторического фундамента. Все остальные варианты — органичные элементы жанра."
+  },
+  {
+    category: "Тропы",
+    q: "Какой троп органично подходит для бояръ-аниме?",
+    opts: [
+      "«Безмолвный монах»: герой-отшельник — говорит мало, медитирует, слушает внутренний голос",
+      "«Корпоративный гильдмастер»: открыл интерфейс гильдии, распределил роли — два танка, хилер, три ДД. Рейд начнётся в полночь",
+      "«Гордая боярышня-цундере»: внешняя холодность и родовая спесь, за которой скрывается симпатия к герою",
+      "«Сломленный антигерой»: убивал без сожаления, мораль осталась в прошлой жизни, аморальность и нигилизм"
+    ],
+    correct: 2,
+    explain: "Цундэрэ — популярный японский архетип: внешняя холодность («цун») и скрытая нежность («дэрэ»). В бояръ-аниме он органично сплавляется с русской дворянской спесью и кодексом чести. Гордость боярышни — не каприз, а родовая обязанность. Её смягчение к герою — политический и символический жест. Форма японская, содержание — русское."
+  },
+  {
+    category: "Нарративные паттерны",
+    q: "Какой нарративный паттерн не относится к бояръ-аниме?",
+    opts: [
+      "«Из грязи в князи» — герой с нуля поднимается до вершины иерархии, унижая тех, кто его недооценивал",
+      "«Восстановление рода» — угасший клан возрождается, каждый том — новый союзник и новый враг",
+      "«Скрытый потенциал» — герой скрывает знание о будущем, что помогает ему расти и менять мир (прогрессорство)",
+      "«Система против традиции» — рациональное мышление героя противостоит архаичным устоям мира"
+    ],
+    correct: 2,
+    explain: "Одного знания о будущем недостаточно для имбовости в жанре — это информационное, а не силовое преимущество. Прогрессорство без сверхспособности делает героя уязвимым. Подлинная скрытая имба должна ломать систему, а не просто её предсказывать."
+  },
+  {
+    category: "Критика жанра",
+    q: "Что часто критикуют в жанре бояръ-аниме?",
+    opts: [
+      "Много воды и зацикливание на мелких деталях",
+      "Большое количество клише",
+      "Отсутствие гаремов",
+      "Постоянный экшен как в боевике"
+    ],
+    correct: 1,
+    explain: "Главная претензия критиков — засилье клише: скрытый имба, цундере-аристократка, презирающий герой клан, стремительная прокачка. Жанр молодой и ещё не выработал достаточно деконструкций собственных штампов."
+  },
+  {
+    category: "Архетипы героев",
+    q: "Что не является основой большинства главных героев бояръ-аниме?",
+    opts: [
+      "Попаданец: реинкарнация архимага, ветерана или просто взрослого циничного человека из нашего мира",
+      "Слабое тело: душа ГГ попадает в тело подростка на дне социальной иерархии — бастарда, изгнанника, сироты",
+      "Маг-демократ, стремящийся раздать магию простолюдинам, а не только аристократам",
+      "Стремительный рост: используя знания и «чит-коды» из прошлой жизни, герой ломает привычные ограничения мира"
+    ],
+    correct: 2,
+    explain: "Маг-демократ — редкость и исключение. Жанр строится на иерархии и клановой борьбе: аристократия, ранги, тайные техники рода. Герой стремится занять место в системе или создать свою — но не разрушить саму идею аристократического превосходства."
+  }
+];
+
+let current = 0, score = 0, answered = false;
+let answers = new Array(questions.length).fill(null);
+
+function render() {
+  const container = document.getElementById('quiz-main');
+  if (current >= questions.length) { renderResult(container); return; }
+  const q = questions[current];
+  const pct = (current / questions.length) * 100;
+  const dotsHtml = questions.map((_, i) => {
+    let cls = 'dot';
+    if (answers[i] === true) cls += ' correct';
+    else if (answers[i] === false) cls += ' wrong';
+    return `<span class="${cls}"></span>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="q-card">
+      <div class="q-header">
+        <span class="q-counter">Вопрос ${current + 1} из ${questions.length}</span>
+        <div class="dots-row">${dotsHtml}</div>
+      </div>
+      <div class="q-progress"><div class="q-progress-fill" style="width:${pct}%"></div></div>
+      <div class="q-category">${q.category}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.opts.map((opt, i) => `<button class="q-option" data-i="${i}">${opt}</button>`).join('')}
+      </div>
+      <div id="explain" class="q-explain"></div>
+      <button class="q-next" id="next-btn">${current < questions.length - 1 ? 'Следующий вопрос →' : 'Посмотреть результат →'}</button>
+    </div>`;
+
+  document.querySelectorAll('.q-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (answered) return;
+      answered = true;
+      const chosen = parseInt(this.dataset.i);
+      document.querySelectorAll('.q-option').forEach((b, i) => {
+        b.disabled = true;
+        if (i === q.correct) b.classList.add('reveal');
+        else if (i === chosen && chosen !== q.correct) b.classList.add('wrong');
+      });
+      answers[current] = (chosen === q.correct);
+      if (chosen === q.correct) score++;
+      const exp = document.getElementById('explain');
+      exp.style.display = 'block';
+      exp.textContent = q.explain;
+      document.getElementById('next-btn').style.display = 'inline-block';
+    });
+  });
+
+  document.getElementById('next-btn').addEventListener('click', () => {
+    current++; answered = false; render();
+  });
+}
+
+function renderResult(container) {
+  const n = questions.length;
+  const pct = score / n;
+  let label, comment;
+  if (pct >= 0.82) {
+    label = 'Глава великого рода';
+    comment = 'Вы знаете жанр изнутри — архетипы, тропы, отличия от смежных жанров и нарративные паттерны. Осталось написать собственный бестселлер в жанре.';
+  } else if (pct >= 0.55) {
+    label = 'Молодой наследник';
+    comment = 'Крепкая база. Несколько нюансов ускользнули, но вы явно читали жанр и понимаете его логику. Скоро выйдете на первый ранг.';
+  } else if (pct >= 0.3) {
+    label = 'Бастард без рода';
+    comment = 'Жанр молодой и плотный — здесь своя терминология и своя механика. Пора взяться за чтение: пара хороших книг расставит всё по местам.';
+  } else {
+    label = 'Крестьянин у ворот';
+    comment = 'Бояръ-аниме — целая вселенная на стыке двух культур. Этот тест — карта входа. Начните с любой книги из топа АТ в жанре.';
+  }
+
+  const gridHtml = answers.map(a => `<div class="result-dot" style="background:${a ? '#639922' : '#E24B4A'}"></div>`).join('');
+
+  container.innerHTML = `
+    <div class="result-card">
+      <div class="result-score">${score}/${n}</div>
+      <div class="result-label">${label}</div>
+      <div class="result-grid" style="grid-template-columns:repeat(${n},1fr)">${gridHtml}</div>
+      <div class="result-comment">${comment}</div>
+      <button class="restart-btn" id="restart">Пройти снова</button>
+    </div>`;
+
+  document.getElementById('restart').addEventListener('click', () => {
+    current = 0; score = 0; answered = false;
+    answers = new Array(questions.length).fill(null);
+    render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
