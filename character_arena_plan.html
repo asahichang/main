@@ -1,0 +1,286 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.wrap { padding: 1.5rem 0; font-family: var(--font-sans); }
+.tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1.5rem; }
+.tab { font-size: 13px; padding: 8px 18px; border: none; background: transparent; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -0.5px; }
+.tab.active { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); font-weight: 500; }
+.section { display: none; }
+.section.active { display: block; }
+
+.phase { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 12px; }
+.phase-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.phase-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+.phase-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.phase-time { font-size: 12px; color: var(--color-text-tertiary); margin-left: auto; }
+.phase-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; margin-left: 40px; }
+.phase-items { margin-left: 40px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+.phase-item { font-size: 13px; color: var(--color-text-secondary); padding-left: 12px; border-left: 2px solid var(--color-border-secondary); line-height: 1.5; }
+
+.p1 .phase-num { background: #EEEDFE; color: #3C3489; }
+.p2 .phase-num { background: #E1F5EE; color: #085041; }
+.p3 .phase-num { background: #FAEEDA; color: #633806; }
+.p4 .phase-num { background: #FAECE7; color: #712B13; }
+.p5 .phase-num { background: #FBEAF0; color: #72243E; }
+
+.task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.task-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 8px; }
+.task-badge { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 999px; width: fit-content; }
+.b-warm { background: #EEEDFE; color: #3C3489; }
+.b-solo { background: #E1F5EE; color: #085041; }
+.b-duel { background: #FAECE7; color: #712B13; }
+.b-team { background: #FBEAF0; color: #72243E; }
+.b-wild { background: #FAEEDA; color: #633806; }
+.task-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); line-height: 1.4; }
+.task-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
+.task-rule { font-size: 12px; color: var(--color-text-tertiary); background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 6px 10px; font-style: italic; line-height: 1.5; }
+.task-meta { font-size: 12px; color: var(--color-text-tertiary); margin-top: auto; padding-top: 8px; border-top: 0.5px solid var(--color-border-tertiary); display: flex; justify-content: space-between; }
+.try-btn { font-size: 13px; background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 5px 12px; color: var(--color-text-info); cursor: pointer; width: fit-content; }
+.try-btn:hover { background: var(--color-background-secondary); }
+
+.axis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+.axis-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
+.axis-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 6px; }
+.axis-q { font-size: 12px; color: var(--color-text-secondary); line-height: 1.8; }
+.axis-q span { color: var(--color-text-tertiary); }
+
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.fpill { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+.fpill.active { background: var(--color-background-tertiary); color: var(--color-text-primary); border-color: var(--color-border-primary); font-weight: 500; }
+</style>
+
+<div class="wrap">
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('plan', this)">План мероприятия</button>
+  <button class="tab" onclick="switchTab('axes', this)">Оси персонажа</button>
+  <button class="tab" onclick="switchTab('tasks', this)">Задания</button>
+</div>
+
+<div class="section active" id="sec-plan">
+  <div class="phase p1">
+    <div class="phase-header">
+      <div class="phase-num">1</div>
+      <div class="phase-title">Разогрев — кто этот человек?</div>
+      <div class="phase-time">15–20 мин</div>
+    </div>
+    <div class="phase-desc">Участники получают карточку с одной деталью персонажа — не имя и не профессия, а жест, привычка или страх. Задача: написать одну сцену, из которой понятно всё остальное.</div>
+  </div>
+
+  <div class="phase p2">
+    <div class="phase-header">
+      <div class="phase-num">2</div>
+      <div class="phase-title">Блок 1 — статика</div>
+      <div class="phase-time">25–30 мин</div>
+    </div>
+    <div class="phase-desc">Персонаж в покое. Как он выглядит, когда ничего не происходит? Задания на голос, привычку, противоречие.</div>
+    <div class="phase-items">
+      <div class="phase-item">Соло: монолог персонажа о чём угодно — кроме себя</div>
+      <div class="phase-item">Соло: три факта о персонаже — два правда, один ложь. Читатели угадывают</div>
+    </div>
+  </div>
+
+  <div class="phase p3">
+    <div class="phase-header">
+      <div class="phase-num">3</div>
+      <div class="phase-title">Блок 2 — давление</div>
+      <div class="phase-time">30–35 мин</div>
+    </div>
+    <div class="phase-desc">Персонаж под нагрузкой. Характер раскрывается не в покое, а в момент выбора или угрозы.</div>
+    <div class="phase-items">
+      <div class="phase-item">Дуэль: два автора пишут одного персонажа в кризисе — каждый видит его по-своему</div>
+      <div class="phase-item">Соло: персонаж лжёт — но текст написан так, что читатель это знает</div>
+    </div>
+  </div>
+
+  <div class="phase p4">
+    <div class="phase-header">
+      <div class="phase-num">4</div>
+      <div class="phase-title">Блок 3 — столкновение</div>
+      <div class="phase-time">35–40 мин</div>
+    </div>
+    <div class="phase-desc">Персонаж встречает другого персонажа. Командные и дуэльные форматы — диалог, конфликт, узнавание.</div>
+    <div class="phase-items">
+      <div class="phase-item">Дуэль: один пишет от лица А, другой от лица Б — не договариваясь заранее</div>
+      <div class="phase-item">Команда: каждый добавляет реплику, не зная, что скажет следующий</div>
+    </div>
+  </div>
+
+  <div class="phase p5">
+    <div class="phase-header">
+      <div class="phase-num">5</div>
+      <div class="phase-title">Финал — смена угла</div>
+      <div class="phase-time">20–25 мин</div>
+    </div>
+    <div class="phase-desc">Тот же персонаж, но глазами другого. Финальный раунд выявляет, насколько персонаж получился объёмным — или остался плоским.</div>
+    <div class="phase-items">
+      <div class="phase-item">Соло: написать о своём персонаже от лица его врага</div>
+      <div class="phase-item">Соло: некролог персонажу — что о нём скажут те, кто его не любил</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="sec-axes">
+  <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1.25rem;line-height:1.6;">Четыре оси, по которым оцениваются персонажи на арене. Судьи могут использовать их явно или интуитивно.</div>
+  <div class="axis-grid">
+    <div class="axis-card">
+      <div class="axis-title">Голос</div>
+      <div class="axis-q">
+        <span>→</span> Можно ли узнать персонажа по одной фразе?<br>
+        <span>→</span> Есть ли слова, которые он никогда не скажет?<br>
+        <span>→</span> Как он говорит о себе vs о других?
+      </div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-title">Противоречие</div>
+      <div class="axis-q">
+        <span>→</span> Есть ли в нём что-то, что не складывается?<br>
+        <span>→</span> Он хочет одного, а делает другое?<br>
+        <span>→</span> Читатель удивился — но поверил?
+      </div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-title">Тело и жест</div>
+      <div class="axis-q">
+        <span>→</span> Есть ли физическая деталь, которая его выдаёт?<br>
+        <span>→</span> Как он занимает пространство?<br>
+        <span>→</span> Что он делает руками, когда молчит?
+      </div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-title">Отношение к миру</div>
+      <div class="axis-q">
+        <span>→</span> Чего он хочет на самом деле — не то, что говорит?<br>
+        <span>→</span> Кого он боится и кому завидует?<br>
+        <span>→</span> Что он никогда не простит?
+      </div>
+    </div>
+  </div>
+  <button class="try-btn" onclick="sendPrompt('Помоги мне разработать систему оценки персонажей для писательской арены — по четырём осям: голос, противоречие, тело и жест, отношение к миру.')">Разработать систему оценки ↗</button>
+</div>
+
+<div class="section" id="sec-tasks">
+  <div class="filter-row">
+    <button class="fpill active" onclick="filterTasks('all', this)">Все</button>
+    <button class="fpill" onclick="filterTasks('warm', this)">Разогрев</button>
+    <button class="fpill" onclick="filterTasks('solo', this)">Соло</button>
+    <button class="fpill" onclick="filterTasks('duel', this)">Дуэль</button>
+    <button class="fpill" onclick="filterTasks('team', this)">Команда</button>
+    <button class="fpill" onclick="filterTasks('wild', this)">Дикая карта</button>
+  </div>
+  <div class="task-grid" id="task-grid"></div>
+</div>
+</div>
+
+<script>
+const tasks = [
+  {
+    cat: 'warm', badge: 'b-warm', label: 'Разогрев',
+    title: 'Одна деталь',
+    desc: 'Участник получает карточку: «Этот человек никогда не открывает окна». Только из этого — написать сцену, где персонаж виден целиком.',
+    rule: 'Нельзя объяснять деталь. Только показывать.',
+    time: '10 мин', format: 'соло'
+  },
+  {
+    cat: 'warm', badge: 'b-warm', label: 'Разогрев',
+    title: 'Три факта',
+    desc: 'Написать три факта о персонаже. Два — правда, один — ложь. Остальные голосуют, какой ложный. Победитель — тот, кого не разгадали.',
+    rule: 'Факты должны быть конкретными, не абстрактными.',
+    time: '8 мин', format: 'соло + голосование'
+  },
+  {
+    cat: 'solo', badge: 'b-solo', label: 'Соло',
+    title: 'Монолог о чём угодно, кроме себя',
+    desc: 'Персонаж говорит о погоде, о соседях, о ценах на хлеб — и через это раскрывается полностью. Запрещено упоминать себя напрямую.',
+    rule: 'Местоимение «я» — штрафной балл.',
+    time: '15 мин', format: 'соло'
+  },
+  {
+    cat: 'solo', badge: 'b-solo', label: 'Соло',
+    title: 'Персонаж лжёт',
+    desc: 'Написать сцену, где персонаж говорит неправду. Но текст устроен так, что читатель это знает — без авторских пояснений.',
+    rule: 'Нельзя писать «он солгал» или «на самом деле».',
+    time: '20 мин', format: 'соло'
+  },
+  {
+    cat: 'solo', badge: 'b-solo', label: 'Соло',
+    title: 'Некролог от врага',
+    desc: 'Написать некролог своему персонажу — от лица человека, который его не любил. Что тот скажет на похоронах, когда надо быть вежливым?',
+    rule: 'Текст должен быть формально приличным — и при этом безжалостным.',
+    time: '15 мин', format: 'соло'
+  },
+  {
+    cat: 'solo', badge: 'b-solo', label: 'Соло',
+    title: 'Список того, чего он никогда не сделает',
+    desc: 'Не что персонаж делает — а что он категорически не сделает никогда. И почему каждый пункт списка на самом деле о его боли.',
+    rule: 'Минимум 5 пунктов. Последний должен удивить.',
+    time: '12 мин', format: 'соло'
+  },
+  {
+    cat: 'duel', badge: 'b-duel', label: 'Дуэль',
+    title: 'Один персонаж — два автора',
+    desc: 'Оба получают одно и то же имя и одну деталь. Пишут независимо. Потом читают вслух — и аудитория выбирает, какой персонаж живее.',
+    rule: 'Нельзя договариваться до начала.',
+    time: '25 мин', format: '2 автора'
+  },
+  {
+    cat: 'duel', badge: 'b-duel', label: 'Дуэль',
+    title: 'Диалог вслепую',
+    desc: 'Каждый пишет своего персонажа. Потом их сталкивают в диалоге — не зная заранее, кто окажется напротив. Оценивают, насколько убедительно персонажи реагируют друг на друга.',
+    rule: 'Диалог пишется совместно — по одной реплике вслух.',
+    time: '30 мин', format: '2 автора'
+  },
+  {
+    cat: 'team', badge: 'b-team', label: 'Команда',
+    title: 'Коллективная биография',
+    desc: 'Каждый участник пишет один абзац о прошлом персонажа — не зная, что написали другие. В конце читают всё вместе и ищут противоречия. Они не исправляются — объясняются.',
+    rule: 'Противоречия — это не ошибки, а характер.',
+    time: '35 мин', format: '4–6 авторов'
+  },
+  {
+    cat: 'team', badge: 'b-team', label: 'Команда',
+    title: 'Допрос',
+    desc: 'Один автор играет персонажа. Остальные — следователи, задают вопросы. Автор отвечает от лица персонажа, не выходя из роли.',
+    rule: 'Нельзя говорить «я не знаю». Нельзя молчать дольше 5 секунд.',
+    time: '20 мин', format: '1 + команда'
+  },
+  {
+    cat: 'wild', badge: 'b-wild', label: 'Дикая карта',
+    title: 'Персонаж в чужом жанре',
+    desc: 'Реалистичный персонаж помещается в хоррор, или детективный — в лирическую прозу. Побеждает тот, чей персонаж остался собой, несмотря на смену жанра.',
+    rule: 'Жанр тянет персонажа — задача автора не дать ему сломаться.',
+    time: '20 мин', format: 'соло'
+  },
+  {
+    cat: 'wild', badge: 'b-wild', label: 'Дикая карта',
+    title: 'Второстепенный в центре',
+    desc: 'Взять классический сюжет — и написать его глазами самого незначительного персонажа. Официант на банкете. Сосед в поезде. Кассир.',
+    rule: 'Главные герои оригинала появляются только мельком.',
+    time: '25 мин', format: 'соло'
+  }
+];
+
+function filterTasks(cat, btn) {
+  document.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = cat === 'all' ? tasks : tasks.filter(t => t.cat === cat);
+  document.getElementById('task-grid').innerHTML = filtered.map(t => `
+    <div class="task-card">
+      <span class="task-badge ${t.badge}">${t.label}</span>
+      <div class="task-title">${t.title}</div>
+      <div class="task-desc">${t.desc}</div>
+      <div class="task-rule">${t.rule}</div>
+      <button class="try-btn" onclick="sendPrompt('Расскажи подробнее о задании «${t.title}» для писательской арены — как его правильно провести, на что обращать внимание судьям.')">Подробнее ↗</button>
+      <div class="task-meta"><span>${t.time}</span><span>${t.format}</span></div>
+    </div>
+  `).join('');
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sec-' + id).classList.add('active');
+}
+
+filterTasks('all', document.querySelector('.fpill'));
+</script>
