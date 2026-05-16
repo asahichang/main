@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Насколько хорошо ты знаком с тёмным фэнтези?</title>
+
+<!-- Open Graph -->
+<meta property="og:title" content="Насколько хорошо ты знаком с тёмным фэнтези?" />
+<meta property="og:description" content="12 вопросов о гримдарке, культовых авторах и персонажах жанра — от Геральта до Warhammer 40,000." />
+<meta property="og:image" content="https://asahichang.github.io/main/preview.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://asahichang.github.io/main/dark_fantasy_quiz.html" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Насколько хорошо ты знаком с тёмным фэнтези?" />
+<meta name="twitter:description" content="12 вопросов о гримдарке, культовых авторах и персонажах жанра." />
+<meta name="twitter:image" content="https://asahichang.github.io/main/preview.jpg" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a18;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 640px; width: 100%; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 0.35rem; color: #1a1a18; }
+  .subtitle { font-size: 14px; color: #888780; margin-bottom: 1.75rem; }
+  .q-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+  }
+  .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+  .q-counter { font-size: 13px; color: #888780; }
+  .dots-row { display: flex; gap: 4px; flex-wrap: wrap; max-width: 180px; justify-content: flex-end; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #d3d1c7; display: inline-block; }
+  .dot.correct { background: #3B6D11; }
+  .dot.wrong { background: #A32D2D; }
+  .q-progress { height: 3px; background: #f1efe8; border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+  .q-progress-fill { height: 100%; background: #5A3E7A; border-radius: 2px; transition: width 0.4s ease; }
+  .q-category {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #5A3E7A;
+    margin-bottom: 0.5rem;
+  }
+  .q-text { font-size: 15px; line-height: 1.55; margin-bottom: 1.25rem; color: #1a1a18; }
+  .q-options { display: flex; flex-direction: column; gap: 8px; }
+  .q-option {
+    padding: 10px 14px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a18;
+    cursor: pointer;
+    background: transparent;
+    text-align: left;
+    line-height: 1.45;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+  }
+  .q-option:hover:not(:disabled) { background: #f5f4f0; border-color: rgba(0,0,0,0.35); }
+  .q-option.correct { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option.wrong { background: #FCEBEB; border-color: #E24B4A; color: #A32D2D; }
+  .q-option.reveal { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option:disabled { cursor: default; }
+  .q-explain {
+    margin-top: 1rem;
+    padding: 10px 14px;
+    background: #f5f4f0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #5f5e5a;
+    line-height: 1.6;
+    border-left: 2px solid #5A3E7A;
+    display: none;
+  }
+  .q-next {
+    margin-top: 1.25rem;
+    padding: 9px 20px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    display: none;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .q-next:hover { background: #f5f4f0; }
+  .result-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  .result-score { font-size: 52px; font-weight: 500; color: #1a1a18; margin-bottom: 0.25rem; }
+  .result-label { font-size: 15px; color: #888780; margin-bottom: 1.25rem; }
+  .result-grid { display: grid; gap: 5px; max-width: 300px; margin: 0 auto 1.5rem; }
+  .result-dot { width: 100%; aspect-ratio: 1; border-radius: 4px; }
+  .result-comment { font-size: 14px; color: #5f5e5a; line-height: 1.65; max-width: 420px; margin: 0 auto 1.75rem; }
+  .restart-btn {
+    padding: 9px 24px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .restart-btn:hover { background: #f5f4f0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Тёмное фэнтези</h1>
+  <p class="subtitle">12 вопросов о жанре, авторах и культовых персонажах</p>
+  <div id="quiz-main"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    category: "Основы жанра",
+    q: "Что из нижеперечисленного является одной из самых главных отличительных черт жанра «тёмное фэнтези» в литературе?",
+    opts: [
+      "Обязательное присутствие эльфов и гномов",
+      "Счастливый конец и торжество справедливости",
+      "Чёткое разделение персонажей на абсолютно добрых и злых",
+      "Морально неоднозначные герои и мрачная, безнадёжная атмосфера"
+    ],
+    correct: 3,
+    explain: "Цинизм, серая мораль, жестокость мира и отсутствие «сверкающих доспехов» — фундаментальные основы тёмного фэнтези. Герои здесь не делятся на светлых и тёмных: каждый несёт в себе и то, и другое."
+  },
+  {
+    category: "Тропы жанра",
+    q: "Какой троп реже всего встречается в тёмном фэнтези?",
+    opts: [
+      "Серая мораль",
+      "Цена магии",
+      "Победа с горьким привкусом",
+      "Монстрами оказываются люди",
+      "Рояль в кустах — неожиданное спасение (Deus Ex Machina)",
+      "Гнилая Империя / Мир в упадке"
+    ],
+    correct: 4,
+    explain: "Deus Ex Machina — внезапное и незаслуженное спасение героя — прямо противоречит духу жанра. Тёмное фэнтези строится на том, что помощь не приходит вовремя, а победы достаются страшной ценой. Все остальные тропы — органичные элементы жанра."
+  },
+  {
+    category: "Культовые книги",
+    q: "Тёмное фэнтези часто деконструирует классические сказки. Какая профессия у Геральта из Ривии в цикле Анджея Сапковского?",
+    opts: [
+      "Охотник на монстров за деньги",
+      "Некромант",
+      "Паладин",
+      "Королевский рыцарь"
+    ],
+    correct: 0,
+    explain: "Ведьмаки — мутанты, чья главная и единственная профессия заключается в платном истреблении чудовищ. Никакого рыцарства и служения идеалам — только контракт и оплата."
+  },
+  {
+    category: "Культовые книги",
+    q: "Цикл «Тёмная башня» Стивена Кинга сочетает элементы тёмного фэнтези, вестерна и научной фантастики. Как зовут главного героя, последнего стрелка?",
+    opts: [
+      "Роланд Дискейн",
+      "Человек в чёрном",
+      "Джейк Чемберз",
+      "Эдди Дин"
+    ],
+    correct: 0,
+    explain: "Роланд Дискейн из Гилеада — последний из ордена стрелков, чья единственная цель — дойти до Тёмной Башни. Его путь — это история одержимости, потерь и вопроса о том, чего стоит цель, ради которой жертвуешь всем."
+  },
+  {
+    category: "Культовые книги",
+    q: "В культовом цикле Глена Кука «Чёрный отряд» повествование ведётся от лица лекаря и летописца наёмников. Как его зовут?",
+    opts: [
+      "Одноглазый",
+      "Костоправ",
+      "Гоблин",
+      "Ворон"
+    ],
+    correct: 1,
+    explain: "Именно Костоправ совмещает обязанности лекаря и летописца, от чьего лица читатель узнаёт историю отряда. Его субъективный, порой ненадёжный взгляд — один из главных нарративных приёмов цикла."
+  },
+  {
+    category: "Культовые книги",
+    q: "Как зовут самого известного варвара Севера, чьё имя вселяет ужас, в цикле Джо Аберкромби «Первый закон»?",
+    opts: [
+      "Чёрный Доу",
+      "Бернард",
+      "Логен Девятипалый",
+      "Ищейка"
+    ],
+    correct: 2,
+    explain: "Логен Девятипалый, также известный как Девять Смертей — легендарный и пугающий воин Севера с раздвоением личности. Его образ — деконструкция классического архетипа «благородного варвара»."
+  },
+  {
+    category: "Культовые персонажи",
+    q: "Этот персонаж Майкла Муркока — принц-альбинос, правитель древнего острова, использующий разумный меч, поглощающий души. О ком речь?",
+    opts: [
+      "Артас Менетил",
+      "Дриззт До'Урден",
+      "Конан-варвар",
+      "Элрик из Мелнибонэ"
+    ],
+    correct: 3,
+    explain: "Элрик из Мелнибонэ — классический антигерой тёмного фэнтези, черпающий силы из меча Буревестника, который питается жизнями убитых. Муркок создал его как прямую антитезу образу Конана — могучего и здорового варвара."
+  },
+  {
+    category: "Авторы жанра",
+    q: "Кто из авторов внёс огромный вклад в развитие сплаттерпанка и тёмного городского фэнтези, написав «Имаджику» и цикл рассказов «Книги крови»?",
+    opts: [
+      "Джордж Мартин",
+      "Терри Гудкайнд",
+      "Клайв Баркер",
+      "Нил Гейман"
+    ],
+    correct: 2,
+    explain: "Клайв Баркер мастерски смешивает тёмное фэнтези и боди-хоррор в своих детально проработанных вселенных. Сплаттерпанк — жанр, где гротескная фантазия соседствует с натуралистическими сценами насилия. Также употребляется термин «экстремальный хоррор»."
+  },
+  {
+    category: "Гримдарк",
+    q: "Что не относится к «гримдарку»?",
+    opts: [
+      "Вселенная Warhammer 40,000",
+      "Джордж Мартин («Песнь Льда и Пламени»)",
+      "Глен Кук («Чёрный отряд»)",
+      "Энн Райс «Интервью с вампиром»"
+    ],
+    correct: 3,
+    explain: "У Энн Райс балом правит романтизм, меланхолия и эстетика увядания. Персонажи страдают изящно — в готических замках, ведомые страстью или экзистенциальной тоской. Гримдарк — это поджанр, где мир предельно жесток, царит цинизм, а выживание важнее красоты страдания."
+  },
+  {
+    category: "Цитаты",
+    q: "«Если ты думаешь, что у этой истории счастливый конец, значит, ты невнимательно слушал». Какому произведению принадлежит эта фраза?",
+    opts: [
+      "«Первый закон» Джо Аберкромби",
+      "«Хроники Чёрного Отряда» Глена Кука",
+      "«Малазанская книга павших» Стивена Эриксона",
+      "«Песнь Льда и Огня» (Игра престолов)"
+    ],
+    correct: 3,
+    explain: "Эту фразу произносит Рамси Болтон, и она идеально описывает весь суровый, непредсказуемый и циничный мир Вестероса. Фраза стала манифестом жанра — предупреждением всем, кто ждёт традиционного финала."
+  },
+  {
+    category: "Цитаты",
+    q: "«Зло — это зло. Меньшее, большее, среднее — всё едино, пропорции условны, а границы размыты... Если приходится выбирать между одним злом и другим, я предпочитаю не выбирать вообще». Чья это цитата?",
+    opts: [
+      "Гед из «Волшебника Земноморья» Урсулы Ле Гуин",
+      "Геральт из Ривии. Анджей Сапковский, цикл «Ведьмак»",
+      "Роланд Дискейн из «Тёмной башни» Стивена Кинга",
+      "Принц Йорг из «Принца Терний» Марка Лоуренса"
+    ],
+    correct: 1,
+    explain: "Это философский манифест Геральта — и один из центральных тезисов всего цикла о Ведьмаке. Отказ от выбора между злом и злом — не трусость, а единственная позиция, сохраняющая остатки человечности в бесчеловечном мире."
+  },
+  {
+    category: "Гримдарк",
+    q: "«В мрачной тьме далёкого будущего есть только война» — откуда эта цитата?",
+    opts: [
+      "«Чёрный отряд» Глена Кука",
+      "Вселенная Warhammer 40,000",
+      "Игра «Диабло»",
+      "Майкл Муркок «Сага об Элрике»"
+    ],
+    correct: 1,
+    explain: "Эта фраза — слоган вселенной Warhammer 40,000, ставшей иконой гримдарка. Галактическая империя на пороге распада, демоны из варпа, фанатичная инквизиция — всё это сделало WH40K эталоном жанра в игровой и визуальной культуре."
+  }
+];
+
+let current = 0, score = 0, answered = false;
+let answers = new Array(questions.length).fill(null);
+
+function render() {
+  const container = document.getElementById('quiz-main');
+  if (current >= questions.length) { renderResult(container); return; }
+  const q = questions[current];
+  const pct = (current / questions.length) * 100;
+  const dotsHtml = questions.map((_, i) => {
+    let cls = 'dot';
+    if (answers[i] === true) cls += ' correct';
+    else if (answers[i] === false) cls += ' wrong';
+    return `<span class="${cls}"></span>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="q-card">
+      <div class="q-header">
+        <span class="q-counter">Вопрос ${current + 1} из ${questions.length}</span>
+        <div class="dots-row">${dotsHtml}</div>
+      </div>
+      <div class="q-progress"><div class="q-progress-fill" style="width:${pct}%"></div></div>
+      <div class="q-category">${q.category}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.opts.map((opt, i) => `<button class="q-option" data-i="${i}">${opt}</button>`).join('')}
+      </div>
+      <div id="explain" class="q-explain"></div>
+      <button class="q-next" id="next-btn">${current < questions.length - 1 ? 'Следующий вопрос →' : 'Посмотреть результат →'}</button>
+    </div>`;
+
+  document.querySelectorAll('.q-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (answered) return;
+      answered = true;
+      const chosen = parseInt(this.dataset.i);
+      document.querySelectorAll('.q-option').forEach((b, i) => {
+        b.disabled = true;
+        if (i === q.correct) b.classList.add('reveal');
+        else if (i === chosen && chosen !== q.correct) b.classList.add('wrong');
+      });
+      answers[current] = (chosen === q.correct);
+      if (chosen === q.correct) score++;
+      const exp = document.getElementById('explain');
+      exp.style.display = 'block';
+      exp.textContent = q.explain;
+      document.getElementById('next-btn').style.display = 'inline-block';
+    });
+  });
+
+  document.getElementById('next-btn').addEventListener('click', () => {
+    current++; answered = false; render();
+  });
+}
+
+function renderResult(container) {
+  const n = questions.length;
+  const pct = score / n;
+  let label, comment;
+  if (pct >= 0.84) {
+    label = 'Хранитель Тёмной Башни';
+    comment = 'Вы знаете жанр от истоков до гримдарка — авторов, персонажей, тропы и их деконструкцию. Мир всё равно рухнет, но вы будете знать почему.';
+  } else if (pct >= 0.6) {
+    label = 'Серый странник';
+    comment = 'Крепкое знание. Несколько деталей ускользнули в темноте — но вы явно читали жанр и понимаете, чем он отличается от обычного фэнтези.';
+  } else if (pct >= 0.35) {
+    label = 'Новобранец Чёрного Отряда';
+    comment = 'Вы слышали имена и видели обложки. Теперь пора читать: Сапковский, Аберкромби, Муркок — хороший маршрут в глубину жанра.';
+  } else {
+    label = 'Выживший в Вестеросе';
+    comment = 'Главное — вы живы. А жанр можно освоить: начните с «Ведьмака» или «Первого закона» — и тьма примет вас.';
+  }
+
+  const gridHtml = answers.map(a => `<div class="result-dot" style="background:${a ? '#639922' : '#E24B4A'}"></div>`).join('');
+
+  container.innerHTML = `
+    <div class="result-card">
+      <div class="result-score">${score}/${n}</div>
+      <div class="result-label">${label}</div>
+      <div class="result-grid" style="grid-template-columns:repeat(${n},1fr)">${gridHtml}</div>
+      <div class="result-comment">${comment}</div>
+      <button class="restart-btn" id="restart">Пройти снова</button>
+    </div>`;
+
+  document.getElementById('restart').addEventListener('click', () => {
+    current = 0; score = 0; answered = false;
+    answers = new Array(questions.length).fill(null);
+    render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
