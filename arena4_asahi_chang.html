@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Писательская Арена — Асахи Чанг №4</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1c1917;
+  --ink-soft: #44403c;
+  --ink-muted: #78716c;
+  --ink-faint: #a8a29e;
+  --paper: #faf9f7;
+  --paper-warm: #f5f0e8;
+  --paper-mid: #ede8df;
+  --accent: #8b4513;
+  --accent-soft: #c4825a;
+  --accent-pale: #f0e4d7;
+  --teal: #2d6a6a;
+  --teal-pale: #d4eaea;
+  --plum: #5c3d6b;
+  --plum-pale: #e8dff0;
+  --forest: #3a5c3a;
+  --forest-pale: #dceadc;
+  --gold: #8b6914;
+  --gold-pale: #f5edcc;
+  --border: #ddd8d0;
+  --radius: 10px;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'Jost', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 2.5rem 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '⌂';
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 9rem;
+  opacity: 0.06;
+  line-height: 1;
+  pointer-events: none;
+}
+.header-eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+  margin-bottom: 10px;
+}
+.header-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 300;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.header-title em {
+  font-style: italic;
+  color: var(--accent-soft);
+}
+.header-sub {
+  font-size: 13px;
+  color: #a8a29e;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
+.header-badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+.hbadge {
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.6);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
+
+/* ── NAV TABS ── */
+.nav {
+  background: var(--paper-warm);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2.5rem;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+.ntab {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  padding: 14px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  margin-bottom: -1px;
+}
+.ntab.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+  font-weight: 500;
+}
+
+/* ── MAIN ── */
+.main { padding: 2rem 2.5rem; max-width: 1060px; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── PLAN ── */
+.plan-intro {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  line-height: 1.7;
+  margin-bottom: 1.75rem;
+  padding-left: 1rem;
+  border-left: 3px solid var(--accent-soft);
+  max-width: 640px;
+}
+
+.phase {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 0 1.25rem;
+  margin-bottom: 1rem;
+}
+.phase-left { display: flex; flex-direction: column; align-items: center; }
+.phase-circle {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.phase-line { flex: 1; width: 1px; background: var(--border); margin: 6px 0; }
+.phase:last-child .phase-line { display: none; }
+
+.phase-body {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.phase-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+.phase-title { font-size: 15px; font-weight: 500; color: var(--ink); }
+.phase-time { font-size: 12px; color: var(--ink-faint); margin-left: auto; }
+.phase-desc { font-size: 13px; color: var(--ink-soft); line-height: 1.65; margin-bottom: 8px; }
+.phase-items { display: flex; flex-direction: column; gap: 5px; }
+.phase-item {
+  font-size: 12px; color: var(--ink-muted);
+  padding: 5px 10px;
+  background: var(--paper-warm);
+  border-radius: 6px;
+  border-left: 3px solid var(--border);
+  line-height: 1.5;
+}
+
+.ph1 .phase-circle { background: var(--accent-pale); color: var(--accent); }
+.ph2 .phase-circle { background: var(--teal-pale); color: var(--teal); }
+.ph3 .phase-circle { background: var(--plum-pale); color: var(--plum); }
+.ph4 .phase-circle { background: var(--forest-pale); color: var(--forest); }
+.ph5 .phase-circle { background: var(--gold-pale); color: var(--gold); }
+.ph1 .phase-item { border-color: var(--accent-soft); }
+.ph2 .phase-item { border-color: var(--teal); }
+.ph3 .phase-item { border-color: var(--plum); }
+.ph4 .phase-item { border-color: var(--forest); }
+.ph5 .phase-item { border-color: var(--gold); }
+
+/* ── PRINCIPLES ── */
+.principles {
+  margin-top: 2rem;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+}
+.principles-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--accent-soft);
+  margin-bottom: 1rem;
+}
+.principle-list { display: flex; flex-direction: column; gap: 10px; }
+.principle {
+  display: flex; gap: 10px;
+  font-size: 13px; line-height: 1.6;
+  color: rgba(255,255,255,0.75);
+}
+.principle-icon { color: var(--accent-soft); flex-shrink: 0; font-size: 15px; }
+
+/* ── TASKS ── */
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.fpill {
+  font-family: var(--font-body);
+  font-size: 12px; padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--ink-muted);
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+.fpill.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.tasks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+.tcard {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  display: flex; flex-direction: column; gap: 9px;
+  transition: box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.tcard::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.tcard:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+
+.tcard.cat-interior::before { background: var(--accent-soft); }
+.tcard.cat-exterior::before { background: var(--teal); }
+.tcard.cat-threshold::before { background: var(--plum); }
+.tcard.cat-character::before { background: var(--forest); }
+.tcard.cat-time::before { background: var(--gold); }
+.tcard.cat-pressure::before { background: #c0392b; }
+
+.tbadge {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px; width: fit-content;
+}
+.cat-interior .tbadge { background: var(--accent-pale); color: var(--accent); }
+.cat-exterior .tbadge { background: var(--teal-pale); color: var(--teal); }
+.cat-threshold .tbadge { background: var(--plum-pale); color: var(--plum); }
+.cat-character .tbadge { background: var(--forest-pale); color: var(--forest); }
+.cat-time .tbadge { background: var(--gold-pale); color: var(--gold); }
+.cat-pressure .tbadge { background: #fdecea; color: #c0392b; }
+
+.tnum {
+  position: absolute; top: 12px; right: 14px;
+  font-family: var(--font-display);
+  font-size: 2rem; font-weight: 300;
+  color: var(--paper-mid);
+  line-height: 1;
+  pointer-events: none;
+}
+.ttitle { font-size: 15px; font-weight: 500; color: var(--ink); line-height: 1.3; }
+.tdesc { font-size: 13px; color: var(--ink-soft); line-height: 1.65; }
+.trule {
+  font-size: 12px; color: var(--ink-muted);
+  background: var(--paper-warm);
+  border-radius: 6px; padding: 7px 10px;
+  font-style: italic; line-height: 1.5;
+  border-left: 3px solid var(--border);
+}
+.tmeta {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--ink-faint);
+  margin-top: auto; padding-top: 8px;
+  border-top: 1px solid var(--paper-mid);
+}
+
+/* ── AXES ── */
+.axes-intro {
+  font-size: 13px; color: var(--ink-soft);
+  line-height: 1.7; margin-bottom: 1.5rem; max-width: 580px;
+}
+.axes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+.acard {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+}
+.acard-icon { font-size: 1.4rem; margin-bottom: 8px; }
+.acard-title { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 8px; }
+.acard-qs { font-size: 12px; color: var(--ink-soft); line-height: 1.9; }
+.acard-qs span { color: var(--ink-faint); }
+
+/* ── TIPS ── */
+.tips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.tip-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+  display: flex; gap: 12px;
+}
+.tip-num {
+  font-family: var(--font-display);
+  font-size: 2rem; font-weight: 600;
+  color: var(--paper-mid); line-height: 1;
+  flex-shrink: 0;
+}
+.tip-text { font-size: 13px; color: var(--ink-soft); line-height: 1.65; padding-top: 4px; }
+.tip-text strong { color: var(--ink); font-weight: 500; display: block; margin-bottom: 3px; }
+
+.highlight-box {
+  background: var(--accent-pale);
+  border: 1px solid #e0c4ac;
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-top: 1.5rem;
+}
+.highlight-box p {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-style: italic;
+  color: var(--accent);
+  line-height: 1.7;
+}
+.highlight-box p + p { margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Писательская Арена · Асахи Чанг</div>
+  <h1 class="header-title">Арена <em>№4</em></h1>
+  <div class="header-sub">Пространство как язык — описания жилищ, интерьеров и мест</div>
+  <div class="header-badges">
+    <span class="hbadge">28 заданий</span>
+    <span class="hbadge">6 категорий</span>
+    <span class="hbadge">Соло · Дуэль · Команда</span>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="ntab active" onclick="switchTab('plan', this)">План мероприятия</button>
+  <button class="ntab" onclick="switchTab('tasks', this)">Все задания</button>
+  <button class="ntab" onclick="switchTab('axes', this)">Оси оценки</button>
+  <button class="ntab" onclick="switchTab('tips', this)">Советы</button>
+</div>
+
+<div class="main">
+
+<!-- PLAN -->
+<div class="section active" id="sec-plan">
+  <p class="plan-intro">Пространство — это всегда характер. Дом, который помнит. Порог, который разделяет. Комната, которая говорит за хозяина. Сегодня пишем место — и через него человека.</p>
+
+  <div class="phase ph1">
+    <div class="phase-left"><div class="phase-circle">1</div><div class="phase-line"></div></div>
+    <div class="phase-body">
+      <div class="phase-head"><div class="phase-title">Разогрев — комната без хозяина</div><div class="phase-time">15–20 мин</div></div>
+      <div class="phase-desc">Участники описывают пустое помещение так, чтобы читатель понял всё о человеке, который в нём живёт. Ни одного упоминания персонажа — только предметы, запахи, свет.</div>
+      <div class="phase-items">
+        <div class="phase-item">Соло: одна комната, один абзац — максимум пять деталей</div>
+        <div class="phase-item">Чтение вслух: аудитория описывает человека, которого «увидела»</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase ph2">
+    <div class="phase-left"><div class="phase-circle">2</div><div class="phase-line"></div></div>
+    <div class="phase-body">
+      <div class="phase-head"><div class="phase-title">Блок 1 — интерьер</div><div class="phase-time">25–30 мин</div></div>
+      <div class="phase-desc">Внутреннее пространство как психология. Запах, свет, звук — не декорации, а действующие лица.</div>
+      <div class="phase-items">
+        <div class="phase-item">Соло: войти в здание только через запах — построить весь интерьер через обоняние</div>
+        <div class="phase-item">Дуэль: два автора пишут одно и то же помещение с разницей в 20 лет</div>
+        <div class="phase-item">Соло: написать от лица самого здания — что оно помнит, кого любит из жильцов</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase ph3">
+    <div class="phase-left"><div class="phase-circle">3</div><div class="phase-line"></div></div>
+    <div class="phase-body">
+      <div class="phase-head"><div class="phase-title">Блок 2 — экстерьер и порог</div><div class="phase-time">30–35 мин</div></div>
+      <div class="phase-desc">Внешнее пространство и момент перехода. Фасад лжёт. Город говорит. Порог разделяет два мира.</div>
+      <div class="phase-items">
+        <div class="phase-item">Соло: фасад утром, в полдень и ночью — три зарисовки, три настроения</div>
+        <div class="phase-item">Дуэль: прохожий снаружи и житель из окна — один и тот же момент, два взгляда</div>
+        <div class="phase-item">Соло: персонаж стоит в дверях — показать оба мира в одном абзаце</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase ph4">
+    <div class="phase-left"><div class="phase-circle">4</div><div class="phase-line"></div></div>
+    <div class="phase-body">
+      <div class="phase-head"><div class="phase-title">Блок 3 — персонаж в пространстве</div><div class="phase-time">30–35 мин</div></div>
+      <div class="phase-desc">Как человек обживает место — или отказывается это делать. Что он замечает первым, что игнорирует, куда не войдёт.</div>
+      <div class="phase-items">
+        <div class="phase-item">Соло: ящик стола — список из 7 предметов без объяснений, потом история одного</div>
+        <div class="phase-item">Соло: вещь, которую он никогда не выбросит — сцена, где другой предлагает это сделать</div>
+        <div class="phase-item">Команда: двое в замкнутом пространстве — говорят о чём угодно, кроме главного</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase ph5">
+    <div class="phase-left"><div class="phase-circle">5</div><div class="phase-line"></div></div>
+    <div class="phase-body">
+      <div class="phase-head"><div class="phase-title">Финал — персонаж под давлением</div><div class="phase-time">20–25 мин</div></div>
+      <div class="phase-desc">Пространство как ловушка. Граница, которую нельзя не пересечь. Маска, которая даёт трещину именно здесь, в этом месте.</div>
+      <div class="phase-items">
+        <div class="phase-item">Соло: место, куда герой отказывается входить — его вынуждают</div>
+        <div class="phase-item">Соло: граница — что он никогда не сделает, и сцена, где обстоятельства требуют именно этого</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="principles">
+    <div class="principles-title">Принцип арены</div>
+    <div class="principle-list">
+      <div class="principle"><span class="principle-icon">◆</span>Пространство — это всегда характер. Дом не фон — он соучастник.</div>
+      <div class="principle"><span class="principle-icon">◆</span>Одна точная деталь говорит больше, чем абзац описания.</div>
+      <div class="principle"><span class="principle-icon">◆</span>Настоящий характер проявляется не в монологах, а в реакциях — в том, как человек входит в комнату.</div>
+      <div class="principle"><span class="principle-icon">◆</span>Лучшие упражнения — не те, где вы описываете персонажа, а те, где вы застаёте его врасплох.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASKS -->
+<div class="section" id="sec-tasks">
+  <div class="filter-row" id="filter-row">
+    <button class="fpill active" onclick="filterTasks('all', this)">Все</button>
+    <button class="fpill" onclick="filterTasks('interior', this)">Интерьер</button>
+    <button class="fpill" onclick="filterTasks('exterior', this)">Экстерьер</button>
+    <button class="fpill" onclick="filterTasks('threshold', this)">Порог</button>
+    <button class="fpill" onclick="filterTasks('character', this)">Персонаж</button>
+    <button class="fpill" onclick="filterTasks('time', this)">Время</button>
+    <button class="fpill" onclick="filterTasks('pressure', this)">Давление</button>
+  </div>
+  <div class="tasks-grid" id="tasks-grid"></div>
+</div>
+
+<!-- AXES -->
+<div class="section" id="sec-axes">
+  <p class="axes-intro">Четыре оси, по которым судьи оценивают работу с пространством. Пространство должно работать — а не просто существовать на странице.</p>
+  <div class="axes-grid">
+    <div class="acard">
+      <div class="acard-icon">👁</div>
+      <div class="acard-title">Деталь работает</div>
+      <div class="acard-qs">
+        <span>→</span> Убери эту деталь — что изменится?<br>
+        <span>→</span> Она про место или про человека?<br>
+        <span>→</span> Она одна — или их слишком много?
+      </div>
+    </div>
+    <div class="acard">
+      <div class="acard-icon">🔇</div>
+      <div class="acard-title">Показ без объяснений</div>
+      <div class="acard-qs">
+        <span>→</span> Есть ли фраза «это значило, что»?<br>
+        <span>→</span> Читатель сам сделал вывод — или автор подтолкнул?<br>
+        <span>→</span> Нет ли лишних прилагательных-оценок?
+      </div>
+    </div>
+    <div class="acard">
+      <div class="acard-icon">🌡</div>
+      <div class="acard-title">Атмосфера живёт</div>
+      <div class="acard-qs">
+        <span>→</span> Задействованы ли несколько органов чувств?<br>
+        <span>→</span> Пространство статично или в нём что-то происходит?<br>
+        <span>→</span> Есть ли у места своё настроение — не авторское?
+      </div>
+    </div>
+    <div class="acard">
+      <div class="acard-icon">🚪</div>
+      <div class="acard-title">Пространство и персонаж</div>
+      <div class="acard-qs">
+        <span>→</span> Место влияет на персонажа или нет?<br>
+        <span>→</span> Как он в нём существует — свободно, напряжённо?<br>
+        <span>→</span> Что мы узнали о нём через место — а не напрямую?
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TIPS -->
+<div class="section" id="sec-tips">
+  <div class="tips-grid">
+    <div class="tip-card"><div class="tip-num">01</div><div class="tip-text"><strong>Одна деталь — не список</strong>Избегайте перечислений. Ищите одну точную деталь, которая скажет больше, чем абзац описания.</div></div>
+    <div class="tip-card"><div class="tip-num">02</div><div class="tip-text"><strong>Пространство работает на сюжет</strong>Каждая деталь — это характер, конфликт или предчувствие. Если деталь ни на что не работает — уберите её.</div></div>
+    <div class="tip-card"><div class="tip-num">03</div><div class="tip-text"><strong>Необычная точка зрения</strong>Попробуйте: ребёнок, слепой, архитектор, вор, кот. Смена угла ломает автопилот и открывает неожиданные детали.</div></div>
+    <div class="tip-card"><div class="tip-num">04</div><div class="tip-text"><strong>Застать врасплох</strong>Лучшие упражнения — не те, где вы описываете персонажа, а те, где вы застаёте его врасплох. В чужом месте. В момент перехода.</div></div>
+    <div class="tip-card"><div class="tip-num">05</div><div class="tip-text"><strong>Реакция важнее монолога</strong>Настоящий характер проявляется не в монологах, а в реакциях. Как он вошёл в комнату говорит больше, чем что он сказал.</div></div>
+    <div class="tip-card"><div class="tip-num">06</div><div class="tip-text"><strong>Все органы чувств</strong>Большинство авторов пишут глазами. Попробуйте запах, звук, температуру — и только потом визуальное.</div></div>
+  </div>
+  <div class="highlight-box">
+    <p>Пространство — это всегда характер. Дом не фон — он соучастник.</p>
+    <p>Настоящий характер проявляется не в монологах, а в реакциях — в том, как человек входит в комнату, что замечает первым, куда не смотрит.</p>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+const tasks = [
+  // ИНТЕРЬЕР
+  { id:1, cat:'interior', catLabel:'Интерьер', title:'Комната без хозяина', desc:'Опишите пустую комнату так, чтобы читатель понял всё о человеке, который в ней живёт — характер, привычки, тайны. Без единого упоминания персонажа.', rule:'Нельзя называть человека, его профессию или имя.', time:'15 мин', format:'соло' },
+  { id:2, cat:'interior', catLabel:'Интерьер', title:'До и после', desc:'Два описания одного помещения: каким оно было 20 лет назад и каким стало сейчас. Через предметы покажите, как изменилась жизнь семьи.', rule:'Нельзя писать «раньше» или «теперь» — только предметы.', time:'20 мин', format:'соло' },
+  { id:3, cat:'interior', catLabel:'Интерьер', title:'Запах как проводник', desc:'Войдите в здание только через ощущение запаха. Постройте весь интерьер, опираясь исключительно на обоняние персонажа.', rule:'Ни одного визуального описания в первом абзаце.', time:'15 мин', format:'соло' },
+  { id:4, cat:'interior', catLabel:'Интерьер', title:'Дом как организм', desc:'Напишите от лица самого здания. Что оно помнит? Что слышит за стенами? Кого любит из жильцов?', rule:'Здание не может видеть — только слышать, чувствовать, помнить.', time:'20 мин', format:'соло' },
+  { id:5, cat:'interior', catLabel:'Интерьер', title:'Чужое жильё', desc:'Персонаж впервые входит в квартиру человека, которого едва знает. Покажите нарастающее напряжение через детали интерьера.', rule:'Нельзя описывать эмоции персонажа напрямую.', time:'20 мин', format:'соло' },
+  // ЭКСТЕРЬЕР
+  { id:6, cat:'exterior', catLabel:'Экстерьер', title:'Фасад лжёт', desc:'Снаружи здание выглядит богато и ухоженно — внутри запустение и бедность (или наоборот). Сцена, где герой осознаёт этот контраст.', rule:'Момент осознания — без восклицаний и оценок.', time:'15 мин', format:'соло' },
+  { id:7, cat:'exterior', catLabel:'Экстерьер', title:'Здание в разное время суток', desc:'Один и тот же фасад утром, в полдень и ночью. Три коротких зарисовки — три разных настроения, ни одного повторяющегося образа.', rule:'Одно и то же слово нельзя использовать дважды.', time:'20 мин', format:'соло' },
+  { id:8, cat:'exterior', catLabel:'Экстерьер', title:'Город глазами приезжего', desc:'Персонаж приехал в незнакомый город. Опишите улицу так, чтобы через архитектуру передать культуру и характер этого места.', rule:'Нельзя называть город или страну.', time:'15 мин', format:'соло' },
+  { id:9, cat:'exterior', catLabel:'Экстерьер', title:'Руины', desc:'Разрушенное здание. Что здесь было? Напишите историю, отталкиваясь только от видимых следов — трещин, заросших ступеней, остатков вывески.', rule:'Нельзя изобретать — только читать следы.', time:'20 мин', format:'соло' },
+  { id:10, cat:'exterior', catLabel:'Экстерьер', title:'Очередь у входа', desc:'Не описывайте здание напрямую — покажите его через поведение, разговоры и ожидания людей у дверей.', rule:'Здание появляется в тексте не раньше последнего предложения.', time:'15 мин', format:'соло' },
+  // ПОРОГ
+  { id:11, cat:'threshold', catLabel:'Порог', title:'Порог', desc:'Персонаж стоит в дверях. Снаружи — один мир, внутри — другой. Показать оба мира в одном абзаце — без перехода, одновременно.', rule:'Один абзац. Ровно один.', time:'12 мин', format:'соло' },
+  { id:12, cat:'threshold', catLabel:'Порог', title:'Вид из окна', desc:'Два взгляда на одно и то же: прохожий смотрит на дом снаружи — и житель смотрит на улицу из окна. Написать обе точки зрения.', rule:'Оба текста об одном и том же моменте времени.', time:'20 мин', format:'дуэль' },
+  { id:13, cat:'threshold', catLabel:'Порог', title:'Смена масштаба', desc:'Начните с общего плана здания снаружи — и постепенно приближайтесь: фасад → подъезд → лестница → дверь → комната → один предмет на столе.', rule:'Каждый уровень — ровно одно предложение.', time:'15 мин', format:'соло' },
+  // ПЕРСОНАЖ
+  { id:14, cat:'character', catLabel:'Персонаж', title:'Ваш герой входит', desc:'Возьмите персонажа из вашей книги и поместите его в здание, которое он видит впервые. Что он замечает первым? Что игнорирует полностью?', rule:'Нельзя объяснять, почему он замечает именно это.', time:'15 мин', format:'соло' },
+  { id:15, cat:'character', catLabel:'Персонаж', title:'Его личное место', desc:'Опишите комнату или уголок, где ваш персонаж чувствует себя собой. Не придумывайте — дайте ему самому «выбрать» место, исходя из его характера.', rule:'Слово «уютно» и его синонимы запрещены.', time:'15 мин', format:'соло' },
+  { id:16, cat:'character', catLabel:'Персонаж', title:'Место, куда он не войдёт', desc:'Есть здание, улица, дом, куда ваш герой отказывается заходить. Напишите сцену, где его вынуждают это сделать.', rule:'Причина запрета не называется напрямую.', time:'20 мин', format:'соло' },
+  { id:17, cat:'character', catLabel:'Персонаж', title:'Ящик стола', desc:'Что лежит в ящике стола вашего персонажа? Список из 7–10 предметов — без объяснений. Потом выберите один и напишите, откуда он взялся.', rule:'В списке не должно быть ни одного «очевидного» предмета.', time:'15 мин', format:'соло' },
+  { id:18, cat:'character', catLabel:'Персонаж', title:'Что он никогда не выбросит', desc:'В его доме есть вещь, которую давно пора выбросить, но он не может. Напишите сцену, где другой персонаж предлагает от неё избавиться.', rule:'Нельзя объяснять, почему вещь важна — до последнего предложения.', time:'20 мин', format:'соло' },
+  { id:19, cat:'character', catLabel:'Персонаж', title:'Как он обживает новое место', desc:'Персонаж переезжает или оказывается в чужом жилье надолго. Что он делает первым делом? Через этот ритуал покажите его потребность в контроле, уюте или свободе.', rule:'Нельзя называть эмоцию — только действие.', time:'15 мин', format:'соло' },
+  { id:20, cat:'character', catLabel:'Персонаж', title:'Двое в одной комнате', desc:'Поместите двух персонажей в замкнутое пространство на час. Они не обязаны говорить о главном — пусть говорят о чём угодно. Конфликт или близость проявятся сами.', rule:'Нельзя описывать эмоции — только реплики и действия.', time:'25 мин', format:'командное' },
+  { id:21, cat:'character', catLabel:'Персонаж', title:'Чужими глазами', desc:'Описание главного героя от лица второстепенного персонажа, который его не любит. Потом — от лица того, кто им восхищается. Что осталось правдой в обоих?', rule:'Оба текста об одной и той же сцене.', time:'25 мин', format:'дуэль' },
+  { id:22, cat:'character', catLabel:'Персонаж', title:'Письмо, которое не отправят', desc:'Персонаж пишет письмо человеку, с которым не может говорить открыто — мёртвому, далёкому, опасному. Никаких фильтров, никакой самоцензуры.', rule:'Письмо начинается не с «Дорогой».', time:'15 мин', format:'соло' },
+  // ВРЕМЯ
+  { id:23, cat:'time', catLabel:'Время', title:'Десять лет назад', desc:'Сцена с вашим персонажем за десять лет до начала книги. Тот же человек — но другой. Найдите момент, когда он ещё не стал собой.', rule:'Ни одной детали из основного текста книги.', time:'20 мин', format:'соло' },
+  { id:24, cat:'time', catLabel:'Время', title:'Его худший день', desc:'Не тот день, что описан в книге — а другой, из прошлого. День, о котором он никому не рассказывал. Эту сцену, возможно, никто не прочитает — но вы будете знать.', rule:'Сцена без диалога.', time:'20 мин', format:'соло' },
+  { id:25, cat:'time', catLabel:'Время', title:'После последней страницы', desc:'Короткая сцена жизни персонажа через год после финала вашей книги. Это упражнение показывает, насколько вы сами верите в то, что написали.', rule:'Нельзя подводить итоги — только один обычный момент.', time:'15 мин', format:'соло' },
+  // ДАВЛЕНИЕ
+  { id:26, cat:'pressure', catLabel:'Давление', title:'Испытание малым', desc:'Мелкая бытовая неприятность — сломался замок, опоздал автобус, закончился кофе. Как он реагирует? Мелочи говорят о характере больше, чем катастрофы.', rule:'Масштаб неприятности не должен превышать бытового.', time:'12 мин', format:'соло' },
+  { id:27, cat:'pressure', catLabel:'Давление', title:'Роль, которую он играет', desc:'У каждого персонажа есть «публичная версия» себя. Напишите сцену, где герой изо всех сил поддерживает этот образ — и момент, когда маска даёт трещину.', rule:'Трещина — одно действие или одна фраза, не объяснение.', time:'20 мин', format:'соло' },
+  { id:28, cat:'pressure', catLabel:'Давление', title:'Граница', desc:'Определите: что ваш персонаж никогда не сделает, ни при каких обстоятельствах? Напишите сцену, где обстоятельства вынуждают его сделать именно это. Что остаётся от него после?', rule:'Финальная сцена — без авторского вывода.', time:'25 мин', format:'соло' },
+];
+
+function filterTasks(cat, btn) {
+  document.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = cat === 'all' ? tasks : tasks.filter(t => t.cat === cat);
+  document.getElementById('tasks-grid').innerHTML = filtered.map(t => `
+    <div class="tcard cat-${t.cat}">
+      <span class="tnum">${String(t.id).padStart(2,'0')}</span>
+      <span class="tbadge">${t.catLabel}</span>
+      <div class="ttitle">${t.title}</div>
+      <div class="tdesc">${t.desc}</div>
+      <div class="trule">${t.rule}</div>
+      <div class="tmeta"><span>${t.time}</span><span>${t.format}</span></div>
+    </div>
+  `).join('');
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.ntab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sec-' + id).classList.add('active');
+}
+
+filterTasks('all', document.querySelector('.fpill'));
+</script>
+</body>
+</html>
