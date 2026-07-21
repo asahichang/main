@@ -422,6 +422,7 @@ footer{ text-align:center; padding:40px 24px; color:var(--muted); font-size:0.85
       <h2 class="section-title">Ограничения методологии</h2>
       <div class="card">
         <ul style="margin:0; padding-left:20px; color:var(--paper-dim);">
+          <li style="margin-bottom:10px;"><b style="color:var(--paper)">Путь Тени · Методология является открытой системой — её ценность не в догматическом следовании схеме, а в создании общего языка для разговора о том, как литература и кино конструируют зло изнутри. Вы также можете поучаствовать в её дополнении / исправлении.</li>
           <li style="margin-bottom:10px;"><b style="color:var(--paper)">Статичные злодеи.</b> Персонажи вроде Бейтмана или Луи Блума не проходят путь, а существуют в вечном настоящем — методология фиксирует отсутствие движения как диагностический признак.</li>
           <li style="margin-bottom:10px;"><b style="color:var(--paper)">Антигерой ≠ Злодей.</b> Методология предназначена для персонажей, осознанно или системно причиняющих вред.</li>
           <li style="margin-bottom:10px;"><b style="color:var(--paper)">Культурный контекст.</b> То, что в одной культуре — злодейство, в другой — норма.</li>
@@ -551,7 +552,7 @@ footer{ text-align:center; padding:40px 24px; color:var(--muted); font-size:0.85
 
 </main>
 
-<footer>Путь Тени · Методология является открытой системой — её ценность не в догматическом следовании схеме, а в создании общего языка для разговора о том, как литература и кино конструируют зло изнутри.</footer>
+<footer>Методология создана <a href="https://author.today/u/asahi_chang">Асахи Чангом</a> © 2026. Если вы нашли ошибку, выделите текст, нажмите кнопку "Сообщить об ошибке", введите исправление. Вам будет предложено перейти в программу для отправки email. Если не получается, то вы можете связаться со мной напрямую: asahichang2025@gmail.com или <a href="https://t.me/asahichang2">в Телеграм</a>. При разработке использовались нейросети Qwen, Claude, DeepSeek.</footer>
 
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal-content"></div>
@@ -1235,6 +1236,75 @@ function closeModal(){ overlay.classList.remove('active'); }
 overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeModal(); });
 document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
 
+</script>
+
+  <!-- ===== БЛОК: «Выделить текст → сообщить об ошибке» (mailto) -->
+<style>
+#report-error-btn{
+  position:fixed; z-index:2000; display:none;
+  background:var(--blood); color:var(--paper); border:1px solid var(--blood-bright);
+  font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+  padding:8px 14px; border-radius:2px; cursor:pointer; box-shadow:var(--shadow-deep);
+}
+#report-error-btn:hover{ background:var(--blood-bright); }
+#report-modal textarea{ width:100%; min-height:110px; background:var(--ink-3); color:var(--paper);
+  border:1px solid var(--line); padding:10px; font-family:'PT Serif', serif; font-size:0.92rem; resize:vertical; }
+#report-modal textarea:focus{ outline:none; border-color:var(--brass); }
+#report-send-btn{ margin-top:16px; background:var(--brass-bright); color:var(--ink); border:none;
+  padding:10px 22px; font-family:'JetBrains Mono', monospace; font-size:11.5px; letter-spacing:0.05em;
+  text-transform:uppercase; cursor:pointer; }
+#report-send-btn:hover{ background:var(--paper); }
+</style>
+<button id="report-error-btn" type="button">Сообщить об ошибке</button>
+<div class="modal-overlay" id="report-modal-overlay">
+  <div class="modal" id="report-modal" style="max-width:520px;"></div>
+</div>
+<script>
+(function(){
+  const btn = document.getElementById('report-error-btn');
+  const overlay = document.getElementById('report-modal-overlay');
+  const modal = document.getElementById('report-modal');
+  let selectedText = '';
+ 
+  function showButtonNearSelection(){
+    const sel = window.getSelection();
+    const text = sel && sel.toString().trim();
+    if(text){
+      selectedText = text;
+      const rect = sel.getRangeAt(0).getBoundingClientRect();
+      btn.style.top = Math.max(8, rect.top - 42) + 'px';
+      btn.style.left = Math.max(8, rect.left) + 'px';
+      btn.style.display = 'block';
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+  document.addEventListener('mouseup', ()=>setTimeout(showButtonNearSelection, 10));
+  document.addEventListener('touchend', ()=>setTimeout(showButtonNearSelection, 10));
+  document.addEventListener('mousedown', (e)=>{ if(e.target!==btn) btn.style.display='none'; });
+ 
+  btn.addEventListener('click', ()=>{
+    modal.innerHTML = `
+      <button class="modal-close" id="report-modal-close">&times;</button>
+      <h3 class="sub-title">Сообщить об ошибке</h3>
+      <p class="muted" style="font-size:0.85rem; margin-bottom:6px;">Выделенный фрагмент:</p>
+      <div class="card" style="margin-bottom:18px; font-size:0.85rem; max-height:140px; overflow-y:auto;">${selectedText.replace(/</g,'&lt;')}</div>
+      <p class="muted" style="font-size:0.85rem; margin-bottom:6px;">Предлагаемое исправление:</p>
+      <textarea id="report-fix-text" placeholder="Опишите, в чём ошибка, и как её исправить..."></textarea>
+      <button id="report-send-btn">Отправить на почту</button>
+    `;
+    overlay.classList.add('active');
+    btn.style.display = 'none';
+    document.getElementById('report-modal-close').addEventListener('click', ()=>overlay.classList.remove('active'));
+    document.getElementById('report-send-btn').addEventListener('click', ()=>{
+      const fix = document.getElementById('report-fix-text').value.trim() || '(не указано)';
+      const subject = 'Ошибка в методе Путь Тени';
+      const body = 'Ошибка:\n' + selectedText + '\n\nПредлагаемое исправление:\n' + fix;
+      window.location.href = 'mailto:asahichang2025@gmail.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+      overlay.classList.remove('active');
+    });
+  });
+})();
 </script>
 </body>
 </html>
