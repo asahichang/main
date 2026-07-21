@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Путь Тени — методология анализа злодея-протагониста</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;500;700;900&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141210;
+  --ink-2:#1b1815;
+  --ink-3:#232019;
+  --paper:#e9e1cf;
+  --paper-dim:#cabe9f;
+  --brass:#b08a4e;
+  --brass-bright:#dcb571;
+  --blood:#8a2b34;
+  --blood-bright:#c1424d;
+  --muted:#8f8878;
+  --line:rgba(233,225,207,0.14);
+  --shadow-deep: 0 20px 50px rgba(0,0,0,0.55);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--ink);
+  background-image:
+    radial-gradient(ellipse at 15% 0%, rgba(138,43,52,0.08), transparent 45%),
+    radial-gradient(ellipse at 85% 100%, rgba(176,138,78,0.07), transparent 50%);
+  color:var(--paper);
+  font-family:'PT Serif', serif;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{ background:var(--blood); color:var(--paper); }
+
+.noise{
+  position:fixed; inset:0; pointer-events:none; opacity:0.035; z-index:1000;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+a{color:var(--brass-bright);}
+
+/* ===== Header ===== */
+header{
+  padding:64px 24px 32px;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+  position:relative;
+}
+.eyebrow{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.35em;
+  color:var(--brass);
+  text-transform:uppercase;
+  margin-bottom:18px;
+}
+h1.title{
+  font-family:'Unbounded', sans-serif;
+  font-weight:900;
+  font-size:clamp(2.6rem, 8vw, 5.5rem);
+  letter-spacing:0.02em;
+  margin:0;
+  line-height:0.95;
+  background:linear-gradient(180deg, var(--paper) 0%, var(--paper-dim) 60%, var(--brass) 130%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  text-shadow: 0 2px 40px rgba(176,138,78,0.15);
+}
+.subtitle{
+  margin:20px auto 0;
+  max-width:640px;
+  color:var(--muted);
+  font-style:italic;
+  font-size:1.05rem;
+}
+.version-tag{
+  display:inline-block;
+  margin-top:22px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.1em;
+  color:var(--ink);
+  background:var(--brass);
+  padding:5px 14px;
+  border-radius:2px;
+}
+
+/* ===== Tabs ===== */
+nav.tabs{
+  position:sticky; top:0; z-index:100;
+  display:flex; flex-wrap:wrap; justify-content:center; gap:2px;
+  background:rgba(20,18,16,0.92);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  padding:10px 12px;
+}
+.tab-btn{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11.5px;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  background:transparent;
+  border:1px solid transparent;
+  padding:10px 16px;
+  cursor:pointer;
+  transition:all .25s ease;
+  white-space:nowrap;
+}
+.tab-btn:hover{ color:var(--paper); border-color:var(--line); }
+.tab-btn.active{
+  color:var(--ink);
+  background:var(--brass-bright);
+  border-color:var(--brass-bright);
+}
+
+main{ max-width:1180px; margin:0 auto; padding:48px 24px 120px; }
+.panel{ display:none; animation:fadeIn .5s ease; }
+.panel.active{ display:block; }
+@keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+section.block{ margin-bottom:64px; }
+h2.section-title{
+  font-family:'Unbounded', sans-serif;
+  font-weight:700;
+  font-size:1.7rem;
+  color:var(--paper);
+  border-left:4px solid var(--blood);
+  padding-left:16px;
+  margin-bottom:28px;
+  letter-spacing:0.01em;
+}
+h3.sub-title{
+  font-family:'Unbounded', sans-serif;
+  font-weight:500;
+  font-size:1.1rem;
+  color:var(--brass-bright);
+  margin:0 0 12px;
+}
+p.lead{ color:var(--paper-dim); font-size:1.02rem; max-width:820px; }
+.muted{ color:var(--muted); }
+
+/* ===== Cards ===== */
+.card{
+  background:var(--ink-2);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:26px 28px;
+  position:relative;
+  overflow:hidden;
+}
+.card::before{
+  content:'';
+  position:absolute; left:0; top:0; bottom:0; width:2px;
+  background:linear-gradient(180deg, var(--brass), transparent);
+}
+
+/* Concept comparison table */
+.compare-table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:0.95rem; }
+.compare-table th, .compare-table td{
+  border:1px solid var(--line); padding:12px 16px; text-align:left; vertical-align:top;
+}
+.compare-table th{ font-family:'Unbounded',sans-serif; font-weight:500; font-size:0.8rem; letter-spacing:0.05em; text-transform:uppercase; color:var(--brass-bright); background:rgba(176,138,78,0.06);}
+.compare-table td.hero{ color:var(--paper-dim); }
+.compare-table td.shadow{ color:var(--paper); }
+
+.principles-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-top:20px;}
+.principle-card{ background:var(--ink-2); border:1px solid var(--line); padding:20px; border-radius:3px; }
+.principle-card .num{ font-family:'JetBrains Mono',monospace; color:var(--blood-bright); font-size:0.75rem; letter-spacing:0.1em; }
+.principle-card h4{ font-family:'Unbounded',sans-serif; font-size:1rem; margin:8px 0 8px; color:var(--paper);}
+.principle-card p{ color:var(--muted); font-size:0.92rem; margin:0;}
+
+/* ===== Stage stepper ===== */
+.stepper{
+  display:flex; gap:6px; overflow-x:auto; padding:8px 0 24px;
+  scrollbar-width:thin;
+}
+.step{
+  flex:1 1 150px; min-width:130px;
+  text-align:center; cursor:pointer;
+  padding:16px 10px 14px;
+  border:1px solid var(--line);
+  background:var(--ink-2);
+  position:relative;
+  transition:all .25s ease;
+}
+.step:not(:last-child)::after{
+  content:'→'; position:absolute; right:-14px; top:50%; transform:translateY(-50%);
+  color:var(--muted); font-size:12px; z-index:2;
+}
+.step .step-num{
+  font-family:'Unbounded',sans-serif; font-weight:900; font-size:1.6rem;
+  color:var(--line);
+}
+.step.active .step-num{ color:var(--blood-bright); }
+.step .step-label{
+  font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.05em;
+  text-transform:uppercase; color:var(--muted); margin-top:6px; display:block;
+}
+.step.active{ background:var(--ink-3); border-color:var(--brass); }
+.step.active .step-label{ color:var(--paper); }
+
+.stage-detail{ display:none; }
+.stage-detail.active{ display:block; animation:fadeIn .4s ease; }
+.stage-detail .essence{
+  font-style:italic; color:var(--paper-dim); border-left:2px solid var(--brass);
+  padding-left:16px; margin:0 0 24px;
+}
+.q-box{
+  margin-top:22px; padding:16px 20px; background:rgba(138,43,52,0.09);
+  border:1px dashed var(--blood); font-size:0.92rem; color:var(--paper-dim);
+}
+.q-box b{ color:var(--blood-bright); }
+
+table.data{ width:100%; border-collapse:collapse; font-size:0.9rem; margin:14px 0 6px;}
+table.data th, table.data td{ border:1px solid var(--line); padding:10px 14px; text-align:left;}
+table.data th{ font-family:'Unbounded',sans-serif; font-weight:500; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--brass-bright); background:rgba(176,138,78,0.05);}
+table.data td{ color:var(--paper-dim); }
+table.data td.ex{ color:var(--muted); font-size:0.85rem; }
+
+/* ===== Axes ===== */
+.axis-block{ margin-bottom:40px; padding-bottom:36px; border-bottom:1px solid var(--line); }
+.axis-block:last-child{ border-bottom:none; }
+.axis-head{ display:flex; align-items:baseline; gap:12px; margin-bottom:14px;}
+.axis-idx{ font-family:'JetBrains Mono',monospace; color:var(--blood-bright); font-size:0.85rem;}
+.score-row{ display:flex; align-items:center; gap:14px; margin:8px 0; }
+.score-num{ font-family:'JetBrains Mono',monospace; width:52px; flex-shrink:0; color:var(--brass-bright); font-size:0.85rem;}
+.score-track{ flex:1; height:8px; background:var(--ink-3); border-radius:4px; overflow:hidden; border:1px solid var(--line);}
+.score-fill{ height:100%; background:linear-gradient(90deg, var(--blood), var(--brass-bright)); width:0%; transition:width 1.2s cubic-bezier(.2,.8,.2,1); }
+.score-desc{ flex:2; font-size:0.88rem; color:var(--paper-dim); }
+.score-ex{ flex:1.4; font-size:0.82rem; color:var(--muted); }
+
+/* ===== Archetypes ===== */
+.archetype-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+.archetype-card{
+  background:var(--ink-2); border:1px solid var(--line); padding:22px; position:relative;
+}
+.archetype-card h4{ font-family:'Unbounded',sans-serif; color:var(--paper); font-size:1.05rem; margin:0 0 10px;}
+.archetype-card .axes-tag{ font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--brass); margin-bottom:10px; display:block;}
+.archetype-card .examples{ color:var(--muted); font-size:0.88rem; }
+
+/* ===== Matrix ===== */
+.matrix-scroll{ overflow-x:auto; border:1px solid var(--line); }
+table.matrix{ border-collapse:collapse; width:100%; min-width:1100px; font-size:0.82rem; }
+table.matrix th, table.matrix td{ border:1px solid var(--line); padding:9px 11px; text-align:left; white-space:nowrap; }
+#matrix-detailed table.matrix{ min-width:1500px; }
+#matrix-detailed table.matrix td, #matrix-detailed table.matrix th{ white-space:normal; vertical-align:top; min-width:200px; font-size:0.82rem; line-height:1.5; }
+#matrix-detailed table.matrix td.work-name{ min-width:140px; }
+table.matrix thead th{
+  font-family:'Unbounded',sans-serif; font-weight:500; font-size:0.68rem; text-transform:uppercase;
+  letter-spacing:0.03em; color:var(--brass-bright); background:var(--ink-3); position:sticky; top:0;
+}
+table.matrix td{ color:var(--paper-dim); }
+table.matrix tbody tr:nth-child(even){ background:rgba(255,255,255,0.02); }
+table.matrix td.work-name{ color:var(--paper); font-weight:700; position:sticky; left:0; background:var(--ink-2); white-space:normal; min-width:140px;}
+table.matrix tbody tr:nth-child(even) td.work-name{ background:var(--ink-3); }
+.matrix-toggle{ margin-bottom:16px; display:flex; gap:8px; }
+.matrix-toggle button{
+  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+  background:var(--ink-2); color:var(--muted); border:1px solid var(--line); padding:8px 14px; cursor:pointer;
+}
+.matrix-toggle button.active{ background:var(--brass-bright); color:var(--ink); border-color:var(--brass-bright); }
+.matrix-table{ display:none; }
+.matrix-table.active{ display:block; }
+
+/* ===== Works gallery ===== */
+.works-filter{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px; }
+.works-filter button{
+  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+  background:transparent; color:var(--muted); border:1px solid var(--line); padding:7px 14px; cursor:pointer; transition:.2s;
+}
+.works-filter button:hover{ color:var(--paper); }
+.works-filter button.active{ background:var(--blood); color:var(--paper); border-color:var(--blood); }
+
+.works-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:22px; }
+.work-card{
+  background:var(--ink-2); border:1px solid var(--line); padding:0; overflow:hidden;
+  transition:transform .3s ease, border-color .3s ease; cursor:pointer;
+}
+.work-card:hover{ transform:translateY(-4px); border-color:var(--brass); }
+.work-card-extra{ border-style:dashed; opacity:0.88; }
+.work-card-extra:hover{ opacity:1; }
+.work-sigil-wrap{
+  height:150px; display:flex; align-items:center; justify-content:center;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(176,138,78,0.10), transparent 60%),
+    var(--ink-3);
+  border-bottom:1px solid var(--line);
+}
+.work-sigil-wrap svg{ width:74px; height:74px; stroke:var(--brass-bright); fill:none; stroke-width:1.3; opacity:0.92; }
+.work-body{ padding:20px 22px 22px; }
+.work-type{
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--blood-bright); margin-bottom:6px; display:block;
+}
+.work-title{ font-family:'Unbounded',sans-serif; font-weight:700; font-size:1.15rem; color:var(--paper); margin:0 0 4px;}
+.work-author{ color:var(--muted); font-size:0.85rem; margin-bottom:12px; }
+.work-syn{ font-size:0.88rem; color:var(--paper-dim); margin-bottom:14px; }
+.work-tags{ display:flex; flex-wrap:wrap; gap:6px; }
+.work-tags span{
+  font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.03em;
+  border:1px solid var(--line); padding:3px 8px; color:var(--muted);
+}
+
+/* work modal */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(10,9,8,0.82); backdrop-filter:blur(4px);
+  display:none; align-items:center; justify-content:center; z-index:500; padding:24px;
+}
+.modal-overlay.active{ display:flex; }
+.modal{
+  background:var(--ink-2); border:1px solid var(--brass); max-width:640px; width:100%;
+  max-height:86vh; overflow-y:auto; padding:36px; position:relative; box-shadow:var(--shadow-deep);
+}
+.modal-close{
+  position:absolute; top:16px; right:20px; background:none; border:none; color:var(--muted);
+  font-size:22px; cursor:pointer; line-height:1;
+}
+.modal-close:hover{ color:var(--paper); }
+.modal .work-sigil-wrap{ height:110px; margin-bottom:20px; border:1px solid var(--line);}
+.modal-stage-list{ list-style:none; padding:0; margin:18px 0; }
+.modal-stage-list li{ padding:8px 0; border-bottom:1px solid var(--line); font-size:0.9rem; display:flex; justify-content:space-between; gap:20px;}
+.modal-stage-list li b{ color:var(--brass-bright); font-family:'JetBrains Mono',monospace; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; flex-shrink:0; }
+.modal-stage-list li span{ color:var(--paper-dim); text-align:right;}
+
+footer{ text-align:center; padding:40px 24px; color:var(--muted); font-size:0.85rem; border-top:1px solid var(--line); }
+
+@media(max-width:640px){
+  main{ padding:32px 16px 100px;}
+  .step{ min-width:110px; }
+  h1.title{ font-size:2.6rem; }
+}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+
+<header>
+  <div class="eyebrow">Составлено на основе анализа 16 произведений · версия 2.0</div>
+  <h1 class="title">ПУТЬ ТЕНИ</h1>
+  <p class="subtitle">Методология анализа злодея-протагониста: как конструируется путь от внутреннего дефицита к деструкции.</p>
+  <div class="version-tag">интерактивная методология</div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab-btn active" data-tab="overview">Обзор</button>
+  <button class="tab-btn" data-tab="stages">Шесть этапов</button>
+  <button class="tab-btn" data-tab="axes">Восемь осей</button>
+  <button class="tab-btn" data-tab="archetypes">Архетипы</button>
+  <button class="tab-btn" data-tab="matrix">Матрица</button>
+  <button class="tab-btn" data-tab="apply">Применение</button>
+  <button class="tab-btn" data-tab="works">Произведения</button>
+</nav>
+
+<main>
+
+  <!-- ===================== OVERVIEW ===================== -->
+  <div class="panel active" id="panel-overview">
+    <section class="block">
+      <h2 class="section-title">Концептуальная основа</h2>
+      <p class="lead">«Путь Тени» — структурная методология для анализа произведений, в которых главный герой является злодеем, антагонистом или глубоко аморальным персонажем. Она прослеживает <b>архитектуру зла</b>: механизмы самооправдания, манипуляции и то, к какому финалу приводит траектория персонажа.</p>
+      <p class="lead" style="margin-top:14px;">Идея методики возникла благодаря «Пути Героя» — мономифу Джозефа Кэмпбелла — и во многом ею вдохновлена. Методология делится на две части: <b>структуру нарратива</b> (шесть этапов Пути) и <b>оси координат</b> для сравнения произведений между собой (восемь ключевых характеристик).</p>
+
+      <h3 class="sub-title" style="margin-top:32px;">Путь Тени — декомпозиция Пути Героя</h3>
+      <p class="lead" style="margin-bottom:12px;">Путь Тени — не инверсия Пути Героя, а его декомпозиция: те же этапы присутствуют, но искажены. Зов становится одержимостью, Испытания — эскалацией, Возвращение — невозможностью вернуться.</p>
+      <div class="card">
+        <table class="compare-table">
+          <thead><tr><th>Параметр</th><th>Путь Героя</th><th>Путь Тени</th></tr></thead>
+          <tbody>
+            <tr><td>Вектор</td><td class="hero">От эгоцентризма к альтруизму</td><td class="shadow">От травмы/пустоты к деструкции</td></tr>
+            <tr><td>Зов</td><td class="hero">Внешний (мир нуждается)</td><td class="shadow">Внутренний (одержимость, дефицит)</td></tr>
+            <tr><td>Порог</td><td class="hero">Герой оставляет дом</td><td class="shadow">Тень переступает через другого человека</td></tr>
+            <tr><td>Испытания</td><td class="hero">Учат, дают союзников</td><td class="shadow">Углубляют изоляцию, строят лабиринт</td></tr>
+            <tr><td>Кульминация</td><td class="hero">Победа над драконом</td><td class="shadow">Тень становится драконом или сталкивается с ним в себе</td></tr>
+            <tr><td>Возвращение</td><td class="hero">«Эликсир» для общества</td><td class="shadow">Руины, окаменение или торжество</td></tr>
+            <tr><td>Отношение к обществу</td><td class="hero">Интеграция, служение</td><td class="shadow">Паразитирование, заражение или изоляция</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2 class="section-title">Четыре принципа</h2>
+      <div class="principles-grid">
+        <div class="principle-card">
+          <div class="num">ПРИНЦИП 01</div>
+          <h4>Благая черта</h4>
+          <p>Даже самый тёмный злодей должен обладать хотя бы одной подлинной или кажущейся положительной чертой — она создаёт когнитивный диссонанс, удерживающий внимание аудитории.</p>
+        </div>
+        <div class="principle-card">
+          <div class="num">ПРИНЦИП 02</div>
+          <h4>Короля делает свита</h4>
+          <p>Потенциал злодея раскрывается только при наличии достойного противника. На каждого устранённого должен приходиться один, которого Тень устранить не может.</p>
+        </div>
+        <div class="principle-card">
+          <div class="num">ПРИНЦИП 03</div>
+          <h4>Импринтинг</h4>
+          <p>Читатель прощает злодею жестокость пропорционально его компетентности и харизме. Сильный и выразительный злодей вызывает желание «примерить маску».</p>
+        </div>
+        <div class="principle-card">
+          <div class="num">ПРИНЦИП 04</div>
+          <h4>Голос как оружие</h4>
+          <p>Внутренний голос злодея (фокализация) — не просто точка зрения, а инструмент манипуляции: маска может целенаправленно обманывать саму аудиторию.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2 class="section-title">Источники и признательность</h2>
+      <p class="lead">Методология построена на анализе 10 книг и 6 фильмов/сериалов, составляющих ядро из 16 произведений (полные карточки — во вкладке «Произведения»). Кино было добавлено к материалу позже, чем сложилась основная структура, и потребовало новых подтипов: «Псевдо-Искупление» (Барри), «Ненадёжная реальность» (Джокер), «Заражение» и «Эстетическое слияние» (Ганнибал).</p>
+      <div class="card" style="margin-top:16px;">
+        <p style="margin:0; color:var(--paper-dim); font-size:0.94rem;">Часть уточнений — калибр противника, спектр читательского импринтинга, структурная роль благой черты — родилась из разговора с <b style="color:var(--paper)">Даной Арнаутовой</b> (<a href="https://vkvideo.ru/video-235953301_456239105" target="_blank" rel="noopener">запись разговора</a>). Во вкладке «Произведения» также перечислены ещё восемь книг и пьес, упомянутые в тексте методологии как дополнительные примеры, но не вошедшие в ядро из 16.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2 class="section-title">Ограничения методологии</h2>
+      <div class="card">
+        <ul style="margin:0; padding-left:20px; color:var(--paper-dim);">
+          <li style="margin-bottom:10px;"><b style="color:var(--paper)">Статичные злодеи.</b> Персонажи вроде Бейтмана или Луи Блума не проходят путь, а существуют в вечном настоящем — методология фиксирует отсутствие движения как диагностический признак.</li>
+          <li style="margin-bottom:10px;"><b style="color:var(--paper)">Антигерой ≠ Злодей.</b> Методология предназначена для персонажей, осознанно или системно причиняющих вред.</li>
+          <li style="margin-bottom:10px;"><b style="color:var(--paper)">Культурный контекст.</b> То, что в одной культуре — злодейство, в другой — норма.</li>
+          <li style="margin-bottom:10px;"><b style="color:var(--paper)">Множественные протагонисты.</b> Методология применяется к каждому POV отдельно, затем сравнивается.</li>
+          <li><b style="color:var(--paper)">Неполнота.</b> Методология описывает структуру, но не заменяет эстетическое переживание.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== STAGES ===================== -->
+  <div class="panel" id="panel-stages">
+    <section class="block">
+      <h2 class="section-title">Шесть этапов Пути Тени</h2>
+      <p class="lead">Каждый этап — точка структурного выбора автора. Нажмите на этап, чтобы раскрыть подтипы и аналитический вопрос.</p>
+
+      <div class="stepper" id="stepper"></div>
+      <div id="stage-details"></div>
+    </section>
+  </div>
+
+  <!-- ===================== AXES ===================== -->
+  <div class="panel" id="panel-axes">
+    <section class="block">
+      <h2 class="section-title">Восемь осей сравнительного анализа</h2>
+      <p class="lead">Оси позволяют количественно и качественно сопоставлять произведения между собой.</p>
+      <div id="axes-container"></div>
+    </section>
+  </div>
+
+  <!-- ===================== ARCHETYPES ===================== -->
+  <div class="panel" id="panel-archetypes">
+    <section class="block">
+      <h2 class="section-title">Архетипы злодея-протагониста</h2>
+      <div class="archetype-grid" id="archetype-grid"></div>
+    </section>
+  </div>
+
+  <!-- ===================== MATRIX ===================== -->
+  <div class="panel" id="panel-matrix">
+    <section class="block">
+      <h2 class="section-title">Сводная матрица 16 произведений</h2>
+      <div class="matrix-toggle">
+        <button class="active" data-mtable="axes">Таблица А · Оси сравнения</button>
+        <button data-mtable="stages">Таблица Б · Этапы Пути Тени</button>
+        <button data-mtable="detailed">Таблица В · Подробно (10 книг)</button>
+      </div>
+      <div class="matrix-scroll">
+        <div class="matrix-table active" id="matrix-axes"></div>
+        <div class="matrix-table" id="matrix-stages"></div>
+        <div class="matrix-table" id="matrix-detailed"></div>
+      </div>
+
+      <div class="card" style="margin-top:28px;">
+        <h3 class="sub-title">Главные открытия сводной матрицы</h3>
+        <ul style="margin:0; padding-left:20px; color:var(--paper-dim); font-size:0.94rem;">
+          <li style="margin-bottom:10px;"><b style="color:var(--paper)">Эволюция дефицита.</b> В книгах XX века исходный дефицит чаще носит форму экзистенциальной травмы или философского открытия (Гумберт, Дориан, Ауэ). В фильмах и сериалах XXI века дефицит чаще встроен в социальную систему целиком — Тень не просто ранена, она произведена обществом (Джокер).</li>
+          <li style="margin-bottom:10px;"><b style="color:var(--paper)">Феномен Псевдо-Искупления.</b> Это почти исключительно явление экранных историй (Барри — актёрство, Артур — стендап, Уолтер — «для семьи»); в книгах ядра оно почти не встречается как отдельный, явно артикулированный лабиринт.</li>
+          <li><b style="color:var(--paper)">Смещение финалов.</b> Книги ядра чаще выбирают Падение или Окаменение — то есть баланс так или иначе фиксируется. Фильмы и сериалы XXI века чаще выбирают Триумф Тени или Пространственное окаменение — открытый, некатарсический финал, отражающий более скептичное отношение современной аудитории к идее восстановленной справедливости.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== APPLY ===================== -->
+  <div class="panel" id="panel-apply">
+    <section class="block">
+      <h2 class="section-title">Практическое применение</h2>
+
+      <h3 class="sub-title">Для литературного / кинокритического анализа</h3>
+      <div class="card">
+        <ol style="margin:0; padding-left:20px; color:var(--paper-dim);">
+          <li style="margin-bottom:8px;">Определите произведение и главного героя.</li>
+          <li style="margin-bottom:8px;">Пройдите по 6 этапам: зафиксируйте конкретные события.</li>
+          <li style="margin-bottom:8px;">Оцените по 8 осям: присвойте баллы и выберите подтипы.</li>
+          <li style="margin-bottom:8px;">Определите архетип злодея.</li>
+          <li>Сравните с другими произведениями через матрицу.</li>
+        </ol>
+      </div>
+
+      <h3 class="sub-title" style="margin-top:32px;">Для сценарного мастерства / написания романа</h3>
+      <div class="card">
+        <ol style="margin:0; padding-left:20px; color:var(--paper-dim);">
+          <li style="margin-bottom:8px;"><b style="color:var(--paper)">Этап 1:</b> выберите тип дефицита (травма / пустота / философия).</li>
+          <li style="margin-bottom:8px;"><b style="color:var(--paper)">Этап 2:</b> определите Зов. Классический или расщеплённый?</li>
+          <li style="margin-bottom:8px;"><b style="color:var(--paper)">Этап 3:</b> запланируйте точку невозврата. Какое действие?</li>
+          <li style="margin-bottom:8px;"><b style="color:var(--paper)">Этап 4:</b> постройте лабиринт. Обязательно введите противника равного или выше уровня.</li>
+          <li style="margin-bottom:8px;"><b style="color:var(--paper)">Этап 5:</b> придумайте Зеркало. Кто/что покажет герою правду?</li>
+          <li style="margin-bottom:8px;"><b style="color:var(--paper)">Этап 6:</b> выберите финал (определяет жанр: триллер, трагедия, хоррор, сатира).</li>
+          <li style="margin-bottom:8px;"><b style="color:var(--paper)">Ось 8:</b> дайте герою благую черту. Определите её судьбу в финале.</li>
+          <li style="margin-bottom:8px;"><b style="color:var(--paper)">Ось 3.2:</b> определите уровень компетентности. Насколько читатель будет «примерять маску»?</li>
+          <li><b style="color:var(--paper)">Ось 3.3:</b> решите — маска обманывает героя, читателя или обоих?</li>
+        </ol>
+      </div>
+
+      <h3 class="sub-title" style="margin-top:32px;">Для сравнительного исследования</h3>
+      <div class="card">
+        <ul style="margin:0 0 18px; padding-left:20px; color:var(--paper-dim);">
+          <li style="margin-bottom:8px;"><b style="color:var(--paper)">Вертикальный анализ</b> (по столбцам): как разные авторы решают один этап.</li>
+          <li style="margin-bottom:8px;"><b style="color:var(--paper)">Горизонтальный анализ</b> (по строкам): полная арка конкретного персонажа.</li>
+          <li><b style="color:var(--paper)">Перекрёстный анализ:</b> наложение двух произведений для выявления структурных различий.</li>
+        </ul>
+        <p style="color:var(--muted); font-size:0.92rem; margin-bottom:16px;">Пример сравнения двух книг через эту методологию — «Лолита» vs «Американский психопат»:</p>
+        <table class="compare-table">
+          <thead><tr><th>Ось</th><th>Лолита (Гумберт)</th><th>Американский психопат (Бейтман)</th></tr></thead>
+          <tbody>
+            <tr><td>Рефлексия</td><td class="hero">8/10 — мучительная</td><td class="shadow">1/10 — отсутствует</td></tr>
+            <tr><td>Нарративная маска</td><td class="hero">Соблазнитель / Поэт</td><td class="shadow">Клиницист / пустая оболочка</td></tr>
+            <tr><td>Отношение к жертве</td><td class="hero">Искажённая любовь — разрушает через одержимость</td><td class="shadow">Абсолютная объективация — люди как мебель</td></tr>
+            <tr><td>Финал</td><td class="hero">Падение — смерть в тюрьме, попытка искупления через текст</td><td class="shadow">Триумф Тени — сходит с рук, общество слепо</td></tr>
+          </tbody>
+        </table>
+        <p style="color:var(--muted); font-size:0.9rem; margin-top:16px; margin-bottom:0;">Методология позволяет уйти от субъективных оценок («эта книга страшнее») к структурному анализу того, как именно литература и кино конструируют зло изнутри.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== WORKS ===================== -->
+  <div class="panel" id="panel-works">
+    <section class="block">
+      <h2 class="section-title">Произведения</h2>
+      <p class="lead">16 книг, фильмов и сериалов, составляющих ядро методологии, плюс ещё 8 произведений, которые упоминаются в тексте как дополнительные примеры (отмечены пунктирной рамкой и фильтром «Также упоминаются»). Вместо кадров и обложек — авторские сигилы: символический герб каждой Тени.</p>
+      <div class="works-filter" id="works-filter"></div>
+      <div class="works-grid" id="works-grid"></div>
+    </section>
+  </div>
+
+</main>
+
+<footer>Путь Тени · Методология является открытой системой — её ценность не в догматическом следовании схеме, а в создании общего языка для разговора о том, как литература и кино конструируют зло изнутри.</footer>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+
+const stages = [
+  {
+    label:'Дефицит', title:'Этап 1 · Исходный Дефицит / Первичная Травма',
+    essence:'Внутренняя пустота, рана или дефект, делающий нормальную жизнь невозможной. Не «обычный мир», а мир, который уже сломан.',
+    table:{
+      head:['Подтип','Описание','Примеры'],
+      rows:[
+        ['Классическая травма','Конкретное событие в прошлом (смерть, насилие, отвержение)','Гумберт (смерть Анны), Клегг (одиночество), Артур Флек (насилие), Барри (война)'],
+        ['Изначальная пустота','Травмы нет. Персонаж рождён без эмпатии. Зло — естественное состояние','Луи Блум, Патрик Бейтман, Алекс (начало)'],
+        ['Философский дефицит','Интеллектуальное открытие, разрушающее моральные ориентиры','Дориан Грей (идея Генри), Раскольников (теория), Ауэ (нигилизм)'],
+      ]
+    },
+    question:'Что сломано в герое ДО начала истории? Это след внешнего удара или внутренняя пустота?'
+  },
+  {
+    label:'Ложный Зов', title:'Этап 2 · Ложный Зов / Одержимость',
+    essence:'Внутренний импульс — фиксация на объекте, идее или состоянии, маскирующаяся под высшую цель, но являющаяся проекцией дефицита из Этапа 1.',
+    table:{
+      head:['Подтип','Описание','Примеры'],
+      rows:[
+        ['Классический','Одна одержимость, поглощающая всё','Гумберт → Лолита; Гренуй → аромат; Клегг → Миранда'],
+        ['Расщеплённый','Две параллельные мотивации: публичная (благородная) и приватная (эгоистичная)','Уолтер Уайт: «для семьи» vs «для себя»'],
+        ['Корпоративный','Зов замаскирован под язык саморазвития, бизнеса, эффективности','Луи Блум (мотивационные видео как инструкция по хищничеству)'],
+        ['Эстетический','Стремление к красоте/совершенству, для которого люди — материал','Дориан Грей, Ганнибал, Судья Холден'],
+      ]
+    },
+    question:'Что герой считает своей «миссией»? Как он формулирует Зов вслух и про себя? Совпадают ли формулировки?'
+  },
+  {
+    label:'Горизонт', title:'Этап 3 · Пересечение Морального Горизонта',
+    essence:'Точка невозврата. Первое непоправимое действие, после которого возврат к «норме» невозможен. Тень переступает через другого человека.',
+    extra:'Всегда связано с первым убийством, необратимым насилием или тотальным предательством; сопровождается рационализацией. После этого этапа каждый следующий акт насилия даётся легче.',
+    table:{
+      head:['Вариант','Описание','Примеры'],
+      rows:[
+        ['Холодный расчёт','Убийство спланировано и выполнено без аффекта','Рипли → Дикки; Уолтер → Брок'],
+        ['Аффект / Срыв','Убийство в ярости, панике, опьянении','Алекс → писательница; Артур → финансисты'],
+        ['Попустительство','Тень не убивает, но позволяет смерти случиться','Гумберт → Шарлотта; Дориан → Сибилла'],
+        ['Делегирование','Тень заставляет другого совершить акт','Ганнибал → Уилл; Ричард → наёмные убийцы'],
+      ]
+    },
+    question:'Какое действие делает возврат невозможным? Как герой объясняет его себе в первые минуты? Меняется ли объяснение со временем?'
+  },
+  {
+    label:'Лабиринт', title:'Этап 4 · Построение Лабиринта / Эскалация',
+    essence:'Тень строит систему, защищающую от разоблачения и позволяющую продолжать. Жертвы — ресурсы, союзники — инструменты, враги устраняются.',
+    table:{
+      head:['Подтип лабиринта','Описание','Примеры'],
+      rows:[
+        ['Лабиринт лжи','Эскалация через усложнение обмана','Рипли, Эми Данн, Уолтер, Джо Голдберг'],
+        ['Лабиринт насилия','Эскалация через увеличение жестокости','Алекс, Барри, Ричард III, Гренуй'],
+        ['Псевдо-Искупление','Попытка замаскировать Путь Тени под Путь Героя','Барри (актёрство), Артур (стендап), Уолтер («для семьи»)'],
+        ['Лабиринт власти','Эскалация через захват контроля над институтами','Ричард III, Плейнвью, Ауэ'],
+      ]
+    },
+    table2:{
+      title:'Подпункт 4.1 · Калибр противника',
+      head:['Уровень','Эффект','Примеры'],
+      rows:[
+        ['Равный / Выше','Создаёт напряжение, раскрывает потенциал Тени','Гус Фринг, Уилл Грэм, Илай Санди, Куильти'],
+        ['Ниже','«God mode», снижение интереса','Рик в «Стрингере», подруги в «Ты»'],
+        ['Отсутствует','Требует компенсации через внутренний конфликт или финальный «непредвиденный противник»','Гренуй (толпа в финале)'],
+      ]
+    },
+    extra2:'Правило: на каждого устранённого противника должен приходиться один, которого Тень устранить не может — и именно он становится Зеркалом в Этапе 5. Чем больше Тень строит, тем меньше у неё подлинных связей.',
+    question:'Какую систему строит герой? Кто в ней — инструмент, а кто — угроза? Есть ли противник, которого он НЕ может устранить?'
+  },
+  {
+    label:'Зеркало', title:'Этап 5 · Столкновение с Зеркалом / Тенью Тени',
+    essence:'Тень сталкивается с отражением себя — фигурой, ситуацией или осознанием, разрушающим иллюзию контроля.',
+    table:{
+      head:['Подтип','Описание','Примеры'],
+      rows:[
+        ['Вынужденное','Зеркало приходит извне','Миранда (дневник), Бек (тайник Джо), портрет Дориана'],
+        ['Добровольное разоблачение','Тень сама разрушает свою маску','Уолтер: «I did it for me»; Ричард перед битвой'],
+        ['Слияние','Тень и Зеркало становятся одним целым','Ганнибал и Уилл (падение со скалы)'],
+        ['Отсутствие Зеркала','Зеркало не приходит. Тень остаётся в изоляции','Луи Блум, Бейтман (крик в пустоту)'],
+      ]
+    },
+    question:'Кто/что показывает герою его истинное лицо? Принимает ли он отражение или отвергает?'
+  },
+  {
+    label:'Финал', title:'Этап 6 · Финал / Трансформация',
+    essence:'Тень не приносит обществу «эликсира». Финал фиксирует окончательное состояние после прохождения Пути.',
+    table:{
+      head:['Архетип финала','Описание','Примеры'],
+      rows:[
+        ['Падение','Смерть, арест, безумие. Баланс восстановлен.','Ричард III, Барри, Гренуй, Томпсон'],
+        ['Триумф Тени','Тень побеждает, уходит от наказания. Баланс НЕ восстановлен.','Рипли, Луи Блум, Джо Голдберг, Алекс'],
+        ['Окаменение','Застревание в уродстве. Не мертва, но и не жива.','Дориан Грей, Клегг, Ауэ'],
+        ['Пространственное окаменение','Запертость в архитектуре успеха. Победа = тюрьма.','Плейнвью (боулинг), Уолтер (лаборатория)'],
+        ['Эстетическое слияние','Тень и Зеркало падают/торжествуют вместе.','Ганнибал и Уилл'],
+      ]
+    },
+    question:'Что остаётся от героя? Восстановлен ли баланс? Что чувствует читатель/зритель: катарсис, ужас, пустоту?'
+  },
+];
+
+const axes = [
+  {
+    idx:'ОСЬ 1', title:'Степень рефлексии и рационализации (0–10)', type:'score',
+    rows:[
+      ['0–2','Отсутствие рефлексии. Зло — естественная среда.','Бейтман, Гренуй, Луи Блум, Джо Голдберг'],
+      ['3–4','Избирательная рационализация.','Клегг, Рипли, Алекс'],
+      ['5–6','Эстетская/прагматичная рефлексия.','Дориан, Уолтер, Ричард III'],
+      ['7–8','Мучительная рефлексия. Осознаёт, но не может остановиться.','Гумберт, Раскольников, Барри'],
+      ['9–10','Интеллектуальная рефлексия без раскаяния. Зло как философия.','Ауэ, Ганнибал, Судья Холден'],
+    ]
+  },
+  {
+    idx:'ОСЬ 2', title:'Отношение к жертве', type:'table', head:['Тип','Описание','Примеры'],
+    rows:[
+      ['Абсолютная объективация','Жертва — вещь, сырьё, расходный материал.','Гренуй, Луи Блум, Ауэ'],
+      ['Объективация','Жертва — инструмент или игрушка.','Алекс, Дориан, Клегг'],
+      ['Искажённая любовь','Жертва идеализируется, но разрушается через «любовь».','Гумберт, Джо Голдберг'],
+      ['Зеркало / Соперник','Жертва — равный, которого нужно сломать или поглотить.','Рипли → Дикки, Ричард, Ганнибал → Уилл'],
+      ['Случайная / Безразличная','Жертва не имеет значения.','Артур Флек, Алекс (прохожие)'],
+    ]
+  },
+  {
+    idx:'ОСЬ 3', title:'Нарративная маска (расширенная)', type:'nested',
+    parts:[
+      {sub:'3.1 · Тип маски', head:['Тип','Описание','Примеры'], rows:[
+        ['Соблазнитель / Эстет','Красивый язык, юмор, интеллект. Втягивает в соучастие.','Гумберт, Ричард III, Ганнибал'],
+        ['Хладнокровный','Холодный, отстранённый тон. Ужас описан языком отчёта/рецепта.','Бейтман, Гренуй, Ауэ, Луи Блум'],
+        ['Оправдывающийся','Перекладывает вину, вызывает сочувствие.','Клегг, Рипли, Джо, Артур'],
+        ['Лицедей','Постоянная смена масок.','Рипли, Уолтер, Барри'],
+        ['Ненадёжная реальность','Сомнительна сама ткань повествования.','Артур Флек, Уолтер (финал)'],
+      ], note:'Ненадёжная реальность (расширение маски): у Джокера и отчасти у Барри зритель не может быть уверен, что видит на экране — фантазию героя или объективные события. Маска здесь работает не через слова персонажа, а через саму структуру повествования.'},
+      {sub:'3.2 · Компетентность / привлекательность маски (0–10)', intro:'Формула Даны Арнаутовой: Привлекательность = Компетентность × Активность × Эстетика.', head:['Уровень','Механизм вовлечения','Примеры','Читательская реакция'], rows:[
+        ['Восхищение','Герой гениален, эстетичен, полностью владеет ситуацией','Ганнибал, Гумберт, Ричард III','«Хочу быть таким же умным»'],
+        ['Узнавание / эмпатия','Герой уязвим, узнаваем, слаб перед своей одержимостью','Клегг, Артур Флек, Джо Голдберг','«Мне его почти жаль»'],
+        ['Отвращение / пустота','Маска не работает, компетентность есть, но нет ни красоты, ни уязвимости','Бейтман, Луи Блум','«Это просто пусто и мерзко»'],
+      ]},
+      {sub:null, score:true, rows:[
+        ['0–3','Жалок, некомпетентен. Маска не работает.','Бейтман (пустота), Луи Блум (пародия)'],
+        ['4–6','Вызывает жалость/узнавание. Маска через эмпатию.','Клегг, Артур, Джо Голдберг'],
+        ['7–8','Компетентен, харизматичен. Маска через уважение.','Рипли, Уолтер, Барри'],
+        ['9–10','Гениален, эстетически совершенен. Маска через восхищение.','Ганнибал, Гумберт, Ричард III'],
+      ]},
+      {sub:'3.3 · Функция маски: для кого работает обман?', head:['Функция','Для кого?','Механизм','Пример'], rows:[
+        ['Самооправдание','Для самого героя','Маска нужна, чтобы не видеть в зеркале монстра','Уолтер Уайт: «это ради семьи»'],
+        ['Манипуляция читателем','Для аудитории','Голос рассказчика целенаправленно формирует сочувствие или восхищение','Гумберт: поэтичный слог заслоняет факт растления'],
+      ]},
+      {sub:'Как это работает в 16 произведениях', head:['Произведение','Механизм обмана читателя','Момент разоблачения'], rows:[
+        ['Лолита','Поэтический, соблазнительный слог маскирует растление ребёнка','Читатель сам должен «расколдовать» текст; прямого разоблачения в сюжете нет'],
+        ['Коллекционер','Вежливый, «разумный» голос Клегга нормализует похищение','Дневник Миранды — вторая точка зрения, ломающая иллюзию'],
+        ['Ричард III','Остроумные обращения к залу делают зрителя соучастником','Призраки жертв перед битвой у Босворта'],
+        ['Заводной апельсин','Изобретённый жаргон (надсат) эстетизирует насилие','Финальное «излечение» показывает лицемерие системы, не героя'],
+        ['Дориан Грей','Красота и остроумие лорда Генри маскируют цинизм философии','Портрет, который стареет и уродуется вместо хозяина'],
+        ['Парфюмер','Отстранённый, «научный» тон описывает чудовищные убийства как эксперимент','Финал — Гренуя буквально съедает толпа, ослеплённая его ароматом'],
+        ['Мр Рипли','Обаяние и уязвимость Тома вызывают сочувствие раньше, чем отвращение','Момента полного разоблачения для читателя нет — Рипли уходит от наказания'],
+        ['Благоволительницы','Бюрократический, интеллектуальный тон нормализует участие в Холокосте','Разоблачения не происходит — это и есть ужас книги'],
+        ['Убийца внутри нас','Вежливая, простодушная манера шерифа Форда усыпляет бдительность','Собственные признания рассказчика в финале обнажают внутреннего «Пола»'],
+        ['Ты','Романтизированный внутренний монолог Джо выдаёт слежку за заботу','Бек находит тайник с вещами прошлых жертв'],
+        ['Во все тяжкие','Расщеплённая мотивация «для семьи» долго маскирует эгоизм','Уолтер сам произносит: «Я делал это для себя»'],
+        ['Стрингер','Язык корпоративного успеха маскирует хищническую этику Луи','Разоблачения нет — герой торжествует'],
+        ['Джокер','Ненадёжная реальность стирает грань между фантазией Артура и событиями','Сцена с Мюрреем Франклином рушит одну из иллюзий, но не все'],
+        ['Нефть','Язык бизнеса и религии взаимно маскируют одинаковую жажду власти','Финальный монолог в подвале для боулинга снимает все маски разом'],
+        ['Барри','Актёрское мастерство буквально используется как маска над убийцей','Салли и Джин узнают правду поодиночке, в разных сценах'],
+        ['Ганнибал','Эстетика еды и искусства маскирует людоедство как высокую культуру','Уилл Грэм видит правду одним из первых — задолго до зрителя'],
+      ]},
+      {sub:null, head:['Вектор','Описание','Примеры'], rows:[
+        ['Самообман','Маска нужна герою, чтобы не видеть себя','Уолтер, Джо, Клегг'],
+        ['Обман читателя','Маска манипулирует восприятием аудитории','Гумберт, Ганнибал, Ричард III'],
+        ['Двойной обман','И себя, и читателя одновременно','Барри, Артур Флек'],
+      ]},
+      {sub:'Момент снятия маски', head:['Тип','Описание','Примеры'], rows:[
+        ['Внешний','Кто-то извне срывает маску','Бек находит тайник; Салли видит оружие'],
+        ['Внутренний','Герой сам снимает маску','Уолтер: «I did it for me»'],
+        ['Визуальный','Маска снята через образ, не слова','Портрет Дориана; призраки Ричарда'],
+        ['Никогда','Маска не снимается. Герой остаётся в ней навсегда.','Луи Блум, Бейтман'],
+      ]},
+    ]
+  },
+  {
+    idx:'ОСЬ 4', title:'Масштаб и вектор деструкции', type:'table', head:['Масштаб','Описание','Примеры'],
+    rows:[
+      ['Микро','Один дом, семья, подвал. Камерный ужас.','Клегг, Джо, Томпсон'],
+      ['Социальный','Город, сообщество, цепь жизней.','Рипли, Бейтман, Луи Блум, Барри'],
+      ['Макро','Страна, война, цивилизация.','Ауэ, Ричард III, Плейнвью'],
+      ['Заражение','Тень создаёт других Теней. Зло как вирус.','Ганнибал → Уилл, Уолтер → Джесси, Холден → Парень'],
+    ],
+    note:'Заражение / Создание наследника — вектор, добавленный после включения кино в материал: Лектер (в сериале «Ганнибал») не просто идёт своим путём, а создаёт другую Тень в Уилле Грэме. Тень как вирус, который передаётся.'
+  },
+  {
+    idx:'ОСЬ 5', title:'Степень интеграции в социум', type:'table', head:['Тип','Описание','Примеры'],
+    rows:[
+      ['Монстр на виду','Открыто принимает природу, бросает вызов.','Ричард III, Алекс, Артур (финал)'],
+      ['Скрытый паразит','Мимикрирует под нормального человека.','Рипли, Бейтман, Джо, Уолтер (до раскрытия)'],
+      ['Изгой','Вне общества, в изолированном мире.','Гренуй, Клегг, Плейнвью (финал)'],
+      ['Системный хищник','Встроен в институты власти.','Ауэ (СС), Ганнибал (психиатрия), Луи Блум (медиа)'],
+    ],
+    note:'Динамика: Тень часто перемещается по оси (Уолтер: паразит → монстр; Артур: изгой → монстр).'
+  },
+  {
+    idx:'ОСЬ 6', title:'Роль общества в создании Тени (0–10)', type:'score',
+    intro:'Артур Флек («Джокер») — случай, когда сама система создаёт Тень: отключение соцпрограмм, равнодушие окружающих, насмешки — не просто фон, а активный со-автор его превращения. Тень может быть продуктом не только личной травмы, но и социального краха.',
+    rows:[
+      ['0–2','Тень создана внутренним дефицитом. Общество ни при чём.','Гренуй, Клегг, Ганнибал, Луи Блум'],
+      ['3–5','Общество — фон, но не причина.','Рипли, Дориан, Уолтер, Плейнвью'],
+      ['6–7','Общество активно способствует.','Алекс (государство), Луи Блум (медиа)'],
+      ['8–10','Общество — со-автор зла. Без системы Тень не стала бы собой.','Артур Флек, Ауэ (бюрократия Холокоста)'],
+    ]
+  },
+  {
+    idx:'ОСЬ 7', title:'Финальная точка', type:'table', head:['Архетип','Баланс восстановлен?','Эмоция аудитории'],
+    rows:[
+      ['Падение','Да','Катарсис, облегчение'],
+      ['Триумф Тени','Нет','Экзистенциальный ужас'],
+      ['Окаменение','Частично','Эстетическое удовлетворение + тревога'],
+      ['Пространственное окаменение','Нет','Пустота, тщетность'],
+      ['Эстетическое слияние','Нет (но не нужно)','Амбивалентность, извращённая красота'],
+    ]
+  },
+  {
+    idx:'ОСЬ 8', title:'Благая черта / Когнитивный якорь', type:'nested',
+    intro:'Часть исследования, уточнённая в разговоре с Даной Арнаутовой: благая черта — не украшение персонажа, а структурный инструмент со своей ролью на каждом этапе Пути.',
+    parts:[
+      {sub:'8.1 · Каталог благих черт по 16 произведениям', head:['Произведение','«Благая черта» злодея','Как она подана'], rows:[
+        ['Лолита','Способность любить (пусть и извращённо)','Лирические, почти нежные пассажи о Лолите среди отвратительных фактов'],
+        ['Коллекционер','Забота, застенчивость','Клегг искренне не считает себя насильником — «я же забочусь о ней»'],
+        ['Ричард III','Остроумие, интеллектуальная честность','Прямые монологи к зрителю без самообмана'],
+        ['Заводной апельсин','Любовь к музыке (Бетховен)','Единственный момент подлинного, не деструктивного восторга'],
+        ['Дориан Грей','Ранняя дружба, тяга к красоте','В начале романа Дориан ещё способен смущаться и стыдиться'],
+        ['Парфюмер','Гениальность, преданность ремеслу','Гренуй — подлинный мастер, а не самозванец'],
+        ['Мр Рипли','Уязвимость, тоска по чужой жизни','Моменты, где видно, что Том прежде всего одинок'],
+        ['Благоволительницы','Интеллект, любовь к музыке','Бах и Моцарт как единственная точка соприкосновения с человечностью'],
+        ['Убийца внутри нас','Вежливость, провинциальное обаяние','Маска настолько убедительна, что горожане не подозревают шерифа'],
+        ['Ты','Искренняя любовь к книгам','Джо по-настоящему разбирается в литературе и заботится о читателях магазина'],
+        ['Во все тяжкие','Любовь к семье (в начале), гениальность химика','Первый сезон держится на том, что мотив выглядит благородным'],
+        ['Стрингер','Отсутствует','Единственный герой без компенсирующей черты — намеренно'],
+        ['Джокер','Любовь к матери, желание нести людям смех','Оба мотива искренни и оба же оказываются разрушены/иллюзорны'],
+        ['Нефть','Трудолюбие, ранняя привязанность к приёмному сыну Г.У.','Плейнвью действительно заботится о сыне, пока тот ему полезен'],
+        ['Барри','Искреннее желание стать хорошим человеком','Актёрские курсы — не только прикрытие, но и подлинный порыв'],
+        ['Ганнибал','Забота об Уилле Грэме, эстетическое чувство','Ганнибал хочет для Уилла «лучшего» — по своим меркам'],
+      ]},
+      {sub:'Исключения: злодеи без благой черты', html:`<div class="card" style="margin-top:4px;">
+        <p style="margin:0 0 12px; color:var(--paper-dim); font-size:0.92rem;"><b style="color:var(--paper);">Патрик Бейтман</b> — трудолюбие и вкус к моде есть, но поданы как пустая пародия: за визиткой и точным знанием ресторанов ничего не стоит. Это не благая черта, а её имитация.</p>
+        <p style="margin:0; color:var(--paper-dim); font-size:0.92rem;"><b style="color:var(--paper);">Луи Блум</b> — трудолюбие и целеустремлённость поданы языком корпоративных мотивационных курсов, но направлены исключительно на хищничество. Компетентность есть, человеческого содержания за ней нет.</p>
+      </div>`},
+      {sub:'Как благая черта работает в структуре', html:`<div class="card" style="margin-top:4px;">
+        <p style="margin:0 0 14px; color:var(--paper-dim); font-size:0.92rem;"><b style="color:var(--paper);">Функция 1 · Якорь для Этапа 2.</b> Благая черта делает Ложный Зов правдоподобным — зритель верит в «миссию» именно потому, что видит подлинную способность любить или создавать красоту. <span class="muted">Пример: любовь Гумберта делает его одержимость похожей на страсть, а не только на патологию.</span></p>
+        <p style="margin:0 0 14px; color:var(--paper-dim); font-size:0.92rem;"><b style="color:var(--paper);">Функция 2 · Усилитель для Этапа 5.</b> Столкновение с Зеркалом ранит сильнее, если у героя есть что терять — не только власть, но и черту, которой он дорожит. <span class="muted">Пример: Уолтер Уайт теряет не только империю, но и семью, которую якобы защищал.</span></p>
+        <p style="margin:0 0 14px; color:var(--paper-dim); font-size:0.92rem;"><b style="color:var(--paper);">Функция 3 · Двигатель когнитивного диссонанса.</b> Благая черта не даёт аудитории просто отвергнуть героя — приходится удерживать одновременно восхищение и ужас. <span class="muted">Пример: музыкальный вкус Ганнибала не отменяет людоедства, но и не даёт забыть о нём как о простом монстре.</span></p>
+        <p style="margin:0; color:var(--paper-dim); font-size:0.92rem;"><b style="color:var(--paper);">Функция 4 · Маркер Триумфа Тени.</b> Если черта в финале извращается, а не исчезает и не вспыхивает искренне — это верный признак того, что баланс не будет восстановлен. <span class="muted">Пример: любовь Джо Голдберга к книгам в финале снова становится инструментом манипуляции новой жертвой.</span></p>
+      </div>`},
+      {sub:'Итог: наличие благой черты', head:['Вариант','Описание','Примеры'], rows:[
+        ['Есть','Подлинная или кажущаяся положительная черта','14 из 16 произведений'],
+        ['Отсутствует','Изначальная пустота. Черты нет, потому что нет содержания.','Бейтман, Луи Блум'],
+      ]},
+      {sub:'8.2 · Тип благой черты', head:['Тип','Описание','Примеры'], rows:[
+        ['Подлинная любовь (к одному объекту)','Способен любить одного, но любовь извращена','Гумберт, Джо, Ганнибал, Артур → мать'],
+        ['Эстетическая чувствительность','Подлинное переживание красоты','Алекс → Бетховен; Ауэ → музыка; Гренуй → запахи'],
+        ['Интеллектуальная честность','Не лжёт себе. Знает, кто он.','Ричард III, Ганнибал, Судья Холден'],
+        ['Уязвимость / Детскость','Сохраняет наивность, ранимость','Клегг, Артур, Барри, Рипли'],
+        ['Мастерство / Преданность делу','Подлинно талантлив','Гренуй, Уолтер, Луи Блум, Плейнвью'],
+        ['Кодекс / Правило','Следует внутреннему правилу','Ганнибал («не ем грубых»), Уолтер («не убиваю детей»)'],
+      ]},
+      {sub:'8.3 · Подлинность', head:['Вариант','Описание','Примеры'], rows:[
+        ['Подлинная','Черта реальна, но не отменяет зла','Гумберт (любовь), Алекс (Бетховен)'],
+        ['Извращённая','Черта реальна, но направлена на разрушение','Джо (защита = контроль), Ганнибал (забота = поглощение)'],
+        ['Пародия','Черта имитируется, за ней ничего нет','Луи Блум (трудолюбие = пустота)'],
+      ]},
+      {sub:'8.4 · Судьба благой черты в финале', head:['Вариант','Описание','Примеры'], rows:[
+        ['Вспыхивает','В момент Падения черта проявляется в последний раз','Гумберт: признание в любви; Ричард: страх'],
+        ['Извращается','В момент Триумфа черта становится инструментом зла','Джо: любовь к книгам → манипуляция новой жертвой'],
+        ['Исчезает','В момент Окаменения черта угасает','Дориан: красота → уродство'],
+        ['Сливается с Зеркалом','Черта разделяется с Зеркалом','Ганнибал и Уилл: эстетика становится общей'],
+      ]},
+    ]
+  },
+];
+
+const archetypes = [
+  {name:'Трагический злодей', axes:'Рефлексия 7-8 · Зеркало вынужденное · Финал — Падение', examples:'Макбет, Раскольников, Барри'},
+  {name:'Хладнокровный хищник', axes:'Рефлексия 0-2 · Маска Клинициста · Финал — Триумф', examples:'Луи Блум, Бейтман, Джо Голдберг'},
+  {name:'Эстет-разрушитель', axes:'Маска Соблазнителя · Зов Эстетический · Финал — Окаменение', examples:'Дориан, Ганнибал, Гумберт'},
+  {name:'Идеолог', axes:'Рефлексия 9-10 · Масштаб Макро · Маска Клинициста/Эстета', examples:'Ауэ, Судья Холден, Ричард III'},
+  {name:'Социальный монстр', axes:'Роль общества 8-10 · Маска Ненадёжной реальности', examples:'Артур Флек, Алекс'},
+  {name:'Паразит-мимик', axes:'Интеграция — Скрытый паразит · Маска Лицедея · Финал — Триумф', examples:'Рипли, Уолтер (до финала)'},
+  {name:'Заразитель', axes:'Масштаб — Заражение · Зеркало — Слияние', examples:'Ганнибал, Судья Холден, Уолтер → Джесси'},
+];
+
+const matrixAxesHead = ['№','Произведение','Рефл.','Общ.','Жертва','Маска','Комп.','Масштаб','Интегр.','Финал','Благая черта'];
+const matrixAxesRows = [
+  [1,'Лолита',8,2,'Искаж. любовь','Соблазнитель',9,'Микро','Паразит','Падение','Любовь, дар'],
+  [2,'Коллекционер',3,1,'Объективация','Оправдывающийся',4,'Микро','Изгой','Окаменение','Забота (извращ.)'],
+  [3,'Ричард III',6,4,'Зеркало','Соблазнитель',9,'Макро','Монстр на виду','Падение','Остроумие, честность'],
+  [4,'Заводной апельсин','1→4',6,'Объективация','Соблазнитель',7,'Социальный','Монстр на виду','Триумф','Бетховен'],
+  [5,'Дориан Грей',5,3,'Объективация','Соблазнитель',8,'Социальный','Паразит','Окаменение','Красота, дружба (нач.)'],
+  [6,'Парфюмер',1,2,'Абс. объективация','Клиницист',8,'Социальный','Изгой','Падение','Гениальность'],
+  [7,'Мр Рипли',4,5,'Зеркало','Лицедей',7,'Социальный','Паразит','Триумф','Уязвимость'],
+  [8,'Благоволительницы',7,9,'Объективация','Клиницист',8,'Макро','Системный','Окаменение','Интеллект, музыка'],
+  [9,'Убийца внутри нас',5,3,'Объективация','Оправдывающийся',6,'Микро','Паразит','Падение','Вежливость (маска)'],
+  [10,'Ты',2,2,'Искаж. любовь','Оправдывающийся',5,'Микро','Паразит','Триумф','Любовь к книгам'],
+  [11,'Во все тяжкие','6→9',4,'Объективация','Лицедей',9,'Соц.→Макро','Паразит→Монстр','Простр. окамен.','Семья (нач.), гений'],
+  [12,'Стрингер',1,7,'Абс. объективация','Клиницист',3,'Социальный','Паразит→Монстр','Триумф','Отсутствует'],
+  [13,'Джокер',3,10,'Случайная','Ненадёжн. реальность',4,'Соц.→Макро','Изгой→Монстр','Двусмысл. триумф','Мать, желание смешить'],
+  [14,'Нефть',4,5,'Объективация','Клиницист',8,'Макро','Паразит→Изгой','Простр. окамен.','Трудолюбие, Г.У. (нач.)'],
+  [15,'Барри',7,4,'Объективация','Оправдывающийся',7,'Микро→Соц.','Паразит','Падение','Желание быть хорошим'],
+  [16,'Ганнибал',9,2,'Объективация + Зеркало','Соблазнитель',10,'Заражение','Системный','Эстет. слияние','Забота об Уилле, эстетика'],
+];
+
+const matrixStagesHead = ['№','Произведение','Этап 1: Дефицит','Этап 2: Зов','Этап 3: Горизонт','Этап 4: Лабиринт','Этап 5: Зеркало','Этап 6: Финал'];
+const matrixStagesRows = [
+  [1,'Лолита','Травма','Классический','Попустительство','Лжи','Вынужденное','Падение'],
+  [2,'Коллекционер','Травма','Классический','Холодный расчёт','Насилия/Изоляции','Вынужденное','Окаменение'],
+  [3,'Ричард III','Травма','Классический','Делегирование','Власти','Вынужденное','Падение'],
+  [4,'Заводной апельсин','Изнач. пустота','Классический','Аффект','Насилия','Вынужденное','Триумф'],
+  [5,'Дориан Грей','Философский','Эстетический','Попустительство','Лжи','Визуальное','Окаменение'],
+  [6,'Парфюмер','Травма','Эстетический','Холодный расчёт','Насилия','Вынужденное','Падение'],
+  [7,'Мр Рипли','Травма','Классический','Холодный расчёт','Лжи','Вынужденное','Триумф'],
+  [8,'Благоволительницы','Философский','Корпоративный','Холодный расчёт','Власти','Вынужденное','Окаменение'],
+  [9,'Убийца внутри нас','Травма','Классический','Холодный расчёт','Лжи','Внутреннее','Падение'],
+  [10,'Ты','Травма','Классический','Холодный расчёт','Лжи/Насилия','Внешнее','Триумф'],
+  [11,'Во все тяжкие','Травма','Расщеплённый','Холодный расчёт','Лжи→Насилия','Внутреннее','Простр. окамен.'],
+  [12,'Стрингер','Изнач. пустота','Корпоративный','Холодный расчёт','Насилия','Вынужденное','Триумф'],
+  [13,'Джокер','Травма','Классический','Аффект','Псевдо-Искупление','Вынужденное','Двусмысл. триумф'],
+  [14,'Нефть','Травма','Классический','Попустительство','Власти','Вынужденное','Простр. окамен.'],
+  [15,'Барри','Травма','Классический','Холодный расчёт','Псевдо-Искупление','Внешнее','Падение'],
+  [16,'Ганнибал','Травма','Эстетический','Делегирование','Лжи/Насилия','Слияние','Эстет. слияние'],
+];
+
+const matrixDetailedHead = ['№','Произведение','Этап 1: Дефицит','Этап 2: Зов','Этап 3: Горизонт','Этап 4: Лабиринт','Этап 5: Зеркало','Этап 6: Финал'];
+const matrixDetailedRows = [
+  [1,'Лолита','Смерть Анны в детстве оставляет Гумберта с застывшим, невзрослеющим желанием.','Он встречает Долорес и объявляет наваждение «истинной любовью», подменяя растление поэзией.','Смерть Шарлотты — Гумберт не убивает её сам, но с облегчением принимает случившееся и получает доступ к Лолите.','Он опутывает девочку ложью, переездами и запугиванием, пряча преступление под видом заботливого отчима.','Побег Лолиты и её письмо годы спустя разбивают иллюзию «взаимной любви».','Гумберт убивает Куильти и умирает в тюрьме, оставляя после себя рукопись как единственную форму раскаяния.'],
+  [2,'Коллекционер','Хроническое одиночество и социальная униженность Клегга находят выход в фантазии обладания.','Выигрыш в лотерею даёт ему средства превратить фантазию о Миранде в план.','Он хладнокровно похищает Миранду и запирает её в подвале загородного дома.','Клегг выстраивает ритуал «ухаживания» в неволе, путая заботу с контролем и насилием.','Дневник Миранды — единственное, что показывает читателю (но не Клеггу) весь ужас происходящего.','Миранда умирает от болезни, которую Клегг не смог или не захотел вовремя вылечить; он начинает присматривать новую жертву.'],
+  [3,'Ричард III','Физический недуг и отвержение с рождения формируют у Ричарда философию тотального цинизма.','Он открыто ставит целью английский трон и обращается к зрителю как к сообщнику интриги.','Ричард делегирует убийство малолетних принцев наёмным убийцам, не пятная руки лично.','Он методично устраняет всех претендентов и союзников через захват институтов власти.','Ночь перед битвой при Босворте: призраки жертв являются ему и лишают уверенности в себе.','Ричард гибнет в бою, а трон переходит к Ричмонду — баланс восстановлен через историческую справедливость.'],
+  [4,'Заводной апельсин','У Алекса нет травмы — жестокость является его естественным, ничем не спровоцированным состоянием.','Его «миссией» становится эстетизированное насилие под музыку Бетховена — искусство как повод для жестокости.','Убийство писательницы совершено в аффекте, посреди ограбления, без всякого расчёта.','Эскалация идёт через рост жестокости банды, пока государство не хватает Алекса и не подвергает его «лечению» по методу Людовико.','Алекс сталкивается с тем, что его лишили самой способности выбирать зло или добро — и это оказывается страшнее прежней жестокости.','Государство откатывает «лечение», и Алекс возвращается к себе прежнему — победа без раскаяния, институты оказываются не менее чудовищны, чем он сам.'],
+  [5,'Дориан Грей','Идеи лорда Генри о культе молодости и красоты разрушают прежние моральные ориентиры Дориана.','Он желает вечной молодости, а расплату за неё незаметно берёт на себя портрет.','Дориан не убивает Сибиллу лично — его холодный разрыв доводит её до самоубийства, и он лишь равнодушно узнаёт об этом.','Он выстраивает годы двойной жизни, пряча всё уродство за фасадом неизменной красоты.','Не слова, а сам портрет — стареющий, гниющий образ — раз за разом показывает Дориану, во что он превратился.','Дориан пытается уничтожить портрет и вместо этого убивает себя: тело принимает всё уродство и возраст, которые нёс холст.'],
+  [6,'Парфюмер','Рождение среди зловония парижского рынка и отсутствие собственного запаха делают Гренуя изгоем с рождения.','Он одержим идеей создать абсолютный, совершенный аромат — цель, для которой люди становятся сырьём.','Первое убийство девушки происходит почти случайно, но Гренуй хладнокровно фиксирует, как теряет её аромат навсегда.','Он методично охотится за ароматом ещё двенадцати девушек, оттачивая ремесло парфюмера как прикрытие.','Не встречая внешнего противника, Гренуй сталкивается с толпой на площади казни — своим собственным созданием, которое не может контролировать.','Толпа, одурманенная его духами, разрывает и съедает Гренуя — гений уничтожен тем самым искусством, которое должно было дать ему власть.'],
+  [7,'Мр Рипли','Бедность и социальная незначительность заставляют Тома жаждать чужой, более красивой жизни.','Поездка в Италию к Дикки Гринлифу превращается в одержимость его образом жизни и статусом.','Том хладнокровно убивает Дикки на лодке, когда тот отказывается принять его в свою жизнь.','Он выстраивает многослойную ложь, поочерёдно выдавая себя то за Дикки, то за себя самого, устраняя каждого, кто приближается к правде.','Подозрения Мардж и полиции подводят его вплотную к разоблачению, но не разрушают маску до конца.','Тому удаётся уйти от правосудия — триумф без раскаяния, хотя цена — постоянный страх разоблачения.'],
+  [8,'Благоволительницы','Интеллектуальный нигилизм и холодная бюрократическая логика формируют мировоззрение офицера СС Ауэ.','Его «зов» замаскирован под язык службы и долга — исполнение приказов как форма самореализации.','Ауэ хладнокровно участвует в первых расстрелах на Восточном фронте, рационализируя их как техническую задачу.','Он поднимается по бюрократической лестнице Холокоста, устраняя конкурентов и сомнения языком эффективности.','Военный крах и распад собственного тела и психики вынужденно показывают Ауэ пустоту его философии.','Он выживает физически, но остаётся заморожен в чудовищной рациональности — окаменение, а не искупление.'],
+  [9,'Убийца внутри нас','Детская травма (насилие в семье) прячется за маской образцового провинциального шерифа Лу Форда.','Его «миссия» — поддерживать образ вежливого блюстителя порядка, скрывающий психопатию.','Первое убийство совершено с холодным расчётом, замаскированным под несчастный случай.','Форд методично устраняет свидетелей и подозреваемых, пряча счёт жертв за респектабельностью.','Внутренний голос рассказчика сам, шаг за шагом, обнажает читателю чудовище под вежливостью.','Форд гибнет в перестрелке при разоблачении — падение, баланс восстановлен ценой множества жизней.'],
+  [10,'Ты','Детская травма и одержимость контролем маскируются под романтическую заботу Джо Голдберга.','Влюблённость в Гвиневеру Бек формулируется как забота о «правильном» партнёре для неё.','Джо хладнокровно устраняет её бывшего парня, представляя это как защиту, а не убийство.','Он выстраивает лабиринт лжи и насилия вокруг Бек, устраняя всех, кто мог бы её предупредить.','Бек находит тайник с вещами прошлых жертв Джо — зеркало приходит извне, но слишком поздно для неё самой.','Джо убивает Бек и уходит от правосудия, находя новую цель для «любви» — триумф Тени без всякого баланса.'],
+];
+
+/* Icons: minimalist single-color line "sigils", none copied from any real cover/poster */
+const ICONS = {
+  lolita:`<circle cx="12" cy="9" r="3.2"/><path d="M12 12.2 L12 19"/><path d="M8 15 C6 17 6 20 8 21"/><path d="M16 15 C18 17 18 20 16 21"/><path d="M9 6 C7 4 7 2 9 1.5"/>`,
+  collector:`<rect x="6" y="8" width="12" height="13" rx="1"/><path d="M9 8 V5 C9 3.5 10 2.5 12 2.5 C14 2.5 15 3.5 15 5 V8"/><path d="M9 13 L15 13" stroke-dasharray="1 2"/><path d="M12 11 L12 18" stroke-dasharray="1 2"/>`,
+  richard:`<path d="M4 16 L7 6 L10 13 L12 5 L14 13 L17 6 L20 16 Z"/><path d="M4 16 L20 16 L20 19 L4 19 Z"/><path d="M11 9 L13 9" />`,
+  clockwork:`<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.4"/><path d="M12 4.5 L12 7"/><path d="M12 17 L12 19.5"/><path d="M4.5 12 L7 12"/><path d="M17 12 L19.5 12"/><path d="M7 7 L9 9"/><path d="M15 15 L17 17"/>`,
+  dorian:`<rect x="5" y="4" width="14" height="18" rx="7" />
+          <path d="M9 22 L9 18" /><path d="M15 22 L15 18" />
+          <path d="M8 11 C9 9 15 9 16 11" stroke-dasharray="1 1.6"/>`,
+  perfumer:`<path d="M10 2 L14 2 L14 5 L10 5 Z"/><path d="M9 5 L15 5 L16 8 L16 21 L8 21 L8 8 Z"/><path d="M8 12 L16 12"/>`,
+  ripley:`<path d="M4 10 C4 6 8 4 12 4 C16 4 20 6 20 10 C20 15 16 17 12 17 C8 17 4 15 4 10 Z"/>
+          <circle cx="9" cy="10" r="1.1" fill="var(--brass-bright)" stroke="none"/><circle cx="15" cy="10" r="1.1" fill="var(--brass-bright)" stroke="none"/>
+          <path d="M9 14 C10.5 15.5 13.5 15.5 15 14"/>`,
+  auehole:`<path d="M12 2 L18 6 L18 13 C18 18 15 21 12 22 C9 21 6 18 6 13 L6 6 Z"/><path d="M9 11 L15 11"/><path d="M12 8 L12 14"/>`,
+  killer:`<path d="M12 2 L15 8 L21 9 L16.5 13.5 L18 20 L12 16.5 L6 20 L7.5 13.5 L3 9 L9 8 Z"/><path d="M4 4 L20 20" stroke-dasharray="2 2"/>`,
+  you:`<path d="M4 6 C4 4 6 3 12 3 C18 3 20 4 20 6 L20 19 C20 17.5 18 17 12 17 C6 17 4 17.5 4 19 Z"/><path d="M12 3 L12 17"/><circle cx="12" cy="10" r="1.6"/>`,
+  breaking:`<path d="M12 2 L20 6.5 L20 15.5 L12 20 L4 15.5 L4 6.5 Z"/><path d="M12 2 L12 20" stroke-dasharray="1 2"/><path d="M4 6.5 L20 6.5"/>`,
+  nightcrawler:`<rect x="5" y="8" width="14" height="10" rx="1"/><circle cx="12" cy="13" r="3.4"/><path d="M9 8 L10.5 5.5 L13.5 5.5 L15 8"/><circle cx="16.3" cy="10.3" r="0.6" fill="var(--brass-bright)" stroke="none"/>`,
+  joker:`<circle cx="12" cy="12" r="8"/><path d="M8.5 9.5 L9.5 10.5" /><path d="M15.5 9.5 L14.5 10.5"/><path d="M7.5 14 C9 17.5 15 17.5 16.5 14" stroke-dasharray="1.4 1.4"/>`,
+  oil:`<path d="M12 2 C16 8 18 12 18 15.5 C18 19.5 15.3 22 12 22 C8.7 22 6 19.5 6 15.5 C6 12 8 8 12 2 Z"/><path d="M12 12 L12 18" stroke-dasharray="1 1.6"/>`,
+  barry:`<path d="M5 4 C5 3 6 3 6.5 4 L9 9 C9.5 10 9 11 8 11 L4 11 C3 11 2.5 10 3 9 Z"/><path d="M12 15 L12 3" /><path d="M9 4 L15 4"/><path d="M9 22 L9 17 C9 15 10 14 12 14 C14 14 15 15 15 17 L15 22"/>`,
+  hannibal:`<path d="M6 3 L6 14 C6 17 8 19 9 21" /><path d="M9 3 L9 13"/><path d="M18 3 L14 3 L14 10 C14 12 15 12 15 14 L15 21"/><path d="M6 8 L9 8"/>`,
+  americanpsycho:`<circle cx="12" cy="9" r="6.5"/><path d="M12 15.5 L12 21"/><path d="M8.5 21 L15.5 21"/><path d="M9 6.5 C10 5 14 5 15 6.5" stroke-dasharray="1 1.4"/>`,
+  gonegirl:`<rect x="5" y="4" width="14" height="16" rx="1"/><path d="M9 9 C9 7 15 7 15 9 C15 11 12 12 12 14 C12 12 9 11 9 9 Z" stroke-dasharray="1 1.2"/>`,
+  crimepunishment:`<path d="M12 3 L12 21"/><path d="M8 3 C8 1.5 16 1.5 16 3 L16 7 C16 8.5 8 8.5 8 7 Z"/>`,
+  aptpupil:`<path d="M9 4 C5 4 4 9 6 12 C4 15 6 20 10 19 C13 18 13 15 13 13"/><circle cx="14" cy="9" r="1" fill="var(--brass-bright)" stroke="none"/>`,
+  tampa:`<circle cx="8" cy="12" r="3.2"/><circle cx="16" cy="12" r="3.2"/><path d="M11.2 12 L12.8 12"/><path d="M4.8 11 L2 9"/><path d="M19.2 11 L22 9"/>`,
+  macbeth:`<path d="M5 15 L7 7 L10 12 L12 6 L14 12 L17 7 L19 15 Z"/><path d="M5 15 L19 15 L19 17.5 L5 17.5 Z"/><path d="M12 17.5 C12 19 13 20 12 21.5 C11 20 12 19 12 17.5 Z" fill="var(--blood-bright)" stroke="none"/>`,
+  bloodmeridian:`<circle cx="12" cy="12" r="7"/><path d="M12 5 L12 3"/><path d="M12 21 L12 19"/><path d="M5 12 L3 12"/><path d="M21 12 L19 12"/><path d="M7 7 L5.5 5.5"/><path d="M17 17 L18.5 18.5"/><path d="M7 17 L5.5 18.5"/><path d="M17 7 L18.5 5.5"/>`,
+  kissbeforedying:`<rect x="4" y="3" width="16" height="18" rx="0.5"/><path d="M4 9 L20 9"/><path d="M12 3 L12 21"/><path d="M9 12 L15 18" stroke-dasharray="1 1.4"/>`,
+};
+
+const works = [
+  {key:'lolita', title:'Лолита', type:'Книга', author:'Владимир Набоков, 1955', archetype:'Эстет-разрушитель',
+   syn:'Гумберт Гумберт превращает искажённую любовь в изощрённое самооправдание — маска Соблазнителя такой силы, что читателя приходится удерживать от сочувствия сознательным усилием.',
+   tags:['Классическая травма','Соблазнитель','Падение'],
+   detail:{deficit:'Классическая травма (смерть Анны)', call:'Классический (Лолита)', horizon:'Попустительство (Шарлотта)', maze:'Лабиринт лжи', mirror:'Вынужденное', finale:'Падение', trait:'Любовь, дар слова'}},
+  {key:'collector', title:'Коллекционер', type:'Книга', author:'Джон Фаулз, 1963', archetype:'—',
+   syn:'Клегг коллекционирует бабочек, а затем — человека. Забота как форма контроля: самый камерный и тревожный из лабиринтов насилия в подборке.',
+   tags:['Классическая травма','Оправдывающийся','Окаменение'],
+   detail:{deficit:'Классическая травма (одиночество)', call:'Классический (Миранда)', horizon:'Холодный расчёт', maze:'Насилия / Изоляции', mirror:'Вынужденное (дневник)', finale:'Окаменение', trait:'Забота (извращённая)'}},
+  {key:'richard', title:'Ричард III', type:'Пьеса', author:'Уильям Шекспир, ок. 1593', archetype:'Идеолог',
+   syn:'Открытый монстр, который сам приглашает зрителя в заговор остроумием. Делегирует насилие свите — и падает, когда свита иссякает.',
+   tags:['Философский/травма','Соблазнитель','Падение'],
+   detail:{deficit:'Классическая травма (физический дефект, отвержение)', call:'Классический (власть)', horizon:'Делегирование', maze:'Лабиринт власти', mirror:'Вынужденное (призраки)', finale:'Падение', trait:'Остроумие, интеллектуальная честность'}},
+  {key:'clockwork', title:'Заводной апельсин', type:'Книга / Фильм', author:'Энтони Бёрджесс, 1962 · С. Кубрик, 1971', archetype:'Социальный монстр',
+   syn:'Алекс — изначальная пустота, которую государство пытается «вылечить» и тем самым обнажает собственное лицемерие. Финал — триумф без раскаяния.',
+   tags:['Изначальная пустота','Соблазнитель','Триумф'],
+   detail:{deficit:'Изначальная пустота', call:'Классический (насилие как эстетика)', horizon:'Аффект / Срыв', maze:'Лабиринт насилия', mirror:'Вынужденное', finale:'Триумф Тени', trait:'Бетховен, эстетическая чувствительность'}},
+  {key:'dorian', title:'Портрет Дориана Грея', type:'Книга', author:'Оскар Уайльд, 1890', archetype:'Эстет-разрушитель',
+   syn:'Философский дефицит, посеянный чужими словами, превращает эстетическую жажду в медленное окаменение — портрет несёт вину вместо героя.',
+   tags:['Философский дефицит','Соблазнитель','Окаменение'],
+   detail:{deficit:'Философский (идея лорда Генри)', call:'Эстетический', horizon:'Попустительство (Сибилла)', maze:'Лабиринт лжи', mirror:'Визуальное (портрет)', finale:'Окаменение', trait:'Красота, дружба (в начале)'}},
+  {key:'perfumer', title:'Парфюмер', type:'Книга', author:'Патрик Зюскинд, 1985', archetype:'Заразитель',
+   syn:'Гренуй не рефлексирует — он преследует идеальный аромат так же безлично, как дышит. Абсолютная объективация людей как сырья для гениального творения.',
+   tags:['Классическая травма','Клиницист','Падение'],
+   detail:{deficit:'Классическая травма (рождение среди отбросов)', call:'Эстетический (аромат)', horizon:'Холодный расчёт', maze:'Лабиринт насилия', mirror:'Вынужденное (толпа)', finale:'Падение', trait:'Гениальность, обоняние'}},
+  {key:'ripley', title:'Мистер Рипли', type:'Книга / Фильм', author:'Патриция Хайсмит, 1955', archetype:'Паразит-мимик',
+   syn:'Том Рипли примеряет чужую жизнь как костюм. Лабиринт лжи растёт вместе с трупами, но маска Лицедея держится до самого триумфа.',
+   tags:['Классическая травма','Лицедей','Триумф'],
+   detail:{deficit:'Классическая травма', call:'Классический (чужая жизнь Дикки)', horizon:'Холодный расчёт', maze:'Лабиринт лжи', mirror:'Вынужденное', finale:'Триумф Тени', trait:'Уязвимость'}},
+  {key:'auehole', title:'Благоволительницы', type:'Книга', author:'Джонатан Литтелл, 2006', archetype:'Идеолог',
+   syn:'Офицер СС Максимилиан Ауэ рационализирует Холокост языком бюрократии и философии — интеллект без раскаяния, общество как соавтор зла.',
+   tags:['Философский дефицит','Клиницист','Окаменение'],
+   detail:{deficit:'Философский (нигилизм)', call:'Корпоративный (язык службы)', horizon:'Холодный расчёт', maze:'Лабиринт власти', mirror:'Вынужденное', finale:'Окаменение', trait:'Интеллект, музыка'}},
+  {key:'killer', title:'Убийца внутри меня', type:'Книга', author:'Джим Томпсон, 1952', archetype:'—',
+   syn:'Шериф-психопат прячет насилие за маской провинциальной вежливости — оправдывающийся голос, который читатель разоблачает раньше, чем герои книги.',
+   tags:['Классическая травма','Оправдывающийся','Падение'],
+   detail:{deficit:'Классическая травма', call:'Классический', horizon:'Холодный расчёт', maze:'Лабиринт лжи', mirror:'Внутреннее', finale:'Падение', trait:'Вежливость (маска)'}},
+  {key:'you', title:'Ты', type:'Книга / Сериал', author:'Кэролайн Кепнес, 2014', archetype:'Паразит-мимик',
+   syn:'Джо Голдберг превращает любовь к книгам в инструмент слежки и контроля — искажённая любовь, поданная его собственным обаятельным голосом.',
+   tags:['Классическая травма','Оправдывающийся','Триумф'],
+   detail:{deficit:'Классическая травма', call:'Классический (объект любви)', horizon:'Холодный расчёт', maze:'Лжи / Насилия', mirror:'Внешнее (тайник)', finale:'Триумф Тени', trait:'Любовь к книгам'}},
+  {key:'breaking', title:'Во все тяжкие', type:'Сериал', author:'создатель Винс Гиллиган, 2008–2013', archetype:'Паразит-мимик → Идеолог',
+   syn:'Уолтер Уайт проходит расщеплённый Зов «для семьи / для себя» до конца — псевдо-искупление рушится, и герой признаётся: «Я делал это для себя».',
+   tags:['Расщеплённый зов','Лицедей','Простр. окаменение'],
+   detail:{deficit:'Классическая травма (унижение, диагноз)', call:'Расщеплённый', horizon:'Холодный расчёт', maze:'Лжи → Насилия', mirror:'Внутреннее', finale:'Пространственное окаменение', trait:'Семья (в начале), гений химии'}},
+  {key:'nightcrawler', title:'Стрингер', type:'Фильм', author:'реж. Дэн Гилрой, 2014', archetype:'Хладнокровный хищник',
+   syn:'Луи Блум говорит языком мотивационных курсов, но это язык хищника без единой благой черты — редкий случай полного отсутствия когнитивного якоря.',
+   tags:['Изначальная пустота','Клиницист','Триумф'],
+   detail:{deficit:'Изначальная пустота', call:'Корпоративный', horizon:'Холодный расчёт', maze:'Лабиринт насилия', mirror:'Вынужденное', finale:'Триумф Тени', trait:'Отсутствует'}},
+  {key:'joker', title:'Джокер', type:'Фильм', author:'реж. Тодд Филлипс, 2019', archetype:'Социальный монстр',
+   syn:'Артур Флек — редкий случай, где общество названо соавтором зла напрямую. Псевдо-искупление через стендап рушится на глазах у города.',
+   tags:['Роль общества 10/10','Ненадёжная реальность','Двусмысл. триумф'],
+   detail:{deficit:'Классическая травма (насилие, безумие матери)', call:'Классический (желание смешить)', horizon:'Аффект / Срыв', maze:'Псевдо-Искупление', mirror:'Вынужденное', finale:'Двусмысленный триумф', trait:'Любовь к матери, желание смешить'}},
+  {key:'oil', title:'Нефть', type:'Фильм', author:'реж. Пол Т. Андерсон, 2007', archetype:'Идеолог',
+   syn:'Дэниел Плейнвью строит лабиринт власти через нефть и веру — и побеждает всех, чтобы остаться заперт в собственном триумфе, в подвале для боулинга.',
+   tags:['Классическая травма','Клиницист','Простр. окаменение'],
+   detail:{deficit:'Классическая травма', call:'Классический (амбиция)', horizon:'Попустительство', maze:'Лабиринт власти', mirror:'Вынужденное', finale:'Пространственное окаменение', trait:'Трудолюбие, ранняя привязанность к Г.У.'}},
+  {key:'barry', title:'Барри', type:'Сериал', author:'создатели Билл Хейдер, Алек Берг, 2018–2023', archetype:'Трагический злодей',
+   syn:'Наёмный убийца, ищущий искупление на актёрских курсах. Псевдо-искупление здесь буквально ремесло — театр, — что не спасает от финального падения.',
+   tags:['Классическая травма','Оправдывающийся','Падение'],
+   detail:{deficit:'Классическая травма (война)', call:'Классический', horizon:'Холодный расчёт', maze:'Псевдо-Искупление', mirror:'Внешнее', finale:'Падение', trait:'Желание быть хорошим'}},
+  {key:'hannibal', title:'Ганнибал', type:'Сериал / Книги', author:'по мотивам Т. Харриса; шоураннер Брайан Фуллер, 2013–2015', archetype:'Заразитель / Эстет-разрушитель',
+   syn:'Ганнибал Лектер — вершина рефлексии без раскаяния: забота как поглощение, эстетика как оружие. Зеркало (Уилл Грэм) в финале сливается с Тенью, а не разбивает её.',
+   tags:['Эстетический зов','Соблазнитель','Эстет. слияние'],
+   detail:{deficit:'Классическая травма', call:'Эстетический', horizon:'Делегирование', maze:'Лжи / Насилия', mirror:'Слияние', finale:'Эстетическое слияние', trait:'Забота об Уилле, эстетика'}},
+
+  /* --- Дополнительно упоминаемые в тексте методологии произведения (не входят в ядро из 16) --- */
+  {key:'americanpsycho', core:false, title:'Американский психопат', type:'Книга', author:'Брет Истон Эллис, 1991', archetype:'Хладнокровный хищник',
+   syn:'Патрик Бейтман — эталон Оси 1 на нуле: рефлексии нет, а трудолюбие и вкус к моде поданы как пустая пародия. Используется в методологии как контрастный пример к Гумберту.',
+   tags:['Изначальная пустота','Хладнокровный','Без благой черты']},
+  {key:'gonegirl', core:false, title:'Исчезнувшая', type:'Книга', author:'Гиллиан Флинн, 2012', archetype:'Паразит-мимик',
+   syn:'Эми Данн строит лабиринт лжи такой сложности, что жертвой и режиссёром оказывается одновременно. Упоминается как пример «Лабиринта лжи» наравне с Рипли и Уолтером Уайтом.',
+   tags:['Лабиринт лжи','Триумф Тени']},
+  {key:'crimepunishment', core:false, title:'Преступление и наказание', type:'Книга', author:'Фёдор Достоевский, 1866', archetype:'Трагический злодей',
+   syn:'Раскольников и его «теория» — хрестоматийный пример философского дефицита: интеллектуальная конструкция, разрушающая моральные ориентиры до первого удара топором.',
+   tags:['Философский дефицит','Мучительная рефлексия']},
+  {key:'aptpupil', core:false, title:'Способный ученик', type:'Повесть', author:'Стивен Кинг, 1982', archetype:'Заразитель',
+   syn:'История о том, как один голос заражает другого: подросток, зачарованный рассказами бывшего нацистского преступника, сам постепенно становится Тенью. Пример из категории «Заражение».',
+   tags:['Заражение','Философский дефицит']},
+  {key:'tampa', core:false, title:'Тампа', type:'Книга', author:'Алисса Наттинг, 2013', archetype:'Хладнокровный хищник',
+   syn:'Учительница, чья абсолютная объективация подростков описана тем же клиническим, лишённым эмпатии тоном, что у Патрика Бейтмана или Гренуя — упоминается как пример этого типа маски вне мужского канона злодея.',
+   tags:['Абсолютная объективация','Хладнокровный']},
+  {key:'macbeth', core:false, title:'Макбет', type:'Пьеса', author:'Уильям Шекспир, ок. 1606', archetype:'Трагический злодей',
+   syn:'Классический образец мучительной рефлексии: пророчество как Ложный Зов, убийство короля как Моральный Горизонт и безумие леди Макбет как не-фикциональное Зеркало, от которого нельзя отвернуться.',
+   tags:['Мучительная рефлексия','Падение']},
+  {key:'bloodmeridian', core:false, title:'Кровавый меридиан', type:'Книга', author:'Кормак Маккарти, 1985', archetype:'Идеолог',
+   syn:'Судья Холден — предельная точка интеллектуальной рефлексии без раскаяния: зло как метафизика и философия войны, а не патология. Упоминается рядом с Ауэ и Ганнибалом на Оси 1.',
+   tags:['Философский дефицит','Макро','Заражение']},
+  {key:'kissbeforedying', core:false, title:'Жажда смерти', type:'Книга', author:'Айра Левин, 1953', archetype:'Паразит-мимик',
+   syn:'Ранний и во многом образцовый «скрытый паразит»: расчётливый герой последовательно устраняет женщин ради социального восхождения, оставаясь безупречно обаятельным для окружающих.',
+   tags:['Скрытый паразит','Холодный расчёт']},
+];
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!==undefined)e.innerHTML=html; return e; }
+
+// ---- Tabs ----
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ---- Stages ----
+function renderTable(head, rows, exClass){
+  let h = '<table class="data"><thead><tr>' + head.map(x=>`<th>${x}</th>`).join('') + '</tr></thead><tbody>';
+  rows.forEach(r=>{
+    h += '<tr>' + r.map((c,i)=> i===r.length-1 ? `<td class="ex">${c}</td>` : `<td>${c}</td>`).join('') + '</tr>';
+  });
+  h += '</tbody></table>';
+  return h;
+}
+
+const stepper = document.getElementById('stepper');
+const stageDetails = document.getElementById('stage-details');
+stages.forEach((s,i)=>{
+  const step = el('div','step'+(i===0?' active':''));
+  step.innerHTML = `<span class="step-num">${i+1}</span><span class="step-label">${s.label}</span>`;
+  step.addEventListener('click', ()=>selectStage(i));
+  stepper.appendChild(step);
+
+  const detail = el('div','stage-detail'+(i===0?' active':''), '');
+  let html = `<div class="card"><h3 class="sub-title">${s.title}</h3><p class="essence">${s.essence}</p>`;
+  if(s.extra) html += `<p class="muted" style="font-size:0.9rem; margin-bottom:16px;">${s.extra}</p>`;
+  html += renderTable(s.table.head, s.table.rows);
+  if(s.barryNote) html += `<p class="muted" style="font-size:0.9rem; margin-top:12px;">${s.barryNote}</p>`;
+  if(s.calibreTable){
+    if(s.calibreIntro) html += `<p class="muted" style="font-size:0.9rem; margin-top:18px;">${s.calibreIntro}</p>`;
+    html += `<details style="margin-top:8px;"><summary style="cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--brass-bright); padding:8px 0;">Полная проверка калибра по 16 произведениям</summary>${renderTable(s.calibreTable.head, s.calibreTable.rows)}</details>`;
+    if(s.calibreFinding) html += `<p class="muted" style="font-size:0.88rem; margin-top:10px;">${s.calibreFinding}</p>`;
+  }
+  if(s.table2){
+    html += `<h4 style="font-family:'Unbounded',sans-serif; font-size:0.9rem; color:var(--paper); margin:22px 0 4px;">${s.table2.title}</h4>`;
+    html += renderTable(s.table2.head, s.table2.rows);
+  }
+  if(s.extra2) html += `<p class="muted" style="font-size:0.88rem; margin-top:14px;">${s.extra2}</p>`;
+  if(s.note) html += `<p class="muted" style="font-size:0.88rem; margin-top:14px; padding-top:14px; border-top:1px solid var(--line);">${s.note}</p>`;
+  html += `<div class="q-box"><b>Аналитический вопрос:</b> ${s.question}</div></div>`;
+  detail.innerHTML = html;
+  stageDetails.appendChild(detail);
+});
+function selectStage(i){
+  document.querySelectorAll('.step').forEach((s,idx)=>s.classList.toggle('active', idx===i));
+  document.querySelectorAll('.stage-detail').forEach((d,idx)=>d.classList.toggle('active', idx===i));
+}
+
+// ---- Axes ----
+const axesContainer = document.getElementById('axes-container');
+axes.forEach(a=>{
+  const block = el('div','axis-block');
+  let html = `<div class="axis-head"><span class="axis-idx">${a.idx}</span><h3 class="sub-title" style="margin:0;">${a.title}</h3></div>`;
+  if(a.type==='score'){
+    if(a.intro) html += `<p class="lead" style="margin-bottom:16px;">${a.intro}</p>`;
+    a.rows.forEach(r=>{
+      html += `<div class="score-row"><span class="score-num">${r[0]}</span>
+        <div class="score-track"><div class="score-fill" data-w="${parseScoreWidth(r[0])}"></div></div>
+        <span class="score-desc">${r[1]}</span><span class="score-ex">${r[2]}</span></div>`;
+    });
+    if(a.note) html += `<p class="muted" style="font-size:0.85rem; margin-top:10px;">${a.note}</p>`;
+  } else if(a.type==='table'){
+    html += renderTable(a.head, a.rows);
+    if(a.note) html += `<p class="muted" style="font-size:0.85rem; margin-top:10px;">${a.note}</p>`;
+  } else if(a.type==='nested'){
+    if(a.intro) html += `<p class="lead" style="margin-bottom:16px;">${a.intro}</p>`;
+    a.parts.forEach(p=>{
+      if(p.sub) html += `<h4 style="font-family:'Unbounded',sans-serif; font-size:0.9rem; color:var(--paper); margin:18px 0 6px;">${p.sub}</h4>`;
+      if(p.intro) html += `<p class="muted" style="font-size:0.9rem; margin-bottom:10px;">${p.intro}</p>`;
+      if(p.html){
+        html += p.html;
+      } else if(p.score){
+        p.rows.forEach(r=>{
+          html += `<div class="score-row"><span class="score-num">${r[0]}</span>
+            <div class="score-track"><div class="score-fill" data-w="${parseScoreWidth(r[0])}"></div></div>
+            <span class="score-desc">${r[1]}</span><span class="score-ex">${r[2]}</span></div>`;
+        });
+      } else if(p.head){
+        html += renderTable(p.head, p.rows);
+      }
+      if(p.note) html += `<p class="muted" style="font-size:0.85rem; margin-top:8px;">${p.note}</p>`;
+    });
+  }
+  block.innerHTML = html;
+  axesContainer.appendChild(block);
+});
+function parseScoreWidth(rangeStr){
+  const nums = rangeStr.replace(/[^0-9–-]/g,'').split(/–|-/).map(Number).filter(n=>!isNaN(n));
+  const top = nums.length ? Math.max(...nums) : 10;
+  return Math.min(100, (top/10)*100);
+}
+// animate score bars when axes tab opens
+function animateScores(){
+  document.querySelectorAll('#panel-axes .score-fill').forEach(f=>{
+    f.style.width = f.dataset.w + '%';
+  });
+}
+document.querySelector('[data-tab="axes"]').addEventListener('click', ()=>setTimeout(animateScores, 60));
+
+// ---- Archetypes ----
+const archGrid = document.getElementById('archetype-grid');
+archetypes.forEach(a=>{
+  const c = el('div','archetype-card');
+  c.innerHTML = `<h4>${a.name}</h4><span class="axes-tag">${a.axes}</span><p class="examples">${a.examples}</p>`;
+  archGrid.appendChild(c);
+});
+
+// ---- Matrix ----
+function renderMatrix(target, head, rows){
+  let h = '<table class="matrix"><thead><tr>' + head.map(x=>`<th>${x}</th>`).join('') + '</tr></thead><tbody>';
+  rows.forEach(r=>{
+    h += '<tr>' + r.map((c,i)=> i===1 ? `<td class="work-name">${c}</td>` : `<td>${c}</td>`).join('') + '</tr>';
+  });
+  h += '</tbody></table>';
+  document.getElementById(target).innerHTML = h;
+}
+renderMatrix('matrix-axes', matrixAxesHead, matrixAxesRows);
+renderMatrix('matrix-stages', matrixStagesHead, matrixStagesRows);
+renderMatrix('matrix-detailed', matrixDetailedHead, matrixDetailedRows);
+document.querySelectorAll('.matrix-toggle button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.matrix-toggle button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.matrix-table').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('matrix-'+btn.dataset.mtable).classList.add('active');
+  });
+});
+
+// ---- Works gallery ----
+const worksGrid = document.getElementById('works-grid');
+const worksFilter = document.getElementById('works-filter');
+const allTypes = ['Все', 'Ядро 16', ...Array.from(new Set(works.map(w=>w.type.split(' / ')[0]))), 'Также упоминаются'];
+let activeFilter = 'Все';
+
+function renderWorksFilter(){
+  worksFilter.innerHTML = '';
+  allTypes.forEach(t=>{
+    const b = el('button', t===activeFilter?'active':'', t);
+    b.addEventListener('click', ()=>{ activeFilter=t; renderWorksFilter(); renderWorksGrid(); });
+    worksFilter.appendChild(b);
+  });
+}
+function matchesFilter(w){
+  if(activeFilter==='Все') return true;
+  if(activeFilter==='Ядро 16') return w.core !== false;
+  if(activeFilter==='Также упоминаются') return w.core === false;
+  return w.type.includes(activeFilter);
+}
+function renderWorksGrid(){
+  worksGrid.innerHTML = '';
+  works.filter(matchesFilter).forEach(w=>{
+    const isCore = w.core !== false;
+    const c = el('div','work-card'+(isCore?'':' work-card-extra'));
+    c.innerHTML = `
+      <div class="work-sigil-wrap"><svg viewBox="0 0 24 24">${ICONS[w.key]}</svg></div>
+      <div class="work-body">
+        <span class="work-type">${w.type}${isCore?'':' · упоминается'}</span>
+        <h4 class="work-title">${w.title}</h4>
+        <div class="work-author">${w.author}</div>
+        <p class="work-syn">${w.syn}</p>
+        <div class="work-tags">${w.tags.map(t=>`<span>${t}</span>`).join('')}</div>
+      </div>`;
+    c.addEventListener('click', ()=>openModal(w));
+    worksGrid.appendChild(c);
+  });
+}
+renderWorksFilter();
+renderWorksGrid();
+
+// ---- Modal ----
+const overlay = document.getElementById('modal-overlay');
+const modalContent = document.getElementById('modal-content');
+function openModal(w){
+  const stageListHtml = w.detail ? `
+    <ul class="modal-stage-list">
+      <li><b>1 · Дефицит</b><span>${w.detail.deficit}</span></li>
+      <li><b>2 · Зов</b><span>${w.detail.call}</span></li>
+      <li><b>3 · Горизонт</b><span>${w.detail.horizon}</span></li>
+      <li><b>4 · Лабиринт</b><span>${w.detail.maze}</span></li>
+      <li><b>5 · Зеркало</b><span>${w.detail.mirror}</span></li>
+      <li><b>6 · Финал</b><span>${w.detail.finale}</span></li>
+      <li><b>Благая черта</b><span>${w.detail.trait}</span></li>
+    </ul>` : `<p class="muted" style="font-size:0.85rem; margin-top:14px; padding-top:14px; border-top:1px solid var(--line);">Это произведение упоминается в тексте методологии как дополнительный пример, но не входит в ядро из 16 разобранных по всем этапам и осям произведений.</p>`;
+  modalContent.innerHTML = `
+    <button class="modal-close" id="modal-close">&times;</button>
+    <div class="work-sigil-wrap"><svg viewBox="0 0 24 24">${ICONS[w.key]}</svg></div>
+    <span class="work-type">${w.type} · ${w.archetype}</span>
+    <h3 class="work-title" style="font-size:1.5rem;">${w.title}</h3>
+    <div class="work-author">${w.author}</div>
+    <p class="work-syn" style="font-size:0.95rem;">${w.syn}</p>
+    ${stageListHtml}
+  `;
+  overlay.classList.add('active');
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+}
+function closeModal(){ overlay.classList.remove('active'); }
+overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeModal(); });
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+
+</script>
+</body>
+</html>
