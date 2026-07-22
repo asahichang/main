@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Путь Тени — Методология Асахи Чанга</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void:    #12101a;
+  --void-2:  #1e1b2e;
+  --paper:   #f7f4ef;
+  --paper-2: #efebe3;
+  --paper-3: #e5dfd5;
+  --ink:     #1c1917;
+  --ink-2:   #3d3833;
+  --ink-3:   #6b6560;
+  --ink-4:   #9e9890;
+  --gold:    #b8942a;
+  --gold-2:  #e8c85a;
+  --gold-pale: #f5edcc;
+  --shadow:  #6b1e1e;
+  --shadow-2:#9b2c2c;
+  --shadow-pale: #f5e6e6;
+  --maze:    #3d1a5c;
+  --maze-2:  #6b3a9b;
+  --maze-pale: #ede0f5;
+  --mirror:  #1a3d4a;
+  --mirror-2:#2d6b82;
+  --mirror-pale: #dceef5;
+  --border:  #d8d0c4;
+  --border-2:#c8bfb0;
+  --radius:  10px;
+  --font-d:  'EB Garamond', Georgia, serif;
+  --font-b:  'DM Sans', system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+
+body {
+  font-family: var(--font-b);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--void);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+.header-pattern {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(184,148,42,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,148,42,0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+.header-glow {
+  position: absolute;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(107,30,30,0.25) 0%, transparent 70%);
+  top: -200px; right: -100px;
+  pointer-events: none;
+}
+.header-inner {
+  position: relative;
+  padding: 2.5rem 2.5rem 2.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.header-eyebrow {
+  font-family: var(--font-b);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.header-title {
+  font-family: var(--font-d);
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--paper);
+  margin-bottom: 4px;
+}
+.header-title em {
+  font-style: italic;
+  color: var(--gold-2);
+}
+.header-sub {
+  font-family: var(--font-d);
+  font-size: 1rem;
+  font-style: italic;
+  color: rgba(247,244,239,0.45);
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.02em;
+}
+.header-levels {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.hlevel {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: rgba(247,244,239,0.55);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
+.hlevel-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ld-shadow { background: var(--shadow-2); }
+.ld-maze   { background: var(--maze-2); }
+.ld-mirror { background: var(--mirror-2); }
+
+/* ── NAV ── */
+.nav {
+  background: var(--void-2);
+  border-bottom: 1px solid rgba(184,148,42,0.2);
+  padding: 0 2.5rem;
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav::-webkit-scrollbar { display: none; }
+.ntab {
+  font-family: var(--font-b);
+  font-size: 13px;
+  font-weight: 400;
+  padding: 13px 18px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(247,244,239,0.4);
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  margin-bottom: -1px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ntab.active {
+  color: var(--gold-2);
+  border-bottom-color: var(--gold);
+  font-weight: 500;
+}
+
+/* ── MAIN ── */
+.main { padding: 2rem 2.5rem; max-width: 1100px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── SYSTEM PAGE ── */
+.sys-intro {
+  font-family: var(--font-d);
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--ink-2);
+  line-height: 1.75;
+  max-width: 660px;
+  margin-bottom: 2rem;
+  padding-left: 1rem;
+  border-left: 3px solid var(--gold);
+}
+.sys-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 2rem;
+}
+.sys-card {
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+}
+.sys-card.sc-shadow { background: var(--shadow-pale); border: 1px solid #e8c4c4; }
+.sys-card.sc-maze   { background: var(--maze-pale);   border: 1px solid #d4c0e8; }
+.sys-card.sc-mirror { background: var(--mirror-pale); border: 1px solid #c0d8e8; }
+.sys-card.sc-rules  { background: var(--paper-2);     border: 1px solid var(--border); }
+.sys-card.sc-gold   { background: var(--gold-pale);   border: 1px solid #e0cc8a; }
+
+.sys-card-num {
+  position: absolute;
+  top: 8px; right: 14px;
+  font-family: var(--font-d);
+  font-size: 3.5rem;
+  font-weight: 400;
+  opacity: 0.1;
+  line-height: 1;
+  pointer-events: none;
+}
+.sys-card-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.sc-shadow .sys-card-label { color: var(--shadow-2); }
+.sc-maze   .sys-card-label { color: var(--maze-2); }
+.sc-mirror .sys-card-label { color: var(--mirror-2); }
+.sc-rules  .sys-card-label { color: var(--ink-3); }
+.sc-gold   .sys-card-label { color: var(--gold); }
+
+.sys-card-title {
+  font-family: var(--font-d);
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.sys-card-desc {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.65;
+}
+.sys-card-items {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sys-card-item {
+  font-size: 12px;
+  color: var(--ink-3);
+  padding: 4px 8px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 5px;
+  line-height: 1.5;
+}
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+.how-card {
+  background: var(--paper-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+}
+.how-icon { font-size: 1.4rem; margin-bottom: 6px; }
+.how-title { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 5px; }
+.how-desc { font-size: 12px; color: var(--ink-3); line-height: 1.6; }
+
+.dark-box {
+  background: var(--void);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+  color: var(--paper);
+}
+.dark-box-title {
+  font-family: var(--font-d);
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--gold-2);
+  margin-bottom: 1rem;
+}
+.dark-items { display: flex; flex-direction: column; gap: 10px; }
+.dark-item {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(247,244,239,0.7);
+  line-height: 1.6;
+}
+.dark-item-icon { color: var(--gold); flex-shrink: 0; }
+
+/* ── CARDS SECTION ── */
+.level-header {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.level-title {
+  font-family: var(--font-d);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+.level-sub {
+  font-family: var(--font-d);
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--ink-3);
+}
+.level-desc {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.65;
+  max-width: 640px;
+  margin-bottom: 1.5rem;
+}
+
+.filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.fpill {
+  font-family: var(--font-b);
+  font-size: 12px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-2);
+  background: white;
+  color: var(--ink-3);
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.fpill.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+}
+
+/* ── CARD ── */
+.ccard {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.3rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.ccard:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.09);
+  transform: translateY(-1px);
+}
+.ccard-stripe {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 4px;
+  border-radius: 10px 0 0 10px;
+}
+.lv1 .ccard-stripe { background: var(--shadow); }
+.lv2 .ccard-stripe { background: var(--maze); }
+.lv3 .ccard-stripe { background: var(--mirror); }
+
+.ccard-watermark {
+  position: absolute;
+  bottom: 4px; right: 12px;
+  font-family: var(--font-d);
+  font-size: 3.5rem;
+  font-weight: 400;
+  color: var(--paper-3);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ccard-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 6px;
+}
+.ccard-num {
+  font-family: var(--font-d);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ink-4);
+  min-width: 24px;
+}
+.ccard-badge {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.badge-solo  { background: #e8f5ee; color: #1a6640; }
+.badge-group { background: #e8ecf5; color: #1a2e66; }
+
+.ccard-axis {
+  font-size: 10px;
+  color: var(--ink-4);
+  margin-left: auto;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.ccard-title {
+  font-family: var(--font-d);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.3;
+  padding-left: 6px;
+}
+.ccard-task {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.65;
+  padding-left: 6px;
+}
+.ccard-question {
+  font-family: var(--font-d);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-3);
+  padding: 8px 10px;
+  background: var(--paper-2);
+  border-radius: 6px;
+  border-left: 3px solid var(--border-2);
+  line-height: 1.6;
+}
+.lv1 .ccard-question { border-left-color: var(--shadow-2); }
+.lv2 .ccard-question { border-left-color: var(--maze-2); }
+.lv3 .ccard-question { border-left-color: var(--mirror-2); }
+
+.ccard-reveals {
+  font-size: 11px;
+  color: var(--ink-4);
+  padding-left: 6px;
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px solid var(--paper-3);
+  line-height: 1.4;
+}
+.ccard-reveals span { color: var(--ink-3); font-weight: 500; }
+
+/* ── ПАМЯТКА ── */
+.memo-box {
+  background: var(--void);
+  border-radius: var(--radius);
+  padding: 2rem 2.25rem;
+  color: var(--paper);
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.memo-box::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(184,148,42,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,148,42,0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.memo-inner { position: relative; }
+.memo-title {
+  font-family: var(--font-d);
+  font-size: 1.5rem;
+  font-style: italic;
+  color: var(--gold-2);
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.02em;
+}
+.memo-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+.memo-col-title {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+.memo-items { display: flex; flex-direction: column; gap: 6px; }
+.memo-item {
+  font-size: 13px;
+  color: rgba(247,244,239,0.7);
+  display: flex;
+  gap: 8px;
+  line-height: 1.5;
+}
+.memo-item-dot { color: var(--gold); flex-shrink: 0; }
+
+.axes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+.acard {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+}
+.acard-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.acard-sub {
+  font-family: var(--font-d);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+/* mobile tweaks */
+@media (max-width: 600px) {
+  .header-inner { padding: 1.75rem 1.25rem 1.5rem; }
+  .nav { padding: 0 1.25rem; }
+  .main { padding: 1.5rem 1.25rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-pattern"></div>
+  <div class="header-glow"></div>
+  <div class="header-inner">
+    <div class="header-eyebrow">Методология Асахи Чанга · Карточная игра для писателей</div>
+    <h1 class="header-title">Путь <em>Тени</em></h1>
+    <div class="header-sub">Анализ злодея-протагониста через практику, а не теорию</div>
+    <div class="header-levels">
+      <div class="hlevel"><div class="hlevel-dot ld-shadow"></div> I: Тень (1–12)</div>
+      <div class="hlevel"><div class="hlevel-dot ld-maze"></div> II: Лабиринт (13–24)</div>
+      <div class="hlevel"><div class="hlevel-dot ld-mirror"></div> III: Зеркало (25–35)</div>
+      <div class="hlevel"><div class="hlevel-dot" style="background:var(--gold)"></div> 35 карточек</div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav" id="main-nav">
+  <button class="ntab active" data-tab="system">Система</button>
+  <button class="ntab" data-tab="l1">I: Тень</button>
+  <button class="ntab" data-tab="l2">II: Лабиринт</button>
+  <button class="ntab" data-tab="l3">III: Зеркало</button>
+  <button class="ntab" data-tab="memo">Памятка</button>
+</div>
+
+<div class="main">
+
+<!-- СИСТЕМА -->
+<div class="section active" id="sec-system">
+  <p class="sys-intro">35 карточек, которые помогают писателю освоить методологию «Пути Тени» через практику. Нет неправильных ответов. Есть только интересные и скучные.</p>
+
+  <div class="sys-grid">
+    <div class="sys-card sc-shadow">
+      <div class="sys-card-num">I</div>
+      <div class="sys-card-label">Уровень I</div>
+      <div class="sys-card-title">Тень</div>
+      <div class="sys-card-desc">Понять анатомию злодея. Из чего он сделан, как устроен его дефицит, маска, масштаб.</div>
+      <div class="sys-card-items">
+        <div class="sys-card-item">Карточки №1–12</div>
+        <div class="sys-card-item">6 этапов · 8 осей · 7 архетипов</div>
+      </div>
+    </div>
+    <div class="sys-card sc-maze">
+      <div class="sys-card-num">II</div>
+      <div class="sys-card-label">Уровень II</div>
+      <div class="sys-card-title">Лабиринт</div>
+      <div class="sys-card-desc">Построить своего злодея и провести его по всем этапам Пути Тени.</div>
+      <div class="sys-card-items">
+        <div class="sys-card-item">Карточки №13–24</div>
+        <div class="sys-card-item">Конструктор · Эстафета · Суд</div>
+      </div>
+    </div>
+    <div class="sys-card sc-mirror">
+      <div class="sys-card-num">III</div>
+      <div class="sys-card-label">Уровень III</div>
+      <div class="sys-card-title">Зеркало</div>
+      <div class="sys-card-desc">Разрушить иллюзии, проверить методологию на прочность, выйти за её пределы.</div>
+      <div class="sys-card-items">
+        <div class="sys-card-item">Карточки №25–35</div>
+        <div class="sys-card-item">Деконструкция · Этика · Ваше зеркало</div>
+      </div>
+    </div>
+    <div class="sys-card sc-gold">
+      <div class="sys-card-num">✍</div>
+      <div class="sys-card-label">Форматы</div>
+      <div class="sys-card-title">Соло и группа</div>
+      <div class="sys-card-desc">Карточки с пометкой ✍️ выполняются самостоятельно. Карточки с пометкой 👥 — совместно или в соревновании.</div>
+      <div class="sys-card-items">
+        <div class="sys-card-item">✍️ Соло — 5–20 минут на карточку</div>
+        <div class="sys-card-item">👥 Группа — 2–5 человек</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="how-grid">
+    <div class="how-card">
+      <div class="how-icon">🃏</div>
+      <div class="how-title">Соло</div>
+      <div class="how-desc">Тяните карточку по порядку или вразнобой. Выполняйте задание письменно, следуйте таймеру.</div>
+    </div>
+    <div class="how-card">
+      <div class="how-icon">🔁</div>
+      <div class="how-title">Группа</div>
+      <div class="how-desc">Тяните карточку по кругу. Задания 👥 — совместно или в соревновании, потом сравниваете.</div>
+    </div>
+    <div class="how-card">
+      <div class="how-icon">⏱</div>
+      <div class="how-title">Что нужно</div>
+      <div class="how-desc">Ручка и бумага (или ноутбук), таймер по желанию. От 10 до 60 минут на сессию.</div>
+    </div>
+    <div class="how-card">
+      <div class="how-icon">🪞</div>
+      <div class="how-title">Правило</div>
+      <div class="how-desc">Нет неправильных ответов. Есть только интересные и скучные. Последняя карточка — не для показа.</div>
+    </div>
+  </div>
+
+  <div class="dark-box">
+    <div class="dark-box-title">Четыре принципа методологии</div>
+    <div class="dark-items">
+      <div class="dark-item"><span class="dark-item-icon">◆</span> Злодей — не отклонение от нормы, а её крайнее выражение.</div>
+      <div class="dark-item"><span class="dark-item-icon">◆</span> Благая черта не делает злодея лучше — она делает его страшнее.</div>
+      <div class="dark-item"><span class="dark-item-icon">◆</span> Маска — не ложь. Маска — это инструмент. Вопрос в том, кто им управляет.</div>
+      <div class="dark-item"><span class="dark-item-icon">◆</span> Мы изучаем зло не чтобы оправдать его, а чтобы узнать его в себе — и не дать ему победить.</div>
+    </div>
+  </div>
+</div>
+
+<!-- УРОВЕНЬ I -->
+<div class="section" id="sec-l1">
+  <div class="level-header">
+    <div class="level-title">Уровень I: Тень</div>
+    <div class="level-sub">Карточки №1–12</div>
+  </div>
+  <p class="level-desc">Цель: понять анатомию злодея. Дефицит, маска, жертва, масштаб, благая черта — из чего сделан человек, который выбирает тьму.</p>
+  <div class="filter-row" data-level="l1">
+    <button class="fpill active" data-filter="all">Все</button>
+    <button class="fpill" data-filter="solo">✍️ Соло</button>
+    <button class="fpill" data-filter="group">👥 Группа</button>
+  </div>
+  <div class="cards-grid" id="grid-l1"></div>
+</div>
+
+<!-- УРОВЕНЬ II -->
+<div class="section" id="sec-l2">
+  <div class="level-header">
+    <div class="level-title">Уровень II: Лабиринт</div>
+    <div class="level-sub">Карточки №13–24</div>
+  </div>
+  <p class="level-desc">Цель: построить своего злодея и провести его по Пути Тени. Зов, лабиринт, противник, псевдо-искупление — каждый этап меняет человека.</p>
+  <div class="filter-row" data-level="l2">
+    <button class="fpill active" data-filter="all">Все</button>
+    <button class="fpill" data-filter="solo">✍️ Соло</button>
+    <button class="fpill" data-filter="group">👥 Группа</button>
+  </div>
+  <div class="cards-grid" id="grid-l2"></div>
+</div>
+
+<!-- УРОВЕНЬ III -->
+<div class="section" id="sec-l3">
+  <div class="level-header">
+    <div class="level-title">Уровень III: Зеркало</div>
+    <div class="level-sub">Карточки №25–35</div>
+  </div>
+  <p class="level-desc">Цель: сломать иллюзии, проверить методологию на прочность, выйти за её пределы. Последняя карточка — только для вас.</p>
+  <div class="filter-row" data-level="l3">
+    <button class="fpill active" data-filter="all">Все</button>
+    <button class="fpill" data-filter="solo">✍️ Соло</button>
+    <button class="fpill" data-filter="group">👥 Группа</button>
+  </div>
+  <div class="cards-grid" id="grid-l3"></div>
+</div>
+
+<!-- ПАМЯТКА -->
+<div class="section" id="sec-memo">
+  <div class="memo-box">
+    <div class="memo-inner">
+      <div class="memo-title">Путь Тени — краткая памятка</div>
+      <div class="memo-cols">
+        <div>
+          <div class="memo-col-title">Уровни</div>
+          <div class="memo-items">
+            <div class="memo-item"><span class="memo-item-dot">I</span>Тень (1–12) — понять анатомию</div>
+            <div class="memo-item"><span class="memo-item-dot">II</span>Лабиринт (13–24) — построить злодея</div>
+            <div class="memo-item"><span class="memo-item-dot">III</span>Зеркало (25–35) — сломать иллюзии</div>
+          </div>
+        </div>
+        <div>
+          <div class="memo-col-title">6 этапов</div>
+          <div class="memo-items">
+            <div class="memo-item"><span class="memo-item-dot">1</span>Дефицит</div>
+            <div class="memo-item"><span class="memo-item-dot">2</span>Зов</div>
+            <div class="memo-item"><span class="memo-item-dot">3</span>Моральный горизонт</div>
+            <div class="memo-item"><span class="memo-item-dot">4</span>Лабиринт</div>
+            <div class="memo-item"><span class="memo-item-dot">5</span>Зеркало</div>
+            <div class="memo-item"><span class="memo-item-dot">6</span>Финал</div>
+          </div>
+        </div>
+        <div>
+          <div class="memo-col-title">7 архетипов</div>
+          <div class="memo-items">
+            <div class="memo-item"><span class="memo-item-dot">◆</span>Трагический</div>
+            <div class="memo-item"><span class="memo-item-dot">◆</span>Хищник</div>
+            <div class="memo-item"><span class="memo-item-dot">◆</span>Эстет</div>
+            <div class="memo-item"><span class="memo-item-dot">◆</span>Идеолог</div>
+            <div class="memo-item"><span class="memo-item-dot">◆</span>Социальный монстр</div>
+            <div class="memo-item"><span class="memo-item-dot">◆</span>Паразит</div>
+            <div class="memo-item"><span class="memo-item-dot">◆</span>Заразитель</div>
+          </div>
+        </div>
+        <div>
+          <div class="memo-col-title">5 финалов</div>
+          <div class="memo-items">
+            <div class="memo-item"><span class="memo-item-dot">→</span>Падение</div>
+            <div class="memo-item"><span class="memo-item-dot">→</span>Триумф</div>
+            <div class="memo-item"><span class="memo-item-dot">→</span>Окаменение</div>
+            <div class="memo-item"><span class="memo-item-dot">→</span>Пространственное окаменение</div>
+            <div class="memo-item"><span class="memo-item-dot">→</span>Эстетическое слияние</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:13px;color:var(--ink-3);margin-bottom:1rem;font-family:var(--font-d);font-style:italic;">8 осей анализа</div>
+  <div class="axes-grid">
+    <div class="acard"><div class="acard-title">Ось 1: Рефлексия</div><div class="acard-sub">Степень самоосознания злодея (0–10)</div></div>
+    <div class="acard"><div class="acard-title">Ось 2: Жертва</div><div class="acard-sub">Тип отношения к жертве: объективация, любовь, зеркало, случайность</div></div>
+    <div class="acard"><div class="acard-title">Ось 3: Маска</div><div class="acard-sub">Голос, импринтинг, вектор обмана, снятие маски</div></div>
+    <div class="acard"><div class="acard-title">Ось 4: Масштаб</div><div class="acard-sub">Микро → Социальный → Макро → Заражение</div></div>
+    <div class="acard"><div class="acard-title">Ось 5: Интеграция</div><div class="acard-sub">Как злодей вписан в общество: монстр на виду, паразит, изгой, системный хищник</div></div>
+    <div class="acard"><div class="acard-title">Ось 6: Общество</div><div class="acard-sub">Роль среды в создании злодея и распределение вины</div></div>
+    <div class="acard"><div class="acard-title">Ось 7: Финал</div><div class="acard-sub">Архетип завершения пути — 5 вариантов</div></div>
+    <div class="acard"><div class="acard-title">Ось 8: Благая черта</div><div class="acard-sub">Единственная подлинная хорошая черта — и её судьба</div></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+const cards = [
+  // ── УРОВЕНЬ I ──
+  { n:1,  lv:'l1', type:'solo',  title:'Три раны',             axis:'Этап 1: Дефицит',
+    task:'Придумайте трёх злодеев: один сломан травмой, один рождён пустым, один сломан идеей. По 3 предложения на каждого.',
+    q:'Кого из них вам сложнее всего ненавидеть? Почему?',
+    reveals:'Этап 1, подтипы дефицита' },
+
+  { n:2,  lv:'l1', type:'group', title:'Меню хищника',          axis:'Ось 2: Жертва',
+    task:'Один называет тип отношения к жертве. Остальные за 2 минуты придумывают сцену первой встречи злодея с жертвой. Голосуете: чья сцена страшнее? Чья — печальнее?',
+    q:'Какой тип отношения оказывается самым неожиданным для аудитории?',
+    reveals:'Ось 2, динамика «хищник–жертва»' },
+
+  { n:3,  lv:'l1', type:'solo',  title:'Два голоса',            axis:'Ось 3: Маска',
+    task:'Один монолог дважды: как злодей говорит с собой (внутренний голос) и как говорит с читателем (нарративная маска).',
+    q:'Что он скрывает от себя? Что скрывает от нас? Совпадают ли эти секреты?',
+    reveals:'Ось 3.3 (вектор обмана), «Голос как оружие»' },
+
+  { n:4,  lv:'l1', type:'group', title:'Шкала совести',         axis:'Ось 1: Рефлексия',
+    task:'Ведущий называет 5 злодеев. Группа вслепую расставляет их на шкале рефлексии от 0 до 10. Вскрываете — у кого совпало? Спорьте.',
+    q:'Почему оценки расходятся? Что это говорит о субъективности?',
+    reveals:'Ось 1, субъективность оценки' },
+
+  { n:5,  lv:'l1', type:'solo',  title:'Одна хорошая вещь',     axis:'Ось 8: Благая черта',
+    task:'Придумайте самого отвратительного злодея. Теперь дайте ему одну подлинно хорошую черту. Не фальшивую. Настоящую. Напишите сцену, где она проявляется.',
+    q:'Стало ли вам сложнее его ненавидеть? Стал ли он страшнее?',
+    reveals:'Ось 8, принцип «Благой черты», когнитивный диссонанс' },
+
+  { n:6,  lv:'l1', type:'group', title:'Угадай архетип',        axis:'7 архетипов',
+    task:'Один игрок показывает архетип пантомимой или тремя словами. Остальные угадывают. Потом каждый за 3 минуты придумывает персонажа этого архетипа.',
+    q:'В чём разница между архетипами на практике — не в теории?',
+    reveals:'7 архетипов, их различия' },
+
+  { n:7,  lv:'l1', type:'solo',  title:'Четыре способа переступить', axis:'Этап 3: Горизонт',
+    task:'Один персонаж, одна жертва. Четыре мини-сцены пересечения горизонта: холодный расчёт / аффект / попустительство / делегирование.',
+    q:'Какой вариант делает его страшнее? Какой — печальнее?',
+    reveals:'Этап 3, варианты прохождения' },
+
+  { n:8,  lv:'l1', type:'group', title:'Радиус взрыва',         axis:'Ось 4: Масштаб',
+    task:'Бросаете кубик: 1–2 микро, 3–4 социальный, 5 макро, 6 заражение. Все пишут один абзац: как злодей этого масштаба завтракает.',
+    q:'Как масштаб меняет язык и детали быта?',
+    reveals:'Ось 4, масштаб в бытовом' },
+
+  { n:9,  lv:'l1', type:'solo',  title:'Четыре комнаты',        axis:'Ось 5: Интеграция',
+    task:'Один злодей, четыре ситуации — по 2 предложения: монстр на виду / скрытый паразит / изгой / системный хищник.',
+    q:'В какой из четырёх комнат он настоящий?',
+    reveals:'Ось 5, множественность масок' },
+
+  { n:10, lv:'l1', type:'group', title:'Примерь маску',          axis:'Ось 3.2: Импринтинг',
+    task:'Каждый описывает злодея так, чтобы остальные захотели «примерить его маску». Потом — другого злодея так, чтобы вызвать отвращение.',
+    q:'Что делает злодея привлекательным? Компетентность? Юмор? Эстетика? Сила?',
+    reveals:'Ось 3.2, принцип «Импринтинга»' },
+
+  { n:11, lv:'l1', type:'solo',  title:'Кто виноват?',           axis:'Ось 6: Общество',
+    task:'Два текста: злодей о себе («я сам выбрал») и социолог о нём («система его создала»).',
+    q:'Какой текст убедительнее? Где правда?',
+    reveals:'Ось 6, роль общества, субъективность' },
+
+  { n:12, lv:'l1', type:'group', title:'Пять концовок',          axis:'Этап 6: Финал',
+    task:'Ведущий называет злодея. Группа за 10 минут придумывает пять финалов — по одному на каждый архетип. Читаете и голосуете.',
+    q:'Какой финал «правильный»? Может ли быть несколько правильных?',
+    reveals:'Этап 6, 5 архетипов финала' },
+
+  // ── УРОВЕНЬ II ──
+  { n:13, lv:'l2', type:'solo',  title:'Четыре зова',           axis:'Этап 2: Зов',
+    task:'Четыре варианта одержимости злодея: классический / расщеплённый / корпоративный / эстетический. Выберите один.',
+    q:'Какой Зов делает его опаснее? Какой — интереснее для читателя?',
+    reveals:'Этап 2, подтипы Зова' },
+
+  { n:14, lv:'l2', type:'group', title:'Строитель и Разрушитель', axis:'Этап 4: Лабиринт',
+    task:'Игрок А строит Лабиринт злодея — систему из 5 элементов. Игрок Б ищет трещину. Три раунда: залатай и найди новую.',
+    q:'Выжила ли система? Где было самое уязвимое место?',
+    reveals:'Этап 4, прочность лабиринта' },
+
+  { n:15, lv:'l2', type:'solo',  title:'Достойный враг',        axis:'Этап 4.1: Противник',
+    task:'Противник: умнее или сильнее или морально чище злодея. Не может быть убит. Является зеркалом злодея. Сцена первой встречи.',
+    q:'Кто из них страшнее?',
+    reveals:'Этап 4.1, принцип «Короля делает свита»' },
+
+  { n:16, lv:'l2', type:'group', title:'Сорви маску',           axis:'Ось 3.4: Снятие маски',
+    task:'Игрок А — монолог в маске. Игрок Б — тот же монолог без маски. Голая правда.',
+    q:'Что изменилось в языке? Какой момент стал точкой снятия маски?',
+    reveals:'Ось 3.4, механизм снятия маски' },
+
+  { n:17, lv:'l2', type:'solo',  title:'Четыре зеркала',        axis:'Этап 5: Зеркало',
+    task:'Четыре мини-сцены: вынужденное / добровольное / слияние / отсутствие зеркала.',
+    q:'Какое Зеркало больнее? Какое — страшнее для читателя?',
+    reveals:'Этап 5, подтипы Зеркала' },
+
+  { n:18, lv:'l2', type:'group', title:'Последний хороший поступок', axis:'Ось 8.4: Судьба черты',
+    task:'Каждый пишет финальную сцену благой черты: вспыхивает / извращается / исчезает / сливается с Зеркалом.',
+    q:'Какая судьба благой черты делает финал сильнее?',
+    reveals:'Ось 8.4, связь черты и финала' },
+
+  { n:19, lv:'l2', type:'solo',  title:'Последняя страница',    axis:'Этап 6: Финал',
+    task:'Последняя страница истории злодея. Выберите архетип финала — но не называйте его. Ни слова «злодей», «убийца», «монстр». Только действие, образ, тишина.',
+    q:'Смог ли читатель определить архетип самостоятельно?',
+    reveals:'Этап 6, «показывай, а не рассказывай»' },
+
+  { n:20, lv:'l2', type:'group', title:'Эстафета Тени',         axis:'Полный путь',
+    task:'Каждый получает один этап (1–6). За 5 минут пишет фрагмент одного общего злодея (придумываете вместе). Читаете по порядку.',
+    q:'Сложилась ли история? Где швы? Какой этап провис?',
+    reveals:'Все 6 этапов, связность нарратива' },
+
+  { n:21, lv:'l2', type:'solo',  title:'Гений vs Неудачник',    axis:'Ось 3.2: Компетентность',
+    task:'Один злодей, один план. Версия А: всё получается, читатель восхищается. Версия Б: всё идёт не так, читатель морщится.',
+    q:'В какой версии злодей страшнее? В какой — человечнее?',
+    reveals:'Ось 3.2, принцип «Импринтинга»' },
+
+  { n:22, lv:'l2', type:'group', title:'Суд',                   axis:'Ось 6: Общество',
+    task:'Один игрок — злодей. Прокурор: «Он виноват, потому что выбрал». Адвокат: «Система его создала». Присяжные выносят вердикт в процентах.',
+    q:'Совпали ли цифры у разных групп? Что это говорит?',
+    reveals:'Ось 6, субъективность, роль общества' },
+
+  { n:23, lv:'l2', type:'solo',  title:'Я изменюсь',            axis:'Этап 4: Псевдо-Искупление',
+    task:'Три сцены: злодей искренне пытается измениться / старая привычка возвращается / хорошесть становится новой маской.',
+    q:'В какой момент вы поняли, что искупление — ложь? Какой сигнал вы дали читателю?',
+    reveals:'Этап 4, Псевдо-Искупление, двойная маска' },
+
+  { n:24, lv:'l2', type:'group', title:'Конструктор злодея',    axis:'Все 8 осей',
+    task:'Каждый тянет 3 случайные оси с назначенными значениями. За 7 минут собирает злодея из этих параметров и презентует.',
+    q:'Чей злодей самый цельный? Чей — самый неожиданный?',
+    reveals:'Все 8 осей, комбинаторика' },
+
+  // ── УРОВЕНЬ III ──
+  { n:25, lv:'l3', type:'solo',  title:'Сломай методологию',    axis:'Деконструкция',
+    task:'Намеренно нарушьте один из 6 этапов: пропустите дефицит / поменяйте порядок / уберите зеркало. Что происходит с историей?',
+    q:'Сломалась ли она — или стала интереснее? Что методология не учитывает?',
+    reveals:'Ограничения методологии, творческая свобода' },
+
+  { n:26, lv:'l3', type:'group', title:'Кто кого обманывает?',  axis:'Ось 3.3: Обман',
+    task:'Игрок А пишет монолог, чтобы обмануть читателя. Игрок Б определяет: где именно? Каким приёмом? В какой момент «купился»?',
+    q:'Легче ли обмануть, чем распознать обман?',
+    reveals:'Ось 3.3, «Голос как оружие», читательское соучастие' },
+
+  { n:27, lv:'l3', type:'solo',  title:'Абсолютная пустота',    axis:'Ось 8: Без черты',
+    task:'Злодей без благой черты. Совсем. Ни любви к котикам, ни таланта, ни юмора. Напишите сцену.',
+    q:'Что приходит на место благой черты: страх? Отвращение? Гипнотическое оцепенение?',
+    reveals:'Ось 8, исключения, «Изначальная пустота»' },
+
+  { n:28, lv:'l3', type:'group', title:'Я — твоё Зеркало',      axis:'Этап 5: Зеркало',
+    task:'Раунд 1: злодей произносит самооправдание (1 минута). Раунд 2: Зеркало отражает правду. Раунд 3: злодей отвечает — принять, отвергнуть, слиться.',
+    q:'Какой подтип Зеркала получился? Вынужденное? Слияние? Разоблачение?',
+    reveals:'Этап 5, динамика Зеркала в реальном времени' },
+
+  { n:29, lv:'l3', type:'solo',  title:'Вирус',                 axis:'Ось 4: Заражение',
+    task:'Три сцены: учитель встречает ученика / ученик совершает первый акт зла / ученик превосходит учителя.',
+    q:'Кто страшнее — создатель или творение? Несёт ли создатель ответственность?',
+    reveals:'Ось 4 (Заражение), архетип «Заразителя»' },
+
+  { n:30, lv:'l3', type:'group', title:'Убей противника',       axis:'Этап 4.1: Противник',
+    task:'Игрок Б: «Я убиваю твоего противника на странице 50». Игрок А за 5 минут перестраивает сюжет: что делает злодей без достойного врага?',
+    q:'Становится ли скучно? Или злодей начинает разрушать себя?',
+    reveals:'Этап 4.1, структурная необходимость противника' },
+
+  { n:31, lv:'l3', type:'solo',  title:'Пять масок',            axis:'Ось 3.1: Смена маски',
+    task:'Один злодей, пять ситуаций — по 2 предложения: соблазнитель / клиницист / оправдывающийся / лицедей / ненадёжная реальность.',
+    q:'Какая маска — «настоящая»? Или за всеми масками — тоже маска?',
+    reveals:'Ось 3.1, множественность масок, вопрос идентичности' },
+
+  { n:32, lv:'l3', type:'group', title:'Дуэль методологий',     axis:'Полный цикл',
+    task:'Две команды за 15 минут создают полного злодея. Обмениваются и ищут слабые места: где провисает мотивация, слаб противник, фальшива черта, финал не вытекает из пути.',
+    q:'Чей злодей выдержал критику?',
+    reveals:'Вся методология, критическое мышление' },
+
+  { n:33, lv:'l3', type:'solo',  title:'Злодей, которого нет в таблице', axis:'За пределами',
+    task:'Злодей, не вписывающийся ни в один архетип. Ломающий хотя бы 2 оси. Напишите его — и расширьте методологию: какой новый архетип нужен?',
+    q:'Что методология не предвидела?',
+    reveals:'Открытость методологии, творческое расширение' },
+
+  { n:34, lv:'l3', type:'group', title:'Где граница?',          axis:'Этика',
+    task:'Обсуждение: может ли злодей быть слишком привлекательным? Есть ли темы, которые нельзя давать как «благую черту»? Где заканчивается диссонанс и начинается пропаганда зла?',
+    q:'Совпадают ли границы у разных людей? Почему нет?',
+    reveals:'Этика, ответственность автора, «Импринтинг»' },
+
+  { n:35, lv:'l3', type:'solo',  title:'Твоё Зеркало',         axis:'Финал игры',
+    task:'Последняя карточка. Не про злодея. Про вас. Какого злодея вам труднее всего отпустить? Какая его черта — ваша? Что вы узнали о себе через Путь Тени?',
+    q:'Эту карточку не нужно показывать никому. Она — ваше личное Зеркало.',
+    reveals:'Главный принцип: мы изучаем зло, чтобы узнать его в себе' },
+];
+
+function renderCards(level, filter) {
+  const grid = document.getElementById('grid-' + level);
+  const filtered = cards
+    .filter(c => c.lv === level)
+    .filter(c => filter === 'all' || c.type === filter);
+
+  grid.innerHTML = filtered.map(c => `
+    <div class="ccard ${c.lv}">
+      <div class="ccard-stripe"></div>
+      <div class="ccard-watermark">${c.n}</div>
+      <div class="ccard-top">
+        <span class="ccard-num">${String(c.n).padStart(2,'0')}</span>
+        <span class="ccard-badge ${c.type === 'solo' ? 'badge-solo' : 'badge-group'}">
+          ${c.type === 'solo' ? '✍️ Соло' : '👥 Группа'}
+        </span>
+        <span class="ccard-axis">${c.axis}</span>
+      </div>
+      <div class="ccard-title">${c.title}</div>
+      <div class="ccard-task">${c.task}</div>
+      <div class="ccard-question">${c.q}</div>
+      <div class="ccard-reveals"><span>Раскрывает:</span> ${c.reveals}</div>
+    </div>
+  `).join('');
+}
+
+// Tab switching
+document.getElementById('main-nav').addEventListener('click', function(e) {
+  const btn = e.target.closest('.ntab');
+  if (!btn) return;
+  const id = btn.dataset.tab;
+  document.querySelectorAll('.ntab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sec-' + id).classList.add('active');
+});
+
+// Filter pills
+document.querySelectorAll('.filter-row').forEach(row => {
+  const level = row.dataset.level;
+  row.addEventListener('click', function(e) {
+    const pill = e.target.closest('.fpill');
+    if (!pill) return;
+    row.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    renderCards(level, pill.dataset.filter);
+  });
+});
+
+// Init
+renderCards('l1', 'all');
+renderCards('l2', 'all');
+renderCards('l3', 'all');
+</script>
+</body>
+</html>
