@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра: Путь Тени</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --card-front: #16213e;
+            --card-back: #0f3460;
+            --accent: #e94560;
+            --text-color: #e2e2e2;
+            --btn-correct: #4caf50;
+            --btn-wrong: #f44336;
+            --btn-unsure: #ff9800;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-size: 2rem;
+            text-align: center;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .progress {
+            margin-top: 5px;
+            font-size: 1.2rem;
+            color: #a0a0a0;
+        }
+
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 800px;
+            height: 50vh;
+            min-height: 300px;
+            margin-bottom: 30px;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            box-sizing: border-box;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .card-front {
+            background: var(--card-front);
+            border: 2px solid var(--card-back);
+        }
+
+        .card-back {
+            background: var(--card-back);
+            transform: rotateY(180deg);
+            border: 2px solid var(--accent);
+        }
+
+        .card-content {
+            font-size: 1.4rem;
+            line-height: 1.5;
+            text-align: center;
+            overflow-y: auto;
+            max-height: 100%;
+            width: 100%;
+        }
+
+        .weight-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--accent);
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            font-weight: bold;
+            color: white;
+            flex: 1;
+            min-width: 150px;
+            max-width: 250px;
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        .btn-flip {
+            background: var(--accent);
+            max-width: 300px;
+        }
+        .btn-flip:hover { background: #d63d56; }
+
+        .btn-correct { background: var(--btn-correct); }
+        .btn-correct:hover { background: #43a047; }
+
+        .btn-wrong { background: var(--btn-wrong); }
+        .btn-wrong:hover { background: #e53935; }
+
+        .btn-unsure { background: var(--btn-unsure); }
+        .btn-unsure:hover { background: #fb8c00; }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .result-container {
+            text-align: center;
+            padding: 40px;
+            max-width: 800px;
+            background: var(--card-front);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-top: 50px;
+        }
+
+        .result-score {
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .result-title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .result-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #d1d1d1;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Уровень - самый сложный</h1>
+    <div class="progress" id="progress">Вопрос 1 из 35</div>
+
+    <div class="game-container" id="game">
+        <div class="card-container" onclick="toggleFlip()">
+            <div class="card" id="flashcard">
+                <div class="card-front">
+                    <div class="weight-badge" id="badge-front">Вес: 3</div>
+                    <div class="card-content" id="question">Загрузка...</div>
+                </div>
+                <div class="card-back">
+                    <div class="weight-badge" id="badge-back">Вес: 3</div>
+                    <div class="card-content" id="answer">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls" id="controls-flip">
+            <button class="btn-flip" onclick="toggleFlip(event)">Перевернуть</button>
+        </div>
+        
+        <div class="controls hidden" id="controls-ans">
+            <button class="btn-correct" onclick="submitAnswer(true, event)">Угадал</button>
+            <button class="btn-wrong" onclick="submitAnswer(false, event)">Нет</button>
+            <button class="btn-unsure" onclick="submitAnswer(false, event)">Не уверен</button>
+        </div>
+    </div>
+
+    <div class="result-container hidden" id="result">
+        <div class="result-score" id="final-score">0 баллов</div>
+        <div class="result-title" id="final-title">Результат</div>
+        <div class="result-text" id="final-text">Текст результата</div>
+    </div>
+
+    <script>
+        const questions = [{"q": "Какое определение даётся методологии «Путь Тени» в контексте анализа литературы?", "a": "Структурная методология для анализа произведений, в которых главный герой является злодеем или глубоко аморальным персонажем.", "w": 3}, {"q": "В чём заключается основное отличие вектора «Пути Тени» от «Пути Героя» Джозефа Кэмпбелла?", "a": "Путь Тени — это движение от травмы к деструкции, в то время как Путь Героя — от эгоцентризма к альтруизму.", "w": 3}, {"q": "Как в методологии трактуется соотношение «Пути Тени» с классическим мономифом?", "a": "Путь Тени является не инверсией, а декомпозицией Пути Героя, где этапы искажены (например, Зов становится одержимостью).", "w": 2}, {"q": "Согласно принципу «Благой черты», какова её основная структурная роль?", "a": "Создание когнитивного диссонанса, который удерживает внимание аудитории и не позволяет просто отвергнуть персонажа.", "w": 3}, {"q": "Сформулируйте принцип «Короля делает свита» в анализе злодея-протагониста.", "a": "Потенциал злодея раскрывается полностью только при наличии достойного противника, чей уровень равен или выше уровня Тени.", "w": 3}, {"q": "В чём суть принципа «Импринтинга» по отношению к читательскому восприятию злодея?", "a": "Читатель прощает злодею жестокость пропорционально его компетентности, харизме и эстетической выразительности.", "w": 3}, {"q": "Что представляет собой 1-й этап Пути Тени (Исходный дефицит)?", "a": "Внутренняя пустота, рана или дефект героя, делающие нормальную жизнь невозможной ещё до начала истории.", "w": 3}, {"q": "Опишите подтип дефицита «Изначальная пустота» на примере Луи Блума из фильма «Стрингер».", "a": "Персонаж рождён без эмпатии, и зло для него является естественным состоянием при отсутствии первичной травмы.", "w": 2}, {"q": "Что понимается под «Философским дефицитом» на первом этапе Пути Тени?", "a": "Интеллектуальное открытие или теория (как у Раскольникова), разрушающая прежние моральные ориентиры героя.", "w": 2}, {"q": "В чём заключается суть 2-го этапа Пути Тени (Ложный Зов)?", "a": "Фиксация на объекте или идее, которая маскируется под высшую цель, но является проекцией внутреннего дефицита.", "w": 3}, {"q": "Приведите пример «Расщеплённого» Ложного Зова из сериала «Во все тяжкие».", "a": "Сочетание публичной благородной мотивации («для семьи») и приватной эгоистичной жажды власти («для себя»).", "w": 2}, {"q": "Какой процесс характеризует 3-й этап Пути Тени (Пересечение морального горизонта)?", "a": "Совершение первого непоправимого зла, становящееся точкой невозврата и моментом рационализации греха.", "w": 3}, {"q": "Что означает вариант прохождения морального горизонта через «Попустительство»?", "a": "Герой не совершает убийство лично, но осознанно позволяет смерти случиться (например, Гумберт и Шарлотта Гейз).", "w": 2}, {"q": "Какова цель 4-го этапа Пути Тени (Построение Лабиринта)?", "a": "Создание системы лжи, манипуляций или насилия, которая защищает героя от разоблачения и позволяет продолжать путь.", "w": 3}, {"q": "В чём особенность лабиринта типа «Псевдо-Искупление» в сериале «Барри»?", "a": "Попытка Тени использовать социально одобряемую деятельность (актёрство) как ширму, чтобы сбежать от своей природы.", "w": 2}, {"q": "К какому эффекту в сюжете приводит наличие противника, чей уровень значительно «Ниже» уровня Тени?", "a": "Возникает «режим бога», из-за чего драматическое напряжение во второй половине произведения снижается.", "w": 2}, {"q": "Опишите суть 5-го этапа Пути Тени (Столкновение с Зеркалом).", "a": "Встреча с фигурой или осознанием последствий своих действий, разрушающим иллюзию контроля героя.", "w": 3}, {"q": "Что подразумевает подтип финала «Пространственное окаменение»?", "a": "Победа героя становится его тюрьмой, где он заперт в архитектуре своего успеха (например, Плейнвью в боулинге).", "w": 2}, {"q": "Охарактеризуйте подтип финала «Эстетическое слияние» на примере сериала «Ганнибал».", "a": "Тень и её Зеркало (антагонист) падают или торжествуют вместе, образуя неразрывное единство.", "w": 2}, {"q": "Как ранжируется Ось 1 (Степень рефлексии) для персонажа Патрика Бейтмана?", "a": "Низкий балл (0–2), так как рефлексия отсутствует, а зло является естественной средой обитания.", "w": 1}, {"q": "Опишите тип отношения к жертве «Искажённая любовь» в методологии.", "a": "Жертва идеализируется персонажем, но одновременно разрушается через его специфическое понимание любви.", "w": 2}, {"q": "В чём особенность нарративной маски типа «Клиницист»?", "a": "Использование холодного, отстранённого языка (научного или бюрократического) для описания ужасающих действий.", "w": 2}, {"q": "Чем «Ненадёжная реальность» отличается от классического «Ненадёжного рассказчика»?", "a": "Сомнительной становится сама ткань повествования (галлюцинации, искажение фактов миром), а не только точка зрения героя.", "w": 2}, {"q": "По какой формуле, согласно методологии, рассчитывается «Привлекательность» злодея для читателя?", "a": "Привлекательность = Компетентность × Активность × Эстетика.", "w": 2}, {"q": "В чём заключается вектор «Манипуляции читателем» через нарративную маску?", "a": "Целенаправленное использование автором языка (например, поэтичности Гумберта), чтобы заставить аудиторию сочувствовать монстру.", "w": 2}, {"q": "Что подразумевает масштаб деструкции под названием «Заражение»?", "a": "Способность Тени не только разрушать окружение, но и создавать новые Тени (например, влияние Ганнибала на Уилла Грэма).", "w": 2}, {"q": "Опишите тип интеграции в социум «Системный хищник».", "a": "Злодей, который встроен в легитимные институты власти (СС, психиатрия, медиа) и использует их для своих целей.", "w": 2}, {"q": "Какой балл по Оси 6 (Роль общества) присваивается Артуру Флеку из фильма «Джокер»?", "a": "Высокий балл (8–10), так как общественная система выступает со-автором превращения героя в злодея.", "w": 1}, {"q": "Какую структурную функцию выполняет «Благая черта» на 5-м этапе (Зеркало)?", "a": "Она обнажает болезненный контраст между тем, кем герой хотел быть, и тем, кем он стал на самом деле.", "w": 2}, {"q": "Почему у персонажа Патрика Бейтмана отсутствует благая черта?", "a": "Его личность представляет собой «Изначальную пустоту», где благая черта невозможна из-за отсутствия внутреннего содержания.", "w": 1}, {"q": "Назовите архетип злодея, для которого характерны высокая рефлексия, вынужденное Зеркало и финал типа «Падение».", "a": "Трагический злодей (например, Макбет или Раскольников).", "w": 2}, {"q": "Опишите ключевые характеристики архетипа «Паразит-мимик».", "a": "Скрытая интеграция в социум, использование маски лицедея и чаще всего финал типа «Триумф».", "w": 2}, {"q": "В чём заключается феномен «Псевдо-Искупления», характерный для современных сериалов?", "a": "Злодей осознанно имитирует «Путь Героя», используя его как ширму, что делает его итоговое падение более трагичным.", "w": 2}, {"q": "Как меняется судьба благой черты в финалах типа «Триумф Тени»?", "a": "Благая черта извращается и становится инструментом для совершения нового зла или манипуляции следующей жертвой.", "w": 2}, {"q": "Какое ограничение методологии «Путь Тени» касается персонажей вроде Луи Блума?", "a": "Методология фиксирует их как «статичных злодеев», у которых отсутствие движения по этапам является диагностическим признаком.", "w": 1}];
+
+        let currentIdx = 0;
+        let score = 0;
+        let isFlipped = false;
+
+        function loadQuestion() {
+            isFlipped = false;
+            document.getElementById('flashcard').classList.remove('flipped');
+            
+            // Ждем завершения анимации возврата, прежде чем обновить текст
+            setTimeout(() => {
+                const q = questions[currentIdx];
+                document.getElementById('question').innerText = q.q;
+                document.getElementById('answer').innerText = q.a;
+                document.getElementById('badge-front').innerText = `Вес: ${q.w}`;
+                document.getElementById('badge-back').innerText = `Вес: ${q.w}`;
+                document.getElementById('progress').innerText = `Вопрос ${currentIdx + 1} из ${questions.length}`;
+                
+                document.getElementById('controls-flip').classList.remove('hidden');
+                document.getElementById('controls-ans').classList.add('hidden');
+            }, 150);
+        }
+
+        function toggleFlip(event) {
+            if(event) event.stopPropagation();
+            const card = document.getElementById('flashcard');
+            isFlipped = !isFlipped;
+            
+            if (isFlipped) {
+                card.classList.add('flipped');
+                document.getElementById('controls-flip').classList.add('hidden');
+                document.getElementById('controls-ans').classList.remove('hidden');
+            } else {
+                card.classList.remove('flipped');
+            }
+        }
+
+        function submitAnswer(isCorrect, event) {
+            if(event) event.stopPropagation();
+            
+            if (isCorrect) {
+                score += questions[currentIdx].w;
+            }
+            
+            currentIdx++;
+            if (currentIdx < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game').classList.add('hidden');
+            document.getElementById('progress').classList.add('hidden');
+            document.getElementById('result').classList.remove('hidden');
+            
+            let title = "";
+            let text = "";
+            
+            if (score >= 65) {
+                title = "Император Теней";
+                text = "Это был сложный тест, но вы освоили методологию великолепно. Вам известны не только основы, этапы, оси и их детали, но также представленные произведения и вы разбираетесь в злодеях очень хорошо.";
+            } else if (score >= 50) {
+                title = "Зеркало";
+                text = "Это сложный тест и можно сказать, что вы хорошо разобрались, но многие детали еще не запомнили. Думаю самое сложное оказалось разобраться со злодеями из книг и фильмов. Советую посмотреть упомянутые фильмы или прочитать книги.";
+            } else if (score >= 35) {
+                title = "Лабиринт";
+                text = "Общие принципы известны хорошо, но следует еще раз разобраться с материалом. Попробуйте пройти тест среднего уровня сложности (в нем нет акцента на конкретных злодеях из книг и фильмов).";
+            } else if (score >= 20) {
+                title = "Тень";
+                text = "До повелителя Теней вам еще далеко, вы только в начале пути. Кажется у вас есть общее понимание, но методологию вы посмотрели мельком. Попробуйте тест среднего и легкого варианта. Материал однозначно надо изучить еще раз.";
+            } else {
+                title = "Пустота";
+                text = "Тест слишком сложен для вас, попробуйте самый легкий вариант теста (15 вопросов).";
+            }
+            
+            document.getElementById('final-score').innerText = `Итог: ${score} баллов`;
+            document.getElementById('final-title').innerText = title;
+            document.getElementById('final-text').innerText = text;
+        }
+
+        // Запуск
+        loadQuestion();
+    </script>
+</body>
+</html>

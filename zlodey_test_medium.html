@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивные карточки: Уровень - средний</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --card-front: #16213e;
+            --card-back: #0f3460;
+            --text-light: #e94560;
+            --text-main: #ffffff;
+            --btn-green: #2ecc71;
+            --btn-orange: #f39c12;
+            --btn-red: #e74c3c;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .level-title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            z-index: 10;
+        }
+
+        #restart-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background-color: transparent;
+            border: 2px solid var(--text-light);
+            color: var(--text-light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        #restart-btn:hover {
+            background-color: var(--text-light);
+            color: #fff;
+        }
+
+        .progress {
+            position: absolute;
+            top: 25px;
+            left: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #aaa;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 800px;
+            height: 65vh;
+            margin-top: 50px; /* Отступ под заголовок */
+        }
+
+        /* Card 3D Flip Styles */
+        .card-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border-radius: 20px;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            box-sizing: border-box;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .card-front {
+            background-color: var(--card-front);
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .card-back {
+            background-color: var(--card-back);
+            transform: rotateY(180deg);
+            font-size: 22px;
+        }
+        
+        .hint {
+            position: absolute;
+            bottom: 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: normal;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .controls.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .btn {
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .btn-yes { background-color: var(--btn-green); }
+        .btn-not-sure { background-color: var(--btn-orange); }
+        .btn-no { background-color: var(--btn-red); }
+
+        #result-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 36px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .result-score {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .result-text {
+            font-size: 22px;
+            line-height: 1.5;
+            max-width: 600px;
+            color: #ddd;
+        }
+        
+        @media (max-width: 768px) {
+            .level-title { position: static; transform: none; margin-bottom: 10px; margin-top: 20px; font-size: 20px; text-align: center;}
+            .card-front { font-size: 20px; }
+            .card-back { font-size: 18px; padding: 20px;}
+            .controls { flex-direction: column; gap: 10px; width: 100%; margin-top: 20px; }
+            .btn { width: 100%; padding: 12px; }
+            #restart-btn { top: 10px; right: 10px; padding: 8px 12px; font-size: 12px; }
+            .progress { top: 15px; left: 10px; font-size: 14px; }
+            #game-container { margin-top: 20px; height: 60vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="level-title">Уровень - средний</div>
+    <button id="restart-btn" onclick="restart()">Начать сначала</button>
+    <div class="progress" id="progress-text">Карточка 1 / 35</div>
+
+    <div id="game-container">
+        <div class="card-container" id="card-container" onclick="flipCard()">
+            <div class="card" id="card">
+                <div class="card-face card-front" id="card-question">
+                    Вопрос загружается...
+                    <div class="hint">Нажмите на карточку, чтобы перевернуть</div>
+                </div>
+                <div class="card-face card-back" id="card-answer">
+                    Ответ загружается...
+                </div>
+            </div>
+        </div>
+
+        <div class="controls" id="controls">
+            <button class="btn btn-yes" onclick="answerCard(true)">Угадал</button>
+            <button class="btn btn-not-sure" onclick="answerCard(false)">Не уверен</button>
+            <button class="btn btn-no" onclick="answerCard(false)">Нет</button>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <div class="result-title">Ваш результат</div>
+        <div class="result-score"><span id="final-score">0</span> / 73</div>
+        <div class="result-text" id="final-text"></div>
+    </div>
+
+    <script>
+        const data = [
+            {"Вопрос": "Какое определение даётся методологии «Путь Тени»?", "Ответ": "Структурная методология для анализа произведений, в которых главный герой является злодеем или глубоко аморальным персонажем. Позволяет проследить архитектуру зла от внутреннего дефицита до деструкции.", "Вес": 3},
+            {"Вопрос": "В чём основное отличие вектора «Пути Тени» от «Пути Героя» Кэмпбелла?", "Ответ": "Путь Тени — движение от травмы/пустоты к деструкции. Путь Героя — движение от эгоцентризма к альтруизму.", "Вес": 3},
+            {"Вопрос": "Как соотносится «Путь Тени» с классическим мономифом?", "Ответ": "Путь Тени — не инверсия, а декомпозиция мономифа: те же этапы присутствуют, но искажены (Зов → одержимость, Испытания → эскалация, Возвращение → невозможность вернуться).", "Вес": 2},
+            {"Вопрос": "Какова структурная роль «Благой черты» в методологии?", "Ответ": "Создание когнитивного диссонанса, который удерживает внимание аудитории и не позволяет просто отвергнуть персонажа. Благая черта — не «смягчение», а структурный инструмент.", "Вес": 3},
+            {"Вопрос": "Сформулируйте принцип «Короля делает свита».", "Ответ": "Потенциал злодея раскрывается полностью только при наличии противника, чей уровень равен или выше уровня Тени. Без достойного противника сюжет превращается в «режим бога».", "Вес": 3},
+            {"Вопрос": "В чём суть принципа «Импринтинга»?", "Ответ": "Читатель прощает злодею жестокость пропорционально его компетентности, харизме и эстетической выразительности. Сильный злодей вызывает желание «примерить маску».", "Вес": 3},
+            {"Вопрос": "Что представляет собой Этап 1 (Исходный дефицит)?", "Ответ": "Внутренняя пустота, рана или дефект героя, делающие нормальную жизнь невозможной ещё до начала истории. Не «обычный мир», а мир, который уже сломан.", "Вес": 3},
+            {"Вопрос": "Опишите подтип дефицита «Изначальная пустота».", "Ответ": "Персонаж рождён без эмпатии. Травмы нет. Зло является естественным состоянием, а не реакцией на внешнее повреждение.", "Вес": 2},
+            {"Вопрос": "Что понимается под «Философским дефицитом»?", "Ответ": "Интеллектуальное открытие или теория, разрушающая прежние моральные ориентиры героя. Не эмоциональная травма, а идея, после которой невозможно жить по-старому.", "Вес": 2},
+            {"Вопрос": "В чём суть Этапа 2 (Ложный Зов)?", "Ответ": "Фиксация на объекте или идее, которая маскируется под высшую цель, но является проекцией внутреннего дефицита из Этапа 1.", "Вес": 3},
+            {"Вопрос": "Опишите подтип «Расщеплённый Зов».", "Ответ": "Наличие двух параллельных мотиваций: публичной (благородной) и приватной (эгоистичной). Драматургия строится на их постепенном расхождении.", "Вес": 2},
+            {"Вопрос": "Опишите подтип «Корпоративный Зов».", "Ответ": "Зов замаскирован под язык саморазвития, бизнеса, эффективности. Хищничество подаётся как «стратегия успеха» или «оптимизация».", "Вес": 2},
+            {"Вопрос": "Какой процесс характеризует Этап 3 (Пересечение морального горизонта)?", "Ответ": "Совершение первого непоправимого зла, становящееся точкой невозврата. Сопровождается рационализацией. После этого каждый следующий акт насилия даётся легче.", "Вес": 3},
+            {"Вопрос": "Что означает вариант «Попустительство» при пересечении морального горизонта?", "Ответ": "Герой не совершает убийство лично, но осознанно позволяет смерти случиться и извлекает из неё выгоду.", "Вес": 2},
+            {"Вопрос": "Что означает вариант «Делегирование» при пересечении морального горизонта?", "Ответ": "Герой заставляет другого человека совершить акт насилия, оставаясь формально «чистым». Ответственность перекладывается на исполнителя.", "Вес": 2},
+            {"Вопрос": "Какова цель Этапа 4 (Построение Лабиринта)?", "Ответ": "Создание системы лжи, манипуляций или насилия, которая защищает героя от разоблачения и позволяет продолжать путь. Чем больше система, тем меньше подлинных связей.", "Вес": 3},
+            {"Вопрос": "В чём особенность лабиринта типа «Псевдо-Искупление»?", "Ответ": "Тень пытается замаскировать свой путь под «Путь Героя» (стать хорошим, искупить вину), используя социально одобряемую деятельность как ширму. Неизбежно проваливается.", "Вес": 2},
+            {"Вопрос": "К какому эффекту приводит противник, чей уровень значительно ниже уровня Тени?", "Ответ": "Возникает «режим бога»: драматическое напряжение снижается, сюжет превращается в хронику побед, а не в борьбу.", "Вес": 2},
+            {"Вопрос": "Сформулируйте правило калибра противника для Этапа 4.", "Ответ": "На каждого устранённого противника должен приходиться один, которого Тень устранить не может. Именно он становится Зеркалом на Этапе 5.", "Вес": 2},
+            {"Вопрос": "Опишите суть Этапа 5 (Столкновение с Зеркалом).", "Ответ": "Встреча с фигурой, ситуацией или осознанием, разрушающим иллюзию контроля. Зеркало показывает Тени то, чем она стала.", "Вес": 3},
+            {"Вопрос": "Опишите подтип Зеркала «Добровольное разоблачение».", "Ответ": "Тень сама разрушает свою маску, не выдерживая двойной жизни. Признание происходит без внешнего давления.", "Вес": 2},
+            {"Вопрос": "Опишите подтип Зеркала «Отсутствие Зеркала».", "Ответ": "Зеркало не приходит. Никто не видит и не слышит Тень. Признание невозможно, потому что в мире нет инстанции, способной его принять.", "Вес": 2},
+            {"Вопрос": "Назовите пять архетипов финала в методологии.", "Ответ": "Падение, Триумф Тени, Окаменение, Пространственное окаменение, Эстетическое слияние.", "Вес": 3},
+            {"Вопрос": "Что подразумевает финал «Пространственное окаменение»?", "Ответ": "Победа героя становится его тюрьмой. Он заперт в архитектуре своего успеха: огромный дом, империя, лаборатория. Триумф = изоляция.", "Вес": 2},
+            {"Вопрос": "Что подразумевает финал «Эстетическое слияние»?", "Ответ": "Тень и её Зеркало (антагонист) падают или торжествуют вместе, образуя неразрывное единство. Финал воспринимается как извращённая «любовная сцена».", "Вес": 2},
+            {"Вопрос": "Опишите шкалу Оси 1 (Степень рефлексии, 0–10).", "Ответ": "0–2: рефлексия отсутствует, зло — естественная среда. 5–6: эстетская/прагматичная рефлексия. 9–10: интеллектуальная рефлексия без раскаяния, зло как философия.", "Вес": 1},
+            {"Вопрос": "Опишите тип отношения к жертве «Искажённая любовь».", "Ответ": "Жертва идеализируется персонажем, но одновременно разрушается через его специфическое понимание любви. Забота = контроль. Защита = изоляция.", "Вес": 2},
+            {"Вопрос": "В чём особенность нарративной маски «Клиницист»?", "Ответ": "Использование холодного, отстранённого языка (научного, бюрократического, протокольного) для описания ужасающих действий. Эмоция вынесена за скобки.", "Вес": 2},
+            {"Вопрос": "Чем «Ненадёжная реальность» отличается от «Ненадёжного рассказчика»?", "Ответ": "При ненадёжном рассказчике сомнительна точка зрения героя. При ненадёжной реальности сомнительна сама ткань повествования: что реально, а что — галлюцинация.", "Вес": 2},
+            {"Вопрос": "По какой формуле рассчитывается «Привлекательность» злодея для читателя?", "Ответ": "Привлекательность = Компетентность × Активность × Эстетика. Если злодей силён, активен и выразителен — читатель «примеряет маску».", "Вес": 2},
+            {"Вопрос": "В чём заключается вектор «Манипуляция читателем» через нарративную маску?", "Ответ": "Маска служит не только для самооправдания героя, но и для целенаправленного обмана аудитории: язык заставляет сочувствовать тому, кому сочувствовать не следует.", "Вес": 2},
+            {"Вопрос": "Что подразумевает масштаб деструкции «Заражение»?", "Ответ": "Тень не только разрушает, но и создаёт новых Теней. Зло передаётся как вирус: ученик превосходит учителя, жертва становится хищником.", "Вес": 1},
+            {"Вопрос": "Опишите тип интеграции в социум «Системный хищник».", "Ответ": "Злодей встроен в легитимные институты власти (армия, медицина, медиа, корпорации) и использует их структуру как прикрытие и инструмент.", "Вес": 1},
+            {"Вопрос": "Какую функцию выполняет благая черта на Этапе 5 (Зеркало)?", "Ответ": "Обнажает болезненный контраст между тем, кем герой хотел быть, и тем, кем стал. Делает столкновение с правдой не констатацией, а трагедией.", "Вес": 1},
+            {"Вопрос": "Какое ограничение методологии касается «статичных злодеев»?", "Ответ": "Некоторые злодеи не проходят путь, а существуют в вечном настоящем. Для них методология фиксирует отсутствие движения как диагностический признак, а не как ошибку.", "Вес": 1}
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+        let isFlipped = false;
+
+        const cardContainer = document.getElementById('card-container');
+        const card = document.getElementById('card');
+        const cardQuestion = document.getElementById('card-question');
+        const cardAnswer = document.getElementById('card-answer');
+        const controls = document.getElementById('controls');
+        const progressText = document.getElementById('progress-text');
+        const gameContainer = document.getElementById('game-container');
+        const resultScreen = document.getElementById('result-screen');
+        const finalScoreLabel = document.getElementById('final-score');
+        const finalTextLabel = document.getElementById('final-text');
+
+        function initGame() {
+            currentIndex = 0;
+            score = 0;
+            gameContainer.style.display = 'flex';
+            resultScreen.style.display = 'none';
+            progressText.style.display = 'block';
+            loadCard();
+        }
+
+        function loadCard() {
+            if (currentIndex >= data.length) {
+                showResults();
+                return;
+            }
+
+            isFlipped = false;
+            card.classList.remove('is-flipped');
+            controls.classList.remove('visible');
+            
+            // Задержка текста, чтобы не менялся во время анимации переворота
+            setTimeout(() => {
+                progressText.innerText = `Карточка ${currentIndex + 1} / ${data.length}`;
+                cardQuestion.innerHTML = `${data[currentIndex]["Вопрос"]} <div class="hint">Нажмите на карточку, чтобы перевернуть</div>`;
+                cardAnswer.innerText = data[currentIndex]["Ответ"];
+            }, 300);
+        }
+
+        function flipCard() {
+            if (!isFlipped) {
+                card.classList.add('is-flipped');
+                isFlipped = true;
+                controls.classList.add('visible');
+            }
+        }
+
+        function answerCard(isCorrect) {
+            if (!isFlipped) return; // Защита от кликов до переворота
+            
+            if (isCorrect) {
+                score += data[currentIndex]["Вес"];
+            }
+            
+            currentIndex++;
+            loadCard();
+        }
+
+        function showResults() {
+            gameContainer.style.display = 'none';
+            progressText.style.display = 'none';
+            resultScreen.style.display = 'block';
+            
+            finalScoreLabel.innerText = score;
+
+            let resultMessage = "";
+            if (score >= 65 && score <= 73) {
+                resultMessage = "<strong>Архитектор Тени</strong><br>Методология освоена полностью!";
+            } else if (score >= 50 && score <= 64) {
+                resultMessage = "<strong>Зеркало</strong><br>Структура ясна, но кое-что путается.";
+            } else if (score >= 35 && score <= 49) {
+                resultMessage = "<strong>Лабиринт</strong><br>Принципы известны, связи видны хуже.";
+            } else if (score >= 20 && score <= 34) {
+                resultMessage = "<strong>Тень</strong><br>Общее понимание есть, механизмы не различаются.";
+            } else {
+                resultMessage = "<strong>Пустота</strong><br>Изучите материал заново.";
+            }
+            
+            finalTextLabel.innerHTML = resultMessage;
+        }
+
+        function restart() {
+            initGame();
+        }
+
+        // Запуск при загрузке
+        initGame();
+    </script>
+</body>
+</html>

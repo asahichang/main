@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивные карточки: Архитектор Тени</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --card-front: #16213e;
+            --card-back: #0f3460;
+            --text-light: #e94560;
+            --text-main: #ffffff;
+            --btn-green: #2ecc71;
+            --btn-orange: #f39c12;
+            --btn-red: #e74c3c;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #restart-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: transparent;
+            border: 2px solid var(--text-light);
+            color: var(--text-light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        #restart-btn:hover {
+            background-color: var(--text-light);
+            color: #fff;
+        }
+
+        .progress {
+            position: absolute;
+            top: 30px;
+            left: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #aaa;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 800px;
+            height: 70vh;
+        }
+
+        /* Card 3D Flip Styles */
+        .card-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border-radius: 20px;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            box-sizing: border-box;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .card-front {
+            background-color: var(--card-front);
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .card-back {
+            background-color: var(--card-back);
+            transform: rotateY(180deg);
+            font-size: 24px;
+        }
+        
+        .hint {
+            position: absolute;
+            bottom: 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .controls.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .btn {
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .btn-yes { background-color: var(--btn-green); }
+        .btn-not-sure { background-color: var(--btn-orange); }
+        .btn-no { background-color: var(--btn-red); }
+
+        #result-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 36px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .result-score {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .result-text {
+            font-size: 22px;
+            line-height: 1.5;
+            max-width: 600px;
+            color: #ddd;
+        }
+        
+        @media (max-width: 600px) {
+            .card-front { font-size: 20px; }
+            .card-back { font-size: 18px; }
+            .controls { flex-direction: column; gap: 10px; width: 100%; margin-top: 20px; }
+            .btn { width: 100%; padding: 12px; }
+            #restart-btn { top: 10px; right: 10px; padding: 8px 12px; font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <button id="restart-btn" onclick="restart()">Начать сначала</button>
+    <div class="progress" id="progress-text">Карточка 1 / 15</div>
+
+    <div id="game-container">
+        <div class="card-container" id="card-container" onclick="flipCard()">
+            <div class="card" id="card">
+                <div class="card-face card-front" id="card-question">
+                    Вопрос загружается...
+                    <div class="hint">Нажмите на карточку, чтобы перевернуть</div>
+                </div>
+                <div class="card-face card-back" id="card-answer">
+                    Ответ загружается...
+                </div>
+            </div>
+        </div>
+
+        <div class="controls" id="controls">
+            <button class="btn btn-yes" onclick="answerCard(true)">Угадал</button>
+            <button class="btn btn-not-sure" onclick="answerCard(false)">Не уверен</button>
+            <button class="btn btn-no" onclick="answerCard(false)">Нет</button>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <div class="result-title">Ваш результат</div>
+        <div class="result-score"><span id="final-score">0</span> / 33</div>
+        <div class="result-text" id="final-text"></div>
+    </div>
+
+    <script>
+        // Данные из таблицы "простой.xlsx"
+        const data = [
+            {"Вопрос": "«Путь Тени» — это перевёрнутый «Путь Героя» или сломанный?", "Ответ": "Сломанный (декомпозиция). Этапы те же, но каждый работает неправильно.", "Вес": 3},
+            {"Вопрос": "Зачем злодею хотя бы одна хорошая черта?", "Ответ": "Без неё читатель просто закроет книгу. Хорошая черта не даёт отвернуться.", "Вес": 3},
+            {"Вопрос": "Что будет с сюжетом, если все враги злодея — слабаки?", "Ответ": "Злодей станет скучным. Нет сопротивления → нет напряжения.", "Вес": 3},
+            {"Вопрос": "Почему читатель прощает злодею убийства?", "Ответ": "Если злодей умён, активен и красив в своём деле — мы хотим быть на него похожими.", "Вес": 3},
+            {"Вопрос": "Злодей говорит «я спасаю семью», а на деле хочет власти. Что не так с его Зовом?", "Ответ": "Зов расщеплён: публичная ложь и тайная правда. Рано или поздно они столкнутся.", "Вес": 3},
+            {"Вопрос": "Злодей не убивает сам, а просто не спасает тонущего. Он пересёк горизонт?", "Ответ": "Да. Попустительство — это тоже точка невозврата.", "Вес": 2},
+            {"Вопрос": "Злодей выиграл. Но сидит один в огромном пустом доме. Это победа?", "Ответ": "Это пространственное окаменение. Победа стала тюрьмой.", "Вес": 2},
+            {"Вопрос": "Злодей кричит «я убийца!», а все смеются и думают, что это шутка. Что произошло?", "Ответ": "Зеркало не пришло. Мир не способен увидеть зло. Признание невозможно.", "Вес": 2},
+            {"Вопрос": "Злодей описывает убийство языком отчёта: «разрез, угол, температура». Почему это страшнее крика?", "Ответ": "Холодный тон делает убийство рутиной. Это не срыв — это система.", "Вес": 2},
+            {"Вопрос": "Чем злодей, рождённый пустым, отличается от злодея, сломанного травмой?", "Ответ": "Сломанный мог быть другим. Пустой — не мог никогда.", "Вес": 2},
+            {"Вопрос": "Злодей «любит музыку», но на деле просто перечисляет бренды и хит-парады. Это благая черта?", "Ответ": "Нет. Это пародия. За ней ничего нет.", "Вес": 2},
+            {"Вопрос": "В чём разница: «рассказчик врёт» и «реальность рассыпается»?", "Ответ": "Рассказчик знает правду, но скрывает. Реальность — никто не знает, что правда.", "Вес": 2},
+            {"Вопрос": "Хорошая черта злодея в финале помогает ему найти новую жертву. Что с ней случилось?", "Ответ": "Она извратилась. То, что было «хорошим», стало инструментом зла.", "Вес": 2},
+            {"Вопрос": "Злодей стал актёром, чтобы «искупить грехи». Это сработает?", "Ответ": "Нет. Это псевдо-искупление. Маска героя поверх пути злодея. Рано или поздно треснет.", "Вес": 1},
+            {"Вопрос": "Злодей не меняется от первой до последней страницы. Это ошибка автора?", "Ответ": "Нет. Это диагноз: статичный злодей. Отсутствие пути — и есть сообщение.", "Вес": 1}
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+        let isFlipped = false;
+
+        const cardContainer = document.getElementById('card-container');
+        const card = document.getElementById('card');
+        const cardQuestion = document.getElementById('card-question');
+        const cardAnswer = document.getElementById('card-answer');
+        const controls = document.getElementById('controls');
+        const progressText = document.getElementById('progress-text');
+        const gameContainer = document.getElementById('game-container');
+        const resultScreen = document.getElementById('result-screen');
+        const finalScoreLabel = document.getElementById('final-score');
+        const finalTextLabel = document.getElementById('final-text');
+
+        function initGame() {
+            currentIndex = 0;
+            score = 0;
+            gameContainer.style.display = 'flex';
+            resultScreen.style.display = 'none';
+            progressText.style.display = 'block';
+            loadCard();
+        }
+
+        function loadCard() {
+            if (currentIndex >= data.length) {
+                showResults();
+                return;
+            }
+
+            isFlipped = false;
+            card.classList.remove('is-flipped');
+            controls.classList.remove('visible');
+            
+            // Allow animation to reset before changing text
+            setTimeout(() => {
+                progressText.innerText = `Карточка ${currentIndex + 1} / ${data.length}`;
+                cardQuestion.innerHTML = `${data[currentIndex]["Вопрос"]} <div class="hint">Нажмите на карточку, чтобы перевернуть</div>`;
+                cardAnswer.innerText = data[currentIndex]["Ответ"];
+            }, 300);
+        }
+
+        function flipCard() {
+            if (!isFlipped) {
+                card.classList.add('is-flipped');
+                isFlipped = true;
+                controls.classList.add('visible');
+            }
+        }
+
+        function answerCard(isCorrect) {
+            if (!isFlipped) return; // Prevent answering before flipping
+            
+            if (isCorrect) {
+                score += data[currentIndex]["Вес"];
+            }
+            
+            currentIndex++;
+            loadCard();
+        }
+
+        function showResults() {
+            gameContainer.style.display = 'none';
+            progressText.style.display = 'none';
+            resultScreen.style.display = 'block';
+            
+            finalScoreLabel.innerText = score;
+
+            let resultMessage = "";
+            if (score >= 29 && score <= 33) {
+                resultMessage = "<strong>Вы - Архитектор Тени</strong><br>Методология освоена полностью!";
+            } else if (score >= 22 && score <= 28) {
+                resultMessage = "<strong>Запутались в Лабиринте</strong><br>Основа хорошая, но не хватает более полного понимания.";
+            } else if (score >= 15 && score <= 21) {
+                resultMessage = "<strong>Тень пока не понятна</strong><br>Общее понимание есть, механизмы не различаются.";
+            } else {
+                resultMessage = "<strong>Пустота</strong><br>Рекомендуется перечитать материал заново.";
+            }
+            
+            finalTextLabel.innerHTML = resultMessage;
+        }
+
+        function restart() {
+            initGame();
+        }
+
+        // Запуск при загрузке
+        initGame();
+    </script>
+</body>
+</html>
