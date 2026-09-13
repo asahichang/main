@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Писательское мастерство в фантастике — викторина</title>
+
+<!-- Open Graph -->
+<meta property="og:title" content="Насколько хорошо ты знаешь ремесло фантаста?" />
+<meta property="og:description" content="10 вопросов о тропах, магических системах, мирострое и нарративных приёмах в фантастике и фэнтези." />
+<meta property="og:image" content="https://asahichang.github.io/main/preview.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://asahichang.github.io/main/writing_craft_quiz.html" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Насколько хорошо ты знаешь ремесло фантаста?" />
+<meta name="twitter:description" content="10 вопросов о тропах, магических системах, мирострое и нарративных приёмах." />
+<meta name="twitter:image" content="https://asahichang.github.io/main/preview.jpg" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a18;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 640px; width: 100%; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 0.35rem; color: #1a1a18; }
+  .subtitle { font-size: 14px; color: #888780; margin-bottom: 1.75rem; }
+  .q-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+  }
+  .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+  .q-counter { font-size: 13px; color: #888780; }
+  .dots-row { display: flex; gap: 4px; flex-wrap: wrap; max-width: 160px; justify-content: flex-end; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #d3d1c7; display: inline-block; }
+  .dot.correct { background: #3B6D11; }
+  .dot.wrong { background: #A32D2D; }
+  .q-progress { height: 3px; background: #f1efe8; border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+  .q-progress-fill { height: 100%; background: #2E6EA6; border-radius: 2px; transition: width 0.4s ease; }
+  .q-category {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #2E6EA6;
+    margin-bottom: 0.5rem;
+  }
+  .q-text { font-size: 15px; line-height: 1.55; margin-bottom: 1.25rem; color: #1a1a18; }
+  .q-options { display: flex; flex-direction: column; gap: 8px; }
+  .q-option {
+    padding: 10px 14px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a18;
+    cursor: pointer;
+    background: transparent;
+    text-align: left;
+    line-height: 1.45;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+  }
+  .q-option:hover:not(:disabled) { background: #f5f4f0; border-color: rgba(0,0,0,0.35); }
+  .q-option.correct { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option.wrong { background: #FCEBEB; border-color: #E24B4A; color: #A32D2D; }
+  .q-option.reveal { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option:disabled { cursor: default; }
+  .q-explain {
+    margin-top: 1rem;
+    padding: 10px 14px;
+    background: #f5f4f0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #5f5e5a;
+    line-height: 1.6;
+    border-left: 2px solid #2E6EA6;
+    display: none;
+  }
+  .q-next {
+    margin-top: 1.25rem;
+    padding: 9px 20px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    display: none;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .q-next:hover { background: #f5f4f0; }
+  .result-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  .result-score { font-size: 52px; font-weight: 500; color: #1a1a18; margin-bottom: 0.25rem; }
+  .result-label { font-size: 15px; color: #888780; margin-bottom: 1.25rem; }
+  .result-grid { display: grid; gap: 5px; max-width: 300px; margin: 0 auto 1.5rem; }
+  .result-dot { width: 100%; aspect-ratio: 1; border-radius: 4px; }
+  .result-comment { font-size: 14px; color: #5f5e5a; line-height: 1.65; max-width: 420px; margin: 0 auto 1.75rem; }
+  .restart-btn {
+    padding: 9px 24px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .restart-btn:hover { background: #f5f4f0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Ремесло фантаста</h1>
+  <p class="subtitle">10 вопросов о тропах, мирострое и нарративных приёмах в фантастике</p>
+  <div id="quiz-main"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    category: "Миростроение",
+    q: "Вы придумали потрясающую экономику мира, основанную на торговле временем. Но ваш сюжет — это камерный триллер про одного наёмного убийцу. Что делать?",
+    opts: [
+      "Переписать сюжет, чтобы он целиком состоял из политических интриг вокруг экономики времени",
+      "Оставить экономику как фон, показав её влияние только через то, как герой расплачивается за услуги или покупает экипировку",
+      "Удалить экономику времени и заменить на обычную, чтобы не путать читателя"
+    ],
+    correct: 1,
+    explain: "Мир должен обслуживать сюжет, а не наоборот. Детали мироздания работают лучше всего, когда проявляются органично — через действия и выборы персонажей, а не через авторские экскурсы."
+  },
+  {
+    category: "Законы Сандерсона",
+    q: "Что из перечисленного относится к законам магии Брэндона Сандерсона?",
+    opts: [
+      "Чем лучше читатель понимает магию, тем чаще она может быть использована для разрешения конфликта",
+      "Ограничения важнее возможностей",
+      "Используйте уже введённые факты перед введением новых",
+      "Верны все варианты"
+    ],
+    correct: 3,
+    explain: "Все три варианта и составляют законы Сандерсона. Первый — о доверии читателя к магическому решению. Второй — о том, что цена магии делает её интересной. Третий — о нарративной честности: не вытаскивай кролика, которого не клал в шляпу."
+  },
+  {
+    category: "Научная фантастика",
+    q: "Что такое «экстраполяция» при создании технологий в научной фантастике?",
+    opts: [
+      "Копирование технологий из других книг, чтобы не нарушать авторские права",
+      "Продление существующих научных тенденций в будущее для оценки их социальных последствий",
+      "Замена всех научных терминов на выдуманные, чтобы текст выглядел умнее"
+    ],
+    correct: 1,
+    explain: "Например: что будет, если нейросети научатся писать законы? Или если редактирование генома станет доступным как смартфон? Экстраполяция — главный инструмент НФ: берём реальную тенденцию и доводим её до логического (или абсурдного) предела."
+  },
+  {
+    category: "Тропы и субверсия",
+    q: "Что такое «субверсия» (выворот наизнанку) тропов в фантастике?",
+    opts: [
+      "Полное игнорирование всех жанровых клише и написание реалистичной прозы",
+      "Игра с ожиданиями читателя: автор использует знакомый штамп, но в финале меняет его смысл или исход",
+      "Перенос действия классического фэнтези в сеттинг научной фантастики"
+    ],
+    correct: 1,
+    explain: "Например, когда «Избранный» оказывается тем, кто должен был проиграть. Или когда «злодей», которого ждёт читатель, оказывается рассказчиком с понятной мотивацией. Субверсия работает только потому, что читатель знает оригинальный штамп — иначе эффекта нет."
+  },
+  {
+    category: "Нарративные приёмы",
+    q: "Что из перечисленного является классическим примером «Deus ex machina» (Бог из машины)?",
+    opts: [
+      "Герой использует ранее упомянутую в первой главе лазерную отвёртку, чтобы починить корабль",
+      "В момент, когда героя вот-вот убьёт дракон, внезапно прилетает гигантский орёл и спасает его, хотя орлов в сюжете не было",
+      "Антагонист в финале осознаёт свои ошибки и сдаётся после долгой речи героя"
+    ],
+    correct: 1,
+    explain: "Это обесценивает усилия героя и расстраивает читателя. Первый вариант — это честный чеховский приём (ружьё выстрелило). Третий — спорный, но не Deus ex machina: антагонист меняется изнутри, а не спасается снаружи."
+  },
+  {
+    category: "Структура и начало",
+    q: "С чего лучше НЕ начинать фантастический роман, чтобы не отпугнуть читателя?",
+    opts: [
+      "С динамичной сцены, где герой сталкивается с проблемой",
+      "С трёх страниц подробного описания генеалогического древа правящей династии эльфов",
+      "С диалога, в котором герои обсуждают странное явление"
+    ],
+    correct: 1,
+    explain: "Сначала нужно зацепить эмоцией или действием, а лор давать по мере необходимости. Читатель ещё не знает и не любит этих эльфов — ему незачем запоминать их родословную до того, как он успел полюбить хоть одного персонажа."
+  },
+  {
+    category: "Советская фантастика",
+    q: "Какой советский фантаст ввёл понятие «Великое Кольцо»?",
+    opts: [
+      "Кир Булычёв",
+      "Александр Беляев",
+      "Иван Ефремов"
+    ],
+    correct: 2,
+    explain: "Великое Кольцо — система радиообмена информацией между высокоразвитыми цивилизациями, описанная в романах Ефремова «Туманность Андромеды» и «Час Быка». Это одна из первых масштабных концепций межзвёздной коммуникации в русскоязычной НФ."
+  },
+  {
+    category: "Советская фантастика",
+    q: "Что общего у «Аэлиты» и «Гиперболоида инженера Гарина» Алексея Толстого?",
+    opts: [
+      "Космическая война",
+      "Опасность технологий",
+      "Тема научного открытия и социального переустройства"
+    ],
+    correct: 2,
+    explain: "Оба романа — классика раннесоветской фантастики, и в обоих научно-техническая идея не существует сама по себе. Она становится двигателем сюжета и поводом говорить об обществе, власти и будущем. Наука у Толстого всегда политична."
+  },
+  {
+    category: "Типы конфликта",
+    q: "В «Гарри Поттере» конфликт Гарри и Волан-де-Морта — это в первую очередь…",
+    opts: [
+      "Человек против человека / идеи",
+      "Человек против природы",
+      "Человек против богов"
+    ],
+    correct: 0,
+    explain: "Конфликт напрямую связан с борьбой Волан-де-Морта против полукровок — то есть всех, кто не является чистокровным магом. Это идеологическое противостояние: фанатизм, расизм и жажда власти против равенства и любви. Классический конфликт человека с человеком и его идеями."
+  },
+  {
+    category: "Суть фантастики",
+    q: "Что в конечном счёте отличает хорошую фантастику от просто «красивого выдуманного мира»?",
+    opts: [
+      "Количество уникальных магических заклинаний или видов космических кораблей",
+      "Использование фантастического допущения как линзы, через которую исследуются реальные человеческие проблемы и эмоции",
+      "Наличие подробных карт, словарей и хронологий в конце книги"
+    ],
+    correct: 1,
+    explain: "Фантастика — это способ говорить о настоящем через призму вымышленного. Лучшие книги жанра используют придуманный мир не как самоцель, а как инструмент: чтобы спросить о смерти, свободе, идентичности или власти так, как это невозможно сделать в реалистической прозе."
+  }
+];
+
+let current = 0, score = 0, answered = false;
+let answers = new Array(questions.length).fill(null);
+
+function render() {
+  const container = document.getElementById('quiz-main');
+  if (current >= questions.length) { renderResult(container); return; }
+  const q = questions[current];
+  const pct = (current / questions.length) * 100;
+  const dotsHtml = questions.map((_, i) => {
+    let cls = 'dot';
+    if (answers[i] === true) cls += ' correct';
+    else if (answers[i] === false) cls += ' wrong';
+    return `<span class="${cls}"></span>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="q-card">
+      <div class="q-header">
+        <span class="q-counter">Вопрос ${current + 1} из ${questions.length}</span>
+        <div class="dots-row">${dotsHtml}</div>
+      </div>
+      <div class="q-progress"><div class="q-progress-fill" style="width:${pct}%"></div></div>
+      <div class="q-category">${q.category}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.opts.map((opt, i) => `<button class="q-option" data-i="${i}">${opt}</button>`).join('')}
+      </div>
+      <div id="explain" class="q-explain"></div>
+      <button class="q-next" id="next-btn">${current < questions.length - 1 ? 'Следующий вопрос →' : 'Посмотреть результат →'}</button>
+    </div>`;
+
+  document.querySelectorAll('.q-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (answered) return;
+      answered = true;
+      const chosen = parseInt(this.dataset.i);
+      document.querySelectorAll('.q-option').forEach((b, i) => {
+        b.disabled = true;
+        if (i === q.correct) b.classList.add('reveal');
+        else if (i === chosen && chosen !== q.correct) b.classList.add('wrong');
+      });
+      answers[current] = (chosen === q.correct);
+      if (chosen === q.correct) score++;
+      const exp = document.getElementById('explain');
+      exp.style.display = 'block';
+      exp.textContent = q.explain;
+      document.getElementById('next-btn').style.display = 'inline-block';
+    });
+  });
+
+  document.getElementById('next-btn').addEventListener('click', () => {
+    current++; answered = false; render();
+  });
+}
+
+function renderResult(container) {
+  const n = questions.length;
+  const pct = score / n;
+  let label, comment;
+  if (pct >= 0.9) {
+    label = 'Мастер нарратива';
+    comment = 'Вы понимаете фантастику как ремесло: знаете, как работают тропы, зачем нужны ограничения магии и почему мир служит сюжету, а не наоборот. Осталось написать книгу.';
+  } else if (pct >= 0.6) {
+    label = 'Опытный рассказчик';
+    comment = 'Крепкое понимание жанра. Несколько нюансов ускользнули, но вы явно думаете о текстах не только как читатель, но и как автор.';
+  } else if (pct >= 0.3) {
+    label = 'Начинающий автор';
+    comment = 'Хорошая отправная точка. Законы Сандерсона, теория тропов и советская НФ — отличные направления для следующего погружения.';
+  } else {
+    label = 'Читатель у порога';
+    comment = 'Ремесло фантаста — это отдельная наука. Но именно с незнания начинается любой интересный путь. Эти вопросы — карта того, что стоит изучить.';
+  }
+
+  const gridHtml = answers.map(a => `<div class="result-dot" style="background:${a ? '#639922' : '#E24B4A'}"></div>`).join('');
+
+  container.innerHTML = `
+    <div class="result-card">
+      <div class="result-score">${score}/${n}</div>
+      <div class="result-label">${label}</div>
+      <div class="result-grid" style="grid-template-columns:repeat(${n},1fr)">${gridHtml}</div>
+      <div class="result-comment">${comment}</div>
+      <button class="restart-btn" id="restart">Пройти снова</button>
+    </div>`;
+
+  document.getElementById('restart').addEventListener('click', () => {
+    current = 0; score = 0; answered = false;
+    answers = new Array(questions.length).fill(null);
+    render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
