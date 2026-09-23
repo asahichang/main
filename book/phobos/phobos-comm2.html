@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<!-- saved from url=(0094)https://hds-offjv38mkb1k-6014-8h31e.grok-code-wild.hades-www.grok-sandbox.com/phobos-link.html -->
+<html lang="ru"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Фобос-линк</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <!-- <link rel="stylesheet" href="./Фобос-линк-с кнопками_files/css2"> -->
+  <style>
+    /* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexmono/v20/-F63fjptAgt5VM-kVkqdyU8n1iIq129k.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexmono/v20/-F63fjptAgt5VM-kVkqdyU8n1isq129k.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexmono/v20/-F63fjptAgt5VM-kVkqdyU8n1iAq129k.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexmono/v20/-F63fjptAgt5VM-kVkqdyU8n1iEq129k.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexmono/v20/-F63fjptAgt5VM-kVkqdyU8n1i8q1w.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3twJwl1FgtIU.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3twJwlRFgtIU.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3twJwl9FgtIU.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3twJwl5FgtIU.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgg.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD6llDCqg4poY.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD6llDA6g4poY.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD6llDBKg4poY.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD6llDCKg4poY.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD6llDCag4poY.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD6llDB6g4.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD2FlDCqg4poY.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD2FlDA6g4poY.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD2FlDBKg4poY.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD2FlDCKg4poY.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD2FlDCag4poY.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSD2FlDB6g4.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSDNF5DCqg4poY.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSDNF5DA6g4poY.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSDNF5DBKg4poY.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSDNF5DCKg4poY.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSDNF5DCag4poY.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSDNF5DB6g4.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pbYF_Oqeef2kg.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B09;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pbYF_Oleef2kg.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pbYF_Oreec.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pa8FvOqeef2kg.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B09;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pa8FvOleef2kg.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pa8FvOreec.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+  </style>
+  <style>
+    :root {
+      --bg: #0b0e14; --bg2: #121722; --surface: #171d2a; --surface2: #1e2636;
+      --fg: #e8e4d8; --muted: #9aa3b2; --faint: #6b7382; --primary: #5eead4;
+      --mars: #c45c32; --warn: #e8b86d; --danger: #e05d4f; --border: #2a3346; --probe: #f2d27a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: "IBM Plex Sans", sans-serif; min-height: 100%; }
+    h1 { font-family: Rajdhani, sans-serif; margin: 0; font-size: 1.75rem; letter-spacing: .04em; }
+    .kicker { font-family: Rajdhani, sans-serif; font-size: .75rem; letter-spacing: .22em; color: var(--primary); margin: 0; }
+    header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+    .clock { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .clock b { background: var(--surface); color: var(--fg); padding: 4px 8px; border-radius: 6px; font-weight: 500; }
+    .wrap { display: grid; gap: 16px; padding: 16px; grid-template-columns: minmax(0, 1.4fr) minmax(260px, .8fr); }
+    @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; min-height: 360px; overflow: hidden; }
+    .tabs, .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    .controls { border-bottom: 0; border-top: 1px solid var(--border); }
+    button { cursor: pointer; border: 0; background: transparent; color: var(--muted); font: inherit; padding: 8px 12px; border-radius: 8px; min-height: 40px; }
+    button.on { background: var(--surface2); color: var(--primary); }
+    button.play { background: var(--primary); color: var(--bg); min-width: 44px; }
+    .stage { position: relative; flex: 1; min-height: 260px; }
+    canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+    .zoom { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 4px; }
+    .zoom button, .zoom span { min-width: 44px; min-height: 44px; background: var(--surface); color: var(--fg); border: 1px solid var(--border); border-radius: 8px; font-size: 18px; }
+    .zoom span { display: flex; align-items: center; justify-content: center; font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--muted); }
+    .panel:fullscreen, .panel:-webkit-full-screen { width: 100%; height: 100%; border-radius: 0; background: var(--bg); }
+    aside { display: flex; flex-direction: column; gap: 12px; }
+    .card { border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 14px; }
+    .card.ok { border-color: #5eead466; } .card.warn { border-color: #e8b86d66; } .card.bad { border-color: #e05d4f66; }
+    .label { font-size: 11px; letter-spacing: .12em; color: var(--muted); margin: 0 0 4px; }
+    .title { font-family: Rajdhani, sans-serif; font-size: 1.6rem; margin: 0; }
+    .muted { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat dt { font-size: 12px; color: var(--muted); } .stat dd { margin: 0; font-family: "IBM Plex Mono", monospace; font-size: 1.1rem; }
+    .hint { font-size: 12px; color: var(--faint); margin: 0; }
+    .arch { width: 100%; text-align: left; border: 1px solid var(--border); background: var(--bg); color: var(--fg); }
+    .arch span { display: block; margin-top: 8px; color: var(--muted); font-size: 14px; }
+    .bar { position: relative; height: 40px; background: var(--bg); border-radius: 8px; overflow: hidden; margin: 0 10px 6px; }
+    .seg { position: absolute; top: 0; height: 100%; border: 0; border-radius: 0; padding: 0; }
+    .seg.link { background: #5eead4b3; } .seg.acc { background: #e8b86dcc; } .seg.occult, .seg.sabotage { background: #e05d4fb3; }
+    .needle { position: absolute; top: 0; width: 2px; height: 100%; background: var(--fg); pointer-events: none; }
+    .legend { display: flex; justify-content: space-between; font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--faint); padding: 0 10px 10px; }
+    input[type=range] { flex: 1; min-width: 160px; accent-color: var(--primary); }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+<style>:root div.content-showcase-itru-sufficient-2d:not(.q7d5z1l):not(.x9a7b3k), :root div[class*="publift-widget-"]:has(.fuse-slot-sticky), :root .inset-x-0[x-data="adblockBanner()"], :root #hero a[download="Unicore.zip"], :root body > div[data-captcha-enable="true"] > div.cleanslate[id^="google-captcha-"] > div.captcha-box, :root html > #__cf_challenge_host__, :root html[data-scrapbook-source][data-scrapbook-create][data-scrapbook-title] > body.no-js > div.main-wrapper[role="main"] > div.main-content, :root html > body.body > div.container > div.content > form > table.optoutForm, :root html > body > div.container > form#unsubscribe-form[onsubmit="submitUnsubscribeForm(event)"], :root html[lang] > body:not([class]):not([id]):not([style]) > div.background-container > div.container > div.captcha-box, :root body.wp-singular > div[id$="-overlay"] > div[id$="-container"] > div[class*="-container"] > div[id$="-checkbox-window"], :root html > .cfmd-shadow-host, :root .wp-singular > iframe[srcdoc][allowfullscreen][allow*="clipboard-write"][style*="2147483647"], :root html > #nc-cover:not(body), :root body > .cf-root, :root .cjs-container > #checkbox-window, :root .wp-singular > div[data-sm][style*="2147483647"] > iframe[style*="100%"][allow*="clipboard-write"], :root #ipBar + .main, :root #mainBtn[onclick="startVerify()"], :root #turnstile[onclick="handleClick()"], :root body > .page > .verify-row, :root body > .page > #mainVerifyRow, :root html[lang] > body.ishome > div.adult + main.main, :root .container a[title="AI Jerk OFF"][href][target="_blank"], :root body > #mdl-register.modal.anm-e.regnow, :root .flex a[href^="http://adpostup.com/"], :root #app-root ~ a[href][target="_blank"][style="position: fixed;top: 0;left: 0;width: 100%;height: 100%;display: block;z-index: 9999999;cursor: auto"], :root #wrapper ~ a[href][target="_blank"][style="position: fixed;top: 0;left: 0;width: 100%;height: 100%;display: block;z-index: 9999999;cursor: auto"], :root .header ~ div[style^="position:fixed;inset:0;z-index:2147483647;background:black;opacity:0.01;height:"], :root img[width="728"][height="90"], :root button.btn[data-openuri*="/4/"], :root #adbtm[onclick="badr();"], :root #teaser3[style^="width: 100%;height:0;text-align: center;display: scroll;position:fixed;"], :root a[href^="https://www.polybuzz.ai/"] img.responsive-image, :root .kln > a[href^="https://www.polybuzz.ai/"], :root html[lang][style^="--main-bg-color"] > body:not([class]):not([id]) > div#container[style="visibility: visible;"] > div#banner[style="opacity:0"] ~ main:not([class]):not([id]) > div#message, :root #donate > a[href][style][onclick="thank_you()"][target="_blank"][rel="nofollow"], :root .container a[href^="https://insensitiveshoweraudible.com/"], :root .jwplayer ~ div[style="position:absolute;top:0;left:0;width: 100%;height: 100%;z-index:2147483647"], :root iframe.lazyloaded[data-src^="https://rcm-fe.amazon-adsystem.com/"], :root div[style^="position: fixed; inset: 0px; z-index: 2147483647; background: black; opacity: 0.01"], :root .skel-layers-fixed a[href*=".com/smartpop/"], :root [style^="position: fixed; inset: 0px; z-index: 2147483647; background-color: transparent; pointer-events: auto; cursor: auto; margin: 0px; padding: 0px; display: block;"], :root .ads-iframe:not([style="position: absolute; left: -10px; top: -10px;"]), :root .ad-content:not(:empty), :root div[style="position: fixed; display: block; width: 100%; height: 100%; inset: 0px; background-color: rgba(0, 0, 0, 0); z-index: 300000;"], :root #weatherad:not(:empty), :root #topbannerad:not(:empty), :root #topBannerAd:not(:empty), :root #ad_img:not(:empty), :root #adContext:not(:empty), :root .ad-300x250:not(.ads), :root [data-ad-width]:not([style$="left: -10000px !important; top: -1000px !important;"]):not(.adsbygoogle), :root .adunit:not(.text-ad), :root .adslot_1:not(.text-ad), :root #ads-footer:not([style^="position: absolute; left: -5000px"]), :root a.tdn[href^="https://landing.brazzersnetwork.com/"], :root #ads-1:not([style^="position: absolute; left: -5000px"]), :root #adframe:not(frameset):not([style^="position: absolute; left: -5000px"]), :root #ad_slot:not([style^="position: absolute; left: -5000px"]), :root #ad_big:not([style^="position: absolute; left: -5000px"]), :root #ad_area:not([style^="position: absolute; left: -5000px"]), :root #ad_300:not([style^="position: absolute; left: -5000px"]), :root a[dontfo=""][style$="position: absolute; z-index: 2147483647;"], :root [href^="https://join.enjoyx.com/track/"], :root a[href*=".click/?z="][href*="&n"], :root [href^="//taghaugh.com/"], :root div[class$="player-promo-col"], :root [href^="https://www.safestcontentgate.com/"], :root [href^="//cadsecs.com/"], :root [href^="//mellowads.com/"], :root .cjs-container > #verify-window, :root [href^="https://fireads.online/"], :root html[lang="vi"] .sspp-area, :root html[lang="tr"] > body.has-footer-ad.has-pageskin-desktop a.pageskin-desktop-wrapper, :root html[lang="tr"] #aa-wp .container-ads-adjustment, :root body > a.visible[id][href][target="_blank"], :root #videojs ~ div[style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; z-index: 2147483646;"], :root html > #bw-rc-host, :root .close-btn4[onclick="closeAd4()"], :root .close-btn3[onclick="closeAd3()"], :root .close-btn[onclick="closeAd()"], :root #go-to-top + div[id][class], :root .bb ~ main#container .containerAds, :root #midadd:not(:empty), :root #adzerk:not(:empty), :root #advert-header:not(:empty), :root div.card > div#cbRow.checkbox-row[onclick="startVerify()"], :root #tongkatlol ~ script[src^="/shrinke/js/"] ~ .main-content-box > div[style="width:100%;height:110px"], :root body > div[style$="z-index: 2147483647; top: 0px; left: 0px; position: fixed; display: block;"], :root html > body > div.container.m-p > #checkbox-window.checkbox-window, :root .container a[href^="https://seduced.com"][href*="ref="], :root #kt_player .fp-brand, :root a[id][href="https://toolkitspro.com"][rel^="noopener noreferrer"], :root #kt_player #ads_iframe, :root .header-container a[href^="https://candyai.gg/"], :root [src^="//dombnrs.com/"], :root #kt_player ~ #sp-player, :root a[href*="/go.php?a_aid="], :root [href^="https://klsdee.com/"], :root [href^="//producebreed.com/"], :root #modern-player-root ~ div[id^="custom-invisible-overlay-"][class^="custom-popup-overlay-"], :root [href="//xxxrevpushclcdu.com/app.webp"], :root [href^="https://adult.xyz/"], :root [href^="https://popcash.net/"], :root a[href^="http://www.poweredbyliquidfire.mobi/"], :root [href^="https://t.mobtyb.com/"], :root [data-lnguri*="vipbox"], :root .reklama:not(.ads), :root a[href^="https://syndication.exdynsrv.com/splash.php"], :root [href*="/afu.php"], :root span[id^="ezoic-pub-ad-placeholder-"], :root ins.adsbygoogle[data-ad-slot], :root ins.adsbygoogle[data-ad-client], :root img[src^="https://s-img.adskeeper.com/"], :root #download a[download="Unicore.zip"], :root guj-ad, :root body[data-clipboard-code] > .main-wrapper, :root gpt-ad, :root div#spot-holder.spot-holder[style="display: block;"], :root div[ow-ad-unit-wrapper], :root div[id^="zergnet-widget"], :root html[lang] > body:not([class]):not([id]):not([style]) > div.container > div.recaptcha-box, :root div[id^="vuukle-ad-"], :root div[id^="taboola-stream-"], :root div[id^="sticky_ad_"], :root div[id^="st"][style^="z-index: 999999999;"], :root div[id^="rc-widget-"], :root html > body > div.content > dl > dd.dd1 > div.min_sider > form#form1[action="unsubscribe.php"], :root div[id^="mrec-leaderboard-"], :root div[id^="gpt_ad_"], :root div[id^="ezoic-pub-ad-"], :root div[id^="dfp-ad-"], :root div[id^="adspot-"], :root a[onclick="openAuc();"], :root ps-connatix-module, :root div[id^="ad_position_"], :root [data-ad-module]:not([style$="left: -10000px !important; top: -1000px !important;"]):not(.adsbygoogle), :root a[id][href="https://chpadblock.com/"][rel^="noopener noreferrer"], :root div[id^="ad-div-"], :root #banner468:not([style^="position: absolute; left: -5000px"]), :root div[data-id-advertdfpconf], :root div[data-dfp-id], :root div[style="top: 0px; left: 0px; width: 1287px; height: 500px; position: fixed; z-index: 2147483647;"], :root hl-adsense, :root div[data-contentexchange-widget], :root div[data-alias="300x250 Ad 2"], :root div[data-adzone], :root #buy-sell-ads:not(:empty), :root div[data-adunit-path], :root div[data-adname], :root div[data-ad-targeting], :root div[data-ad-region], :root div[data-ad-placeholder], :root div[aria-label="Ads"], :root .google-ad:not(.testAd), :root display-ads, :root #ad_space:not([style^="position: absolute; left: -5000px"]), :root display-ad-component, :root atf-ad-slot, :root aside[id^="adrotate_widgets-"], :root div[style^="position:fixed;inset:0px;z-index:2147483647;background:black;opacity:0.01"], :root aside[aria-label="retailmedia.complimentarySponsored"], :root html[lang] > body#body > * > div.cvh.BlockClicksActivityBusy, :root amp-fx-flying-carpet, :root amp-embed[type="taboola"], :root html > #nochain-demo-frame:not(body), :root html[lang="tr"] #aa-wp .rnd-ads-adjustment, :root amp-connatix-player, :root div[id^="google_dfp_"], :root ad-slot, :root a[href^="https://www.purevpn.com/"][href*="&utm_source=aff-"], :root a[href^="https://www.onlineusershielder.com/"], :root html[lang="tr"] > body.has-footer-ad.has-pageskin-desktop a.pageskin-click-right, :root a[href^="https://financeads.net/tc.php?"], :root a[href^="https://www.mrskin.com/tour"], :root a[href^="https://www.infowarsstore.com/"] > img, :root a[href^="https://www.highperformancecpmgate.com/"], :root amp-ad, :root a[href^="https://www.highcpmrevenuenetwork.com/"], :root a[href^="https://www.get-express-vpn.com/offer/"], :root a[href^="https://lnkxt.bannerator.com/"], :root a[href^="https://www.geekbuying.com/dynamic-ads/"], :root #cmdTextDisplay ~ *, :root [href^="https://groorsoa.net/"], :root a[href^="https://www.financeads.net/tc.php?"], :root a[href^="https://www.effectiveratecpm.com/"], :root [href^="https://www.herbanomic.com/"] > img, :root a[href^="https://www.dql2clk.com/"], :root [data-template-type="nativead"], :root a[href^="https://www.adultempire.com/"][href*="?partner_id="], :root a[href^="https://www.nutaku.net/signup/landing/"], :root a[href^="https://www.dating-finder.com/signup/?ai_d="], :root a[href^="https://wolf-327b.com/"], :root body > .content-wrapper > .cf-wrap, :root [data-ad-manager-id]:not([style$="left: -10000px !important; top: -1000px !important;"]):not(.adsbygoogle), :root a[href^="https://voluum.prom-xcams.com/"], :root a[href^="https://twinrdsyte.com/"], :root div[data-type="_mgwidget"]:not(.eyeo), :root .category-ads:not(html):not(body):not(.post), :root a[href^="https://twinrdsrv.com/"], :root [href="https://snvhost.com/"], :root a[href^="https://trk.nfl-online-streams.club/"], :root a[href^="https://tracking.avapartner.com/"], :root a[href^="https://track.wg-aff.com"], :root a[href^="https://track.ultravpn.com/"], :root a[href^="https://track.afcpatrk.com/"], :root [href="https://t.me/Russia_Vs_Ukraine_War3"], :root a[href^="https://track.adform.net/"], :root a[href^="https://torguard.net/aff.php"] > img, :root .menu-item a[href^="https://go.rmhfrtnd.com"], :root [data-identity="adhesive-ad"], :root a[href^="https://tc.tradetracker.net/"] > img, :root a[href^="https://tatrck.com/"], :root a[href^="https://click.candyoffers.com/"], :root [href^="https://zstacklife.com/"] img, :root a[href^="https://t.aslnk.link/"], :root .container a[href^="https://go.mavrtracktor.com/"], :root a[onmousedown^="this.href='https://paid.outbrain.com/network/redir?"], :root a[href^="https://t.ajump1.com/"], :root a[href^="https://t.adating.link/"], :root a[href^="https://go.trackitalltheway.com/"], :root [href^="https://track.fiverr.com/visit/"] > img, :root a[href^="https://syndication.exoclick.com/"], :root a[href^="https://syndication.dynsrvtbg.com/"], :root div[data-alias="300x250 Ad 1"], :root a[href^="https://syndicate.contentsserved.com/"], :root a[href^="https://svb-analytics.trackerrr.com/"], :root a[onmousedown^="this.href='https://paid.outbrain.com/network/redir?"] + .ob_source, :root a[href^="http://www.iyalc.com/"], :root a[href^="https://claring-loccelkin.com/"], :root a[href^="https://stardomcoit.com/"], :root a[href^="https://track.aftrk5.com/"], :root a[href^="https://slkmis.com/"], :root a[href^="https://myclick-2.com/"], :root a[href^="https://sexynearme.com/"], :root a[href^="https://s.zlinkt.com/"], :root a[href^="https://s.zlinkr.com/"], :root bottomadblock, :root a[href^="https://s.zlinkd.com/"], :root a[href^="https://ad.doubleclick.net/"], :root a[href^="https://static.fleshlight.com/images/banners/"], :root a[href^="https://s.zlink7.com/"], :root a[href^="https://s.ma3ion.com/"], :root a[href^="https://www.privateinternetaccess.com/"] > img, :root a[href^="https://s.gentlefieldpattern.com/"], :root a[href^="https://s.eunow4u.com/"], :root a[href^="https://random-affiliate.atimaze.com/"], :root #downloadAd:not(:empty), :root #kt_player > div[style$="display: block;"][style*="inset: 0px;"], :root a[href^="https://quotationfirearmrevision.com/"], :root a[href^="https://pubads.g.doubleclick.net/"], :root a[href^="https://prf.hn/click/"][href*="/camref:"] > img, :root a[href^="https://www.dating-finder.com/?ai_d="], :root a[href^="https://serve.awmdelivery.com/"], :root a[href^="https://prf.hn/click/"][href*="/adref:"] > img, :root app-ad, :root [href^="https://ap.octopuspop.com/click/"] > img, :root a[href^="https://postback1win.com/"], :root html[lang] > body#body > * > div.cv-xwrapper > div.cvc > div.cv-inner, :root [href^="https://go.mavrtracktor.com/"], :root a[href^="https://a.adtng.com/"], :root a[href^="https://playnano.online/offerwalls/?ref="], :root a[href^="https://mmwebhandler.aff-online.com/"], :root a[href^="https://www.bet365.com/"][href*="affiliate="], :root a[href^="https://pb-track.com/"], :root a[href^="https://pb-front.com/"], :root a[href^="https://paid.outbrain.com/network/redir?"], :root a[href^="https://streamate.com/landing/click/"], :root div[class^="Adstyled__AdWrapper-"], :root a[href^="https://osfultrbriolenai.info/"], :root a[href^="https://upsups.click/"], :root .ad-placeholder:not(#detect, #detect_ad_empire, #filter_ads_by_classname, .adsbox), :root a[href^="https://ndt5.net/"], :root a[href^="https://natour.naughtyamerica.com/track/"], :root a.poly-title[href^="https://www.polybuzz.ai/"], :root a[href^="https://mediaserver.entainpartners.com/renderBanner.do?"], :root [data-ad-name], :root a[href^="https://loboclick.com/"], :root a[href^="https://lead1.pl/"], :root .cta-button[onclick="openUpdateModal()"], :root a[href^="https://landing.brazzersnetwork.com/"], :root a[href^="https://join.bannedsextapes.com/track/"], :root [href^="https://exi8ef83z9.com/"], :root a[href^="https://jaxofuna.com/"], :root a[href^="https://italarizege.xyz/"], :root .category-ad:not(html):not(body):not(.post), :root a[href^="https://s.happyleafmotion.com/"], :root a[href^="https://identicaldrench.com/"], :root a[href^="https://helmethomicidal.com/"], :root #adsquare:not([style^="position: absolute; left: -5000px"]), :root a[href^="https://golinks.work/"], :root a[href^="https://go.xxxjmp.com"], :root [class^="div-gpt-ad"]:not([style^="width: 1px; height: 1px; position: absolute; left: -10000px; top: -"]), :root a[href^="https://zirdough.net/"], :root [class^="tile-picker__CitrusBannerContainer-sc-"], :root a[href^="https://go.xxxiijmp.com"], :root .ad-link:not(.adsbox), :root a[href^="https://go.xtbaffiliates.com/"], :root a[href^="https://go.xlviirdr.com"], :root div[class$="-adlabel"], :root a[href^="https://go.xlviiirdr.com"], :root a[href^="https://go.xlivrdr.com"], :root a[href^="https://ismlks.com/"], :root [href^="https://www.mypillow.com/"] > img, :root a[href^="https://go.xlirdr.com"], :root [data-css-class="dfp-inarticle"], :root a[href^="https://go.tmrjmp.com"], :root a[href^="https://go.markets.com/visit/?bta="], :root a[href^="https://billing.purevpn.com/aff.php"] > img, :root a[href^="https://go.hpyrdr.com/"], :root [data-lnguri^="https://s3.amazonaws.com"], :root a[href^="https://lijavaxa.com/"], :root a[href^="https://go.goaserv.com/"], :root a[href^="https://go.etoro.com/"] > img, :root a[href^="https://go.dmzjmp.com"], :root a[href^="https://www.bang.com/?aff="], :root #mgb-container > #mgb, :root a[href^="https://go.admjmp.com"], :root a[href^="https://get.surfshark.net/aff_c?"][href*="&aff_id="] > img, :root a[href^="https://datewhisper.life/"], :root a[href^="https://click.linksynergy.com/fs-bin/"] > img, :root a[href^="https://get-link.xyz/"], :root a[href^="https://www.mrskin.com/account/"], :root a[id][href="https://hamrocsit.com"][rel^="noopener noreferrer"], :root a[href^="https://www.adskeeper.com"], :root #vidcloud-player > #overlay-container, :root a[data-redirect^="https://paid.outbrain.com/network/redir?"], :root [href^="https://clicks.affstrack.com/"] > img, :root a[href^="https://engine.phn.doublepimp.com/"], :root a[href^="https://dl-protect.net/"], :root a[href*=".foxqck.com/"], :root a[href^="https://ctosrd.com/"], :root div[id*="ScriptRoot"]:not(.eyeo), :root a[href^="https://clixtrac.com/"], :root a[href^="https://clicks.pipaffiliates.com/"], :root #ad_footer:not([style^="position: absolute; left: -5000px"]), :root app-advertisement, :root a[href^="https://getmatchedlocally.com/"], :root a[href^="https://clickins.slixa.com/"], :root a[href^="https://combodef.com/"], :root a[href^="https://click.hoolig.app/"], :root a[href^="https://track.totalav.com/"], :root a[href^="https://ctrdwm.com/"], :root img[src^="https://images.purevpnaffiliates.com"], :root a[href^="https://porntubemate.com/"], :root a[href^="https://clickadilla.com/"], :root a[href^="https://click.dtiserv2.com/"], :root a[href^="https://www.adxsrve.com/"], :root a[href^="https://click.Ggpickaff.com/"], :root a[href^="https://go.awdeliverynet.com/"], :root a[href^="https://go.xlvirdr.com"], :root a[href^="https://cam4com.go2cloud.org/"], :root a[onclick^="window.location.replace('https://random-affiliate.atimaze.com/"], :root a[href^="https://bongacams2.com/track?"], :root a[href^="https://t.ajrkm1.com/"], :root #main-content a[href^="https://hub.buzzaffiliates.com/"], :root a[href^="https://bongacams10.com/track?"], :root a[href*=".g2afse.com/"], :root a[href^="https://bodelen.com/"], :root a[href^="//hoodingluster.com/"], :root a[href^="https://black77854.com/"], :root a[href^="https://rixofa.com/"], :root a[href^="https://best-experience-cool.com/"], :root [data-taboola-options], :root a[href^="https://believessway.com/"], :root a[href^="https://Click.ggpickaff.com/"], :root a[href^="https://banners.livepartners.com/"], :root a[href^="http://revolvemockerycopper.com/"], :root a[href^="https://awptjmp.com/"], :root a[href^="https://join.sexworld3d.com/track/"], :root a[href^="https://track.cam4tracking.com/"], :root a[href^="https://aweptjmp.com/"], :root a[href^="https://ausoafab.net/"], :root #tabVideo > .rmedia, :root a[href^="https://aj1070.online/"], :root a[href^="https://ads.planetwin365affiliate.com/"], :root a[href^="https://ads.leovegas.com/"], :root a[href^="https://a.medfoodhome.com/"], :root .nya-slot[style], :root a[href^="https://a.bestcontentweb.top/"], :root a[href^="https://adultfriendfinder.com/go/"], :root a[href^="https://a.bestcontentoperation.top/"], :root a[href^="https://a2.adform.net/"], :root a[href^="https://a.candyai.love/"], :root .banner-img > .pbl, :root [data-m-ad-id], :root a[href^="https://a-ads.com/"], :root [data-testid^="section-AdRowBillboard"], :root .ad-placeholder:not(#filter_ads_by_classname):not(#detect_ad_empire):not(#detect):not(.adsbox), :root broadstreet-zone-container, :root a[href^="https://ak.psaltauw.net/"], :root a[href^="https://1winpb.com/"], :root a[href^="https://chaturbate.com/in/?"], :root .home a[href^="https://s.zline0.com/"], :root a[href^="https://prf.hn/click/"][href*="/creativeref:"] > img, :root a[href*="&maxads="], :root a[href^="http://www.adultempire.com/unlimited/promo?"][href*="&partner_id="], :root a[href^="https://1betandgonow.com/"], :root div[id^="optidigital-adslot"], :root [href^="https://wsup.ai/"], :root a[href^="https://123-stream.org/"], :root a[href^="https://in.rabbtrk.com/"], :root a[href^="http://www.h4trck.com/"], :root [href^="https://a.acebet.com/api/click?"], :root #video_player ~ div[id] div[style^="position:fixed;inset:0px;z-index:"], :root a[href^="http://www.friendlyduck.com/AF_"], :root .btn-primary[onclick="showVerification()"], :root a[href^="http://partners.etoro.com/"], :root [href="https://chaturbate.jjgirls.com/"] > img, :root body div#notificationPopup.notificationPopupBlock, :root a[href^="http://cam4com.go2cloud.org/aff_c?"], :root a[href^="https://ads.betfair.com/redirect.aspx?"], :root #leader_ad:not(:empty), :root amp-ad-custom, :root [href^="http://referrer.website/"], :root a[href^="http://trk.globwo.online/"], :root a-ad, :root a[href^="https://offhandpump.com/"], :root a[href^="http://stickingrepute.com/"], :root #slashboxes > .deals-rail, :root [href^="http://mypillow.com/"] > img, :root a[href^="http://bongacams.com/track?"], :root .fp-ui > a[href][target="_blank"][style^="position: absolute; inset: 0px;"], :root a[href^="//startgaming.net/tienda/" i], :root a[href^="https://a.medfoodsafety.com/"], :root a[href^="//go.eabids.com/"], :root a[href^=" https://www.friendlyduck.com/AF_"], :root [data-cl-spot-id], :root a[href*="/jump/next.php?r="], :root #banner728x90:not([style^="position: absolute; left: -5000px"]), :root div[id^="lazyad-"], :root a[href^="http://com-1.pro/"], :root [href^="https://www.profitablegatecpm.com/"], :root a[href*=".cfm?domain="][href*="&fp="], :root #vstr ~ #overlay, :root [id^="section-ad-banner"], :root [id^="ad_slider"], :root html#html[sti][vic][lang] > body#allbody, :root [href^="https://www.onclickperformance.com/"], :root a[href^="https://www.goldenfrog.com/vyprvpn?offer_id="][href*="&aff_id="], :root a[href^="https://wmctjd.com/"], :root a[href*="//jjgirls.com/sex/Chaturbate"], :root [id^="ad-wrap-"], :root a[href^="http://sarcasmadvisor.com/"], :root .ad-slot:not(.adsbox):not(.adsbygoogle), :root [href^="https://www.restoro.com/"], :root [href^="https://www.targetingpartner.com/"], :root .close-btn2[onclick="closeAd2()"], :root a[href^="https://join.virtuallust3d.com/"], :root .section-subheader > .section-hotel-prices-header, :root [href^="https://www.hostg.xyz/"] > img, :root [href*="passtechusa.com"], :root a[href^="https://bngpt.com/"], :root a[href^="http://adultfriendfinder.com/go/"], :root a[href^="https://fastestvpn.com/lifetime-special-deal?a_aid="], :root a[href^="https://tour.mrskin.com/"], :root a[href^="https://s.zlink3.com/"], :root a[href^="http://sneakyadministration.com/"], :root [href^="https://www.brighteonstore.com/products/"] img, :root citrus-ad-wrapper, :root a[href^="https://go.grinsbest.com/"], :root [href^="https://www.avantlink.com/click.php"] img, :root html.canvas > body.wp-singular + div[popover="manual"], :root a[href^="https://t.acam.link/"], :root a[href^="https://go.strpjmp.com/"], :root [href^="https://url.totaladblock.com/"], :root div[id^="ad-position-"], :root a[href^="https://www.toprevenuegate.com/"], :root a[href^="https://bc.game/"], :root a[href^="https://bngprm.com/"], :root [href^="https://shiftnetwork.infusionsoft.com/go/"] > img, :root a[href^="https://trk.softonixs.xyz/"], :root [href^="https://wct.link/click?"], :root [href^="//look.utndln.com/offer"], :root div[data-adunit], :root app-large-ad, :root [href^="https://turtlebids.irauctions.com/"] img, :root a[href^="https://iqbroker.com/"][href*="?aff="], :root .p-post-ad:not(html):not(body), :root #vplayer ~ img[id][onclick], :root [href^="https://rpwmct.com/"], :root a[href^="https://go.cmtaffiliates.com/"], :root [href^="https://mylead.global/stl/"] > img, :root [data-testid="adBanner-wrapper"], :root [href^="https://optimizedelite.com/"] > img, :root a[href^="https://go.rmishe.com/"], :root [href^="https://ilovemyfreedoms.com/landing-"], :root a[href^="https://go.xxxijmp.com"], :root [href^="https://istlnkcl.com/"], :root a[href^="https://go.nordvpn.net/aff"] > img, :root #tongkatlol ~ script[src^="/shrinke/js/"] ~ .main-content-box + .content-box > div[id][style^="position: fixed; display: block; width: 100%;"], :root .\[\&_\.gdprAdTransparencyCogWheelButton\]\:\!pjra-z-\[5\], :root [href^="http://clicks.totemcash.com/"], :root a[href^="https://ad.zanox.com/ppc/"] > img, :root [data-d-ad-id], :root a[href*=".engine.adglare.net/"], :root [class~="mailpoet_form_popup_overlay"], :root a[href^="https://www.brazzersnetwork.com/landing/"], :root a[href^="https://explore-site.com/"], :root .AdBody:not(body), :root [href^="https://glersakr.com/"], :root a[href^="https://tm-offers.gamingadult.com/"], :root [href^="https://charmingdatings.life/"], :root [data-id^="div-gpt-ad"], :root a[href^="https://tracker.loropartners.com/"], :root [href^="https://awbbjmp.com/"], :root a[href^="https://go.bushheel.com/"], :root a[href^="https://ctjdwm.com/"], :root body > div.mw[role="main"] > .mc, :root a[href^="https://camfapr.com/landing/click/"], :root div[data-ad-wrapper], :root .gnt_em_vp_c[data-g-s="vp_dk"], :root [href="//sexcams.plus/"], :root [href^="http://www.mypillow.com/"] > img, :root a[href^="https://join.virtualtaboo.com/track/"], :root [id^="ad_sky"], :root [name^="google_ads_iframe"], :root [href^="https://go.xlrdr.com"], :root [href*="uselnk.com/"], :root a[href^="https://s.cant3am.com/"], :root .nav-item[href^="https://candyai.gg/"], :root [data-testid^="taboola-"], :root a[href^="https://track.1234sd123.com/"], :root zeus-ad, :root [data-testid="prism-ad-wrapper"], :root [href^="https://antiagingbed.com/discount/"] > img, :root a[href*=".adsrv.eacdn.com/"], :root #teaser1[style^="width:autopx;"], :root [href^="https://www.cloudways.com/en/?id"], :root #modal[doskip][prclck], :root body > .main-wrapper > .main-content > .intro > #checkbox-window, :root [data-uri^="https://s3.amazonaws.com"], :root [href^="https://mypatriotsupply.com/"] > img, :root a[href^="https://go.hpyjmp.com"], :root iframe[scrolling="no"][sandbox*="allow-popups allow-modals"][style^="width: 100%; height: 100%; border: none;"], :root [href^="https://mystore.com/"] > img, :root html[lang] > body.startnew > div#sections > section#section_uname, :root span[data-ez-ph-id], :root [href^="https://track.aftrk1.com/"], :root html[lang] > body:not([style]) > div.captchaBody, :root #adheader:not([style^="position: absolute; left: -5000px"]), :root div[id^="adngin-"], :root [data-rc-widget], :root a[href^="https://stellarcashflow.net/trck/"], :root [data-mobile-ad-id], :root [href^="https://join.playboyplus.com/track/"], :root html > #bw-cf-root, :root [href^="https://go.smljmp.com/"], :root a[href^="https://gamingadlt.com/?offer="], :root a[href^="https://go.bbrdbr.com"], :root a[href^="https://fc.lc/ref/"], :root body.user-clicked[style="cursor: auto;"] > #root > .app-container, :root a[href^="https://pb-imc.com/"], :root a[href^="https://www8.smartadserver.com/"], :root topadblock, :root a[href^="//s.zlinkd.com/"], :root a[href^="https://adclick.g.doubleclick.net/"], :root [data-freestar-ad][id], :root [data-dynamic-ads], :root [data-desktop-ad-id], :root [href^="https://track.wg-aff.com/click"], :root a[href^="https://go.rmhfrtnd.com"], :root [data-asg-ins], :root [data-block-type="ad"], :root [onclick*="content.ad/"], :root [href^="https://go.rdrjmp.com/"], :root a[href^="https://snowdayonline.xyz/"], :root a[href^="https://join.dreamsexworld.com/"], :root a[href^="http://join.brokestraightboys.com/track/"], :root div[id^="div-ads-"], :root [href^="https://rapidgator.net/article/premium/ref/"], :root a[href^="https://track.aftrk3.com/"], :root [href^="https://join3.bannedsextapes.com"], :root [href^="https://join.girlsoutwest.com/"], :root html > body.hold-transition.theme-primary.bg-img[style^="background-image"][style*="wallpaperaccess.com"][style*="background-repeat"][style*="background-size"], :root AMP-AD, :root [data-ad-cls], :root .ad-box:not(#ad-banner):not(:empty), :root body > .wrapper > .card-box > #step-1, :root [data-ez-name], :root a[style="width:100%;height:100%;z-index:10000000000000000;position:absolute;top:0;left:0;"], :root .ob_container .item-container-obpd, :root #ads_top:not(a), :root a[href^="https://go.mnaspm.com/"], :root a[href^="https://service.bv-aff-trx.com/"], :root .ad_slot:not(.text-ad), :root #st-ami + div[id][class*=" "], :root a[href^="https://6-partner.com/"], :root [class^="s2nPlayer"], :root a[href^="https://traffdaq.com/"], :root [data-testid="ad_testID"], :root [href^="https://ad.admitad.com/"], :root [href^="https://mypillow.com/"] > img, :root [data-testid="commercial-label-taboola"], :root a[href^="http://tc.tradetracker.net/"] > img, :root [class^="amp-ad-"], :root .ad_unit:not(.text-ad, .adsbox), :root [href="https://clickaine.com"], :root #playerOverlay[style="position:absolute; z-index:3"], :root a[href^="https://www.liquidfire.mobi/"], :root .grid > .container > #aside-promotion, :root DFP-AD, :root #hero + div.marquee-wrap + section#games + section#features + #download, :root #ads-banner:not([style^="position: absolute; left: -5000px"]), :root AD-SLOT, :root a[href^="https://www.googleadservices.com/pagead/aclk?"] > img, :root body > .security-container[style="opacity: 1; transform: translateY(0px);"], :root a[href^="https://a.bestcontentfood.top/"], :root #kt_player > a[target="_blank"], :root [href^="https://zone.gotrackier.com/"], :root .ad-area:not(.text-ad), :root a[href^="https://ab.advertiserurl.com/aff/"], :root #adSpecial:not(:empty), :root a[data-oburl^="https://paid.outbrain.com/network/redir?"], :root .sidebar-ad:not(.adsbygoogle), :root a[href^="https://s.zlinkn.com/"], :root a[href^="https://go.xxxvjmp.com/"], :root .ads_container:not(.text-ad), :root [class^="adDisplay-module"], :root div[style^="z-index: 999999; background-image: url(\"data:image/gif;base64,"][style$="position: absolute;"], :root [href^="https://affiliate.fastcomet.com/"] > img, :root a[href^="https://t.ajrkm3.com/"], :root in-page-message[doskip], :root [href^="https://aads.com/campaigns/"], :root a[href^="https://juicyads.in/"], :root #ad_728:not([style^="position: absolute; left: -5000px"]), :root div[id^="apn_native_ad_slot_"], :root .adhesion:not(body), :root body > div.captcha-container > div.captcha-card, :root ad-shield-ads, :root a[href^="https://hot-growngames.life/"], :root .ad_box:not(.text-ad), :root [href^="https://wap4dollar.com/ad/nonadult/serve.php"], :root [href="https://jdrucker.com/gold"] > img, :root .fp-player > div[style="position: absolute; inset: 0px; overflow: hidden; z-index: 160; background: transparent; display: block;"], :root .ad-wrap:not(#google_ads_iframe_checktag), :root a[href^="https://www.friendlyduck.com/AF_"], :root html[lang="tr"] #aa-wp + .fixed-footer .footer-ad-container, :root [href^="https://ad1.adfarm1.adition.com/"], :root #teaser3[style^="width:autopx;"], :root a[href^="https://gml-grp.com/"], :root a[href^="https://activate-game.com/"], :root .ob_dual_right > .ob_ads_header ~ .odb_div, :root a[href^="https://wittered-mainging.com/"], :root div[id][style^="position: fixed; inset: 0px; z-index: 2147483647; background: black"][style*="opacity: 0.01"], :root #teaser3[style="width: 100%;text-align: center;display: scroll;position:fixed;bottom: 0;margin: 0 auto;z-index: 103;"], :root html[lang="tr"] > body.has-footer-ad.has-pageskin-desktop a.pageskin-click-left, :root [data-revive-zoneid], :root a[href^="https://go.skinstrip.net"][href*="?campaignId="], :root figure.movie-detail-banner div[style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; z-index: 999; cursor: pointer;"], :root #teaser2[style^="width:autopx;"], :root a[href^="https://losingoldfry.com/"], :root #player div[style$="cursor: pointer; position: absolute; width: 100%; height: 100%; padding: 1rem; z-index: 2147483647;"], :root div[style="position: fixed; inset: 0px; z-index: 2147483647; pointer-events: auto;"], :root .scroll-fixable.rail-right > .deals-rail, :root div[id^="adrotate_widgets-"], :root .Ad-Container:not(.adsbygoogle) { display: none !important; }</style></head>
+<body><script type="text/javascript">function _translatepage_7172fd2c3a75a7fb3ca66970039adce0(from_lang)
+							{
+//								if (from_lang == 'ru')
+								if (["","ru"].indexOf(from_lang) >= 0)
+									return;
+
+								if ('google' == "bing")
+								{
+									var eWidgetDiv = document.getElementById('MicrosoftTranslatorWidget');
+									if (!eWidgetDiv)
+									{
+										var eWidgetDiv = document.createElement('DIV');
+										eWidgetDiv.id = 'MicrosoftTranslatorWidget';
+										eWidgetDiv.style.display = 'none';
+										document.body.insertBefore(eWidgetDiv, document.body.firstChild);
+									}
+
+									window.document.cookie = "mstmode=notify";
+									window.document.cookie = "mstto=" + 'ru';
+
+									var eWidgetScript = document.createElement('SCRIPT');
+									eWidgetScript.type = "text/javascript";
+									eWidgetScript.charset = "UTF-8";
+/*
+									eWidgetScript.onload = function()
+									{
+										if (window.Microsoft && window.Microsoft.Translator)
+											Microsoft.Translator.translate(document.body, from_lang, 'ru');
+									}
+*/
+									if (from_lang == "auto")
+										from_lang = "";
+									// !! for moderators: this block is not active for some browsers! Check upper second `if`!
+									eWidgetScript.src = 'https://www.microsofttranslator.com/ajax/v2/widget.aspx?mode=manual&from=' + from_lang + '&to=' + 'ru' + '&toolbar=thin';
+/*
+									eWidgetScript.src = ((window.location && window.location.href && window.location.href.indexOf('https') == 0)
+															? "https://ssl.microsofttranslator.com"
+															: "http://www.microsofttranslator.com"
+														) + "/ajax/v2/widget.aspx?mode=manual&from=_"+from_lang + "&to=" + 'ru' + "&layout=ts";
+*/
+									window._mstAppId = window.my_mstAppId;
+									document.body.insertBefore(eWidgetScript, document.body.firstChild);
+								}
+								else if ('google' == "yandex")
+								{
+									var ytWidget = document.createElement("DIV");
+									ytWidget.id = "ytWidget";
+									window.document.body.insertBefore(ytWidget, window.document.body.childNodes[0]);
+
+									var yTransScript = window.document.createElement("SCRIPT");
+									// !! for moderators: this block is not active for some browsers! Check upper second `if`!
+									yTransScript.src = "https://translate.yandex.net/website-widget/v1/widget.js?widgetId=ytWidget&pageLang=" + from_lang + "&defaultLang=ru&widgetTheme=light&autoMode=false";
+									window.document.body.appendChild( yTransScript );
+								}
+								else	// google
+								{
+									var onGoogleTranslateElementInitFunctionName = arguments.callee.name.replace(/^_[^_]+_/, "_googleTranslateElementInit_");		// we don't see here scriptCfg, because we redefine this function as inline
+									window[onGoogleTranslateElementInitFunctionName] = function()
+									{
+//										window.google.translate._const._cl = 'ru';
+										new window.google.translate.TranslateElement({
+											pageLanguage: from_lang,
+											autoDisplay: false
+										}).showBanner(false);
+									};
+
+									var gTransScript = window.document.createElement("SCRIPT");
+									// !! for moderators: this block is not active for some browsers! Check upper second `if`!
+									gTransScript.src = "https://translate.google." + (false ? "com.hk" : "com") + "/translate_a/element.js?cb="+onGoogleTranslateElementInitFunctionName+"&hl="+'ru';
+									window.document.body.appendChild( gTransScript );
+								}
+							}</script>
+  <header>
+    <div>
+      <p class="kicker">МАРС · ФОБОС · 24 Ч</p>
+      <h1>Фобос-линк</h1>
+    </div>
+    <div class="clock"><b id="clock">20:59</b><span>/ 24:00</span></div>
+  </header>
+  <div class="wrap">
+    <section class="panel">
+      <div class="tabs">
+        <button class="on" data-view="system">Система</button>
+        <button data-view="flyby">Пролёт</button>
+        <button data-view="sky">Небо базы</button>
+        <span style="flex:1"></span>
+        <button class="on" data-layer="cable">Кабель</button>
+        <button class="on" data-layer="areo">АСС</button>
+        <button class="on" data-layer="molniya">Молния</button>
+        <button class="on" data-layer="beams">Лучи</button>
+        <button class="on" data-layer="shadow">Тень</button>
+      </div>
+      <div class="stage"><canvas id="cv" aria-label="Схема системы Марс–Фобос–Вояджер-6" width="1095" height="1104" style="width: 730px; height: 736px; cursor: grab;"></canvas>
+        <div class="zoom">
+          <button type="button" id="zIn" aria-label="Приблизить">+</button>
+          <button type="button" id="zOut" aria-label="Отдалить">−</button>
+          <button type="button" id="zRst" aria-label="Сбросить">↺</button>
+          <button type="button" id="fs" aria-label="На весь экран">⛶</button>
+          <span id="zPct">112%</span>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="play" id="play" aria-label="Пауза">❚❚</button>
+        <button data-speed="0.25">0.25×</button>
+        <button class="on" data-speed="1">1×</button>
+        <button data-speed="4">4×</button>
+        <button data-speed="16">16×</button>
+        <label class="sr">Время миссии</label>
+        <input id="slider" type="range" min="0" max="24" step="0.01" value="12">
+      </div>
+      <div class="bar" id="bar"><div class="needle" style="left: 87.4552%;"></div><button class="seg link" title="00:00–05:30 Цикл 1 · стабильный канал" style="left: 0%; width: 22.9167%;"></button><button class="seg acc" title="05:30–06:30 Перегрузка АСС" style="left: 22.9167%; width: 4.16667%;"></button><button class="seg link" title="06:30–07:40 Цикл 1 · доворот" style="left: 27.0833%; width: 4.8625%;"></button><button class="seg occult" title="07:40–09:40 Радиотень Марса · I" style="left: 31.9458%; width: 8.33333%;"></button><button class="seg link" title="09:40–15:10 Цикл 2 · перицентр" style="left: 40.2792%; width: 22.9167%;"></button><button class="seg occult" title="15:10–17:25 Радиотень Марса · II" style="left: 63.1958%; width: 9.375%;"></button><button class="seg link" title="17:25–19:25 Межокно · компенсация АСС" style="left: 72.5708%; width: 8.33333%;"></button><button class="seg link" title="19:25–21:30 Цикл 3 · сброс данных" style="left: 80.9042%; width: 8.67917%;"></button><button class="seg acc" title="21:30–22:30 Перегрузка АСС · II" style="left: 89.5833%; width: 4.16667%;"></button><button class="seg sabotage" title="22:30–24:00 Саботаж канала" style="left: 93.75%; width: 6.25%;"></button></div>
+      <div class="legend"><span>00:00</span><span>перицентр 12:00</span><span>24:00</span></div>
+    </section>
+    <aside>
+      <div class="card ok" id="status">
+        <p class="label">КАНАЛ</p>
+        <p class="title" id="kind">Связь есть</p>
+        <p id="wtitle">Цикл 3 · сброс данных</p>
+        <p class="muted" id="wdetail">Активная передача телеметрии до конца пролёта.</p>
+      </div>
+      <dl class="stats">
+        <div class="card stat"><dt>Дистанция до Марса</dt><dd id="dist">1718 тыс. км</dd></div>
+        <div class="card stat"><dt>Угловой размер</dt><dd id="ang">13.6′</dd><p class="hint" id="angh">меньше Луны</p></div>
+        <div class="card stat"><dt>Скорость Вояджера-6</dt><dd>50 км/с</dd></div>
+        <div class="card stat"><dt>Орбита Фобоса</dt><dd>7.65 ч</dd></div>
+      </dl>
+      <div class="card">
+        <p class="label">АРХИТЕКТУРА СЕТИ</p>
+        <button class="arch" data-arch="cable">Кабельное кольцо<span>3–4 приёмопередатчика по экватору Фобоса, 70 км оптоволокна. Снимает уход зонда за горизонт. Не закрывает радиотень Марса (~53 мин, в сюжете ~2 ч).</span></button>
+        <button class="arch" data-arch="molniya">Полярная «Молния»<span hidden="">Высокоэллиптический ретранслятор над полюсом. Марс не перекрывает линию зонд ↔ спутник. Видит минимум половину Фобоса.</span></button>
+        <button class="arch" data-arch="areo">Ареостационар (АСС)<span hidden="">Три КА на 17 032 км с шагом 120°. Лазерные линки и спуск на подмарсианскую антенну. Сюжетные провалы: приоритет колоний, углы антенн, солнечная засветка.</span></button>
+        <button class="arch" data-arch="sub">Подмарсианская база<span hidden="">Герой здесь. Марс неподвижен в зените (диск 42°). Основные зеркала смотрят в планету; зонд ловят боковыми лепестками и всенаправленными антеннами.</span></button>
+      </div>
+    </aside>
+  </div>
+<script>
+const MARS_R=3389.5, PHOBOS_A=9376, PHOBOS_P=7.65, AREO_A=17032, AREO_P=24.6229;
+const PROBE_B=577500, PROBE_V=50, MISSION=24, HALF=PROBE_V*3600*(MISSION/2), OCCULT=21.2;
+const STATIONS=[{lon:0},{lon:Math.PI/2},{lon:Math.PI},{lon:3*Math.PI/2}];
+const WINDOWS=[
+  {t0:0,t1:5.5,kind:"link",title:"Цикл 1 · стабильный канал",detail:"Фобос на видимой стороне. Кольцевая сеть станций и антимарсианская антенна держат зонд на фоне открытого космоса."},
+  {t0:5.5,t1:6.5,kind:"acc",title:"Перегрузка АСС",detail:"Ареостационарные ретрансляторы отдают приоритет колониям. Неофициальный глубококосмический канал зонда отключён на 1 час."},
+  {t0:6.5,t1:7.667,kind:"link",title:"Цикл 1 · доворот",detail:"Сеть Фобоса снова ведёт зонд до планового ухода спутника за диск."},
+  {t0:7.667,t1:9.667,kind:"occult",title:"Радиотень Марса · I",detail:"Фобос физически заходит за диск Марса. Весь спутник в радиотени ~2 часа. Наземная сеть бессильна."},
+  {t0:9.667,t1:15.167,kind:"link",title:"Цикл 2 · перицентр",detail:"Фобос выныривает с другой стороны. В 12:00 — максимальное сближение: Марс 40′ на небе зонда."},
+  {t0:15.167,t1:17.417,kind:"occult",title:"Радиотень Марса · II",detail:"Второй уход Фобоса за планету. Геометрия повторяется каждые 7.65 ч."},
+  {t0:17.417,t1:19.417,kind:"link",title:"Межокно · компенсация АСС",detail:"Полярный «Молния» и ареостационарный треугольник перекрывают горизонт Фобоса, пока спутник разворачивается."},
+  {t0:19.417,t1:21.5,kind:"link",title:"Цикл 3 · сброс данных",detail:"Активная передача телеметрии до конца пролёта."},
+  {t0:21.5,t1:22.5,kind:"acc",title:"Перегрузка АСС · II",detail:"Второй приоритетный слот внутренней сети Марса. Зонд выпадает из расписания ретрансляторов."},
+  {t0:22.5,t1:24,kind:"sabotage",title:"Саботаж канала",detail:"Длительный внеплановый провал: ориентация антенн АСС сорвана, лазерные межспутниковые линки погашены."}
+];
+const LABELS={link:"Связь есть",acc:"Провал АСС",occult:"Радиотень Марса",sabotage:"Саботаж"};
+function clamp(t){return Math.min(MISSION,Math.max(0,t));}
+function windowAt(t){t=clamp(t);return WINDOWS.find(w=>t>=w.t0&&t<w.t1)||WINDOWS.at(-1);}
+function probePos(t){return {x:-HALF+PROBE_V*3600*t,y:PROBE_B};}
+function marsDist(t){const p=probePos(t);return Math.hypot(p.x,p.y);}
+function marsAng(t){return (2*Math.atan(MARS_R/marsDist(t))*180/Math.PI)*60;}
+function phobosPos(t){const th=Math.PI/2+(2*Math.PI*t)/PHOBOS_P;return {x:PHOBOS_A*Math.cos(th),y:PHOBOS_A*Math.sin(th),th};}
+function occulted(t){const ph=phobosPos(t),pr=probePos(t);const rPh=Math.hypot(ph.x,ph.y),rPr=Math.hypot(pr.x,pr.y);
+  const dot=(ph.x*pr.x+ph.y*pr.y)/(rPh*rPr);const sep=Math.acos(Math.min(1,Math.max(-1,dot)))*180/Math.PI;
+  return sep<OCCULT && rPh<rPr && ph.x*pr.x+ph.y*pr.y>0;}
+function areoTheta(i,t){return i*2*Math.PI/3+(2*Math.PI*t)/AREO_P;}
+function clock(t){const h=Math.floor(t),m=Math.floor((t-h)*60);return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");}
+function kindColor(k){return k==="link"?"#5eead4":k==="acc"?"#e8b86d":"#e05d4f";}
+
+let t=12, playing=true, speed=4, view="system";
+const layers={cable:true,areo:true,molniya:true,beams:true,shadow:true};
+let cam={scale:1,x:0,y:0};
+const MIN_Z=0.45, MAX_Z=10;
+if (matchMedia("(prefers-reduced-motion: reduce)").matches) playing=false;
+
+const canvas=document.getElementById("cv");
+const ctx=canvas.getContext("2d");
+const clockEl=document.getElementById("clock");
+const slider=document.getElementById("slider");
+const playBtn=document.getElementById("play");
+const bar=document.getElementById("bar");
+const needle=document.createElement("div"); needle.className="needle"; bar.appendChild(needle);
+WINDOWS.forEach(w=>{
+  const b=document.createElement("button");
+  b.className="seg "+w.kind;
+  b.style.left=(w.t0/MISSION*100)+"%";
+  b.style.width=((w.t1-w.t0)/MISSION*100)+"%";
+  b.title=clock(w.t0)+"–"+clock(w.t1)+" "+w.title;
+  b.onclick=()=>{playing=false;t=(w.t0+w.t1)/2;sync();};
+  bar.appendChild(b);
+});
+
+document.querySelectorAll("[data-view]").forEach(btn=>{
+  btn.onclick=()=>{view=btn.dataset.view;cam={scale:1,x:0,y:0};document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("on",x===btn));};
+});
+document.querySelectorAll("[data-layer]").forEach(btn=>{
+  btn.onclick=()=>{const k=btn.dataset.layer;layers[k]=!layers[k];btn.classList.toggle("on",layers[k]);};
+});
+document.querySelectorAll("[data-speed]").forEach(btn=>{
+  btn.onclick=()=>{speed=Number(btn.dataset.speed);document.querySelectorAll("[data-speed]").forEach(x=>x.classList.toggle("on",x===btn));};
+});
+playBtn.onclick=()=>{playing=!playing;playBtn.textContent=playing?"❚❚":"▶";};
+slider.oninput=()=>{playing=false;t=Number(slider.value);playBtn.textContent="▶";};
+document.querySelectorAll("[data-arch]").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll("[data-arch] span").forEach(s=>{if(s.parentElement!==btn)s.hidden=true;});
+    const sp=btn.querySelector("span"); sp.hidden=!sp.hidden;
+  };
+});
+
+function fillStars(w,h){let s=17;const rnd=()=>{s=(s*16807)%2147483647;return (s-1)/2147483646;};
+  for(let i=0;i<140;i++){ctx.fillStyle=`rgba(232,228,216,${0.15+rnd()*0.55})`;ctx.fillRect(rnd()*w,rnd()*h,rnd()>0.9?2:1,rnd()>0.9?2:1);} }
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawMars(x,y,r){const g=ctx.createRadialGradient(x-r*0.35,y-r*0.4,r*0.1,x,y,r);g.addColorStop(0,"#e07a4a");g.addColorStop(0.45,"#c45c32");g.addColorStop(1,"#6b2e1c");
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+  ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.clip();
+  ctx.fillStyle="rgba(232,228,216,0.55)";ctx.beginPath();ctx.ellipse(x,y-r*0.92,r*0.42,r*0.18,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="rgba(90,40,24,0.35)";ctx.beginPath();ctx.ellipse(x+r*0.2,y+r*0.15,r*0.5,r*0.22,0.4,0,Math.PI*2);ctx.fill();ctx.restore();
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.strokeStyle="rgba(224,122,74,0.55)";ctx.lineWidth=1.5;ctx.stroke();}
+function badge(x,y,text,color){ctx.font="12px IBM Plex Sans,sans-serif";const tw=ctx.measureText(text).width;
+  ctx.fillStyle="rgba(23,29,42,0.92)";roundRect(x,y,tw+22,26,8);ctx.fill();
+  ctx.fillStyle=color;ctx.beginPath();ctx.arc(x+11,y+13,4,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#e8e4d8";ctx.fillText(text,x+20,y+17);}
+
+function drawSystem(w,h){
+  const cx=w*0.42,cy=h*0.52,marsR=Math.min(w,h)*(h<320?0.09:0.11),km=MARS_R/marsR,phoR=PHOBOS_A/km,areoR=AREO_A/km;
+  ctx.strokeStyle="rgba(154,163,178,0.28)";ctx.setLineDash([4,6]);ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,phoR,0,Math.PI*2);ctx.stroke();
+  if(layers.areo){ctx.strokeStyle="rgba(94,234,212,0.28)";ctx.beginPath();ctx.arc(cx,cy,areoR,0,Math.PI*2);ctx.stroke();}
+  ctx.setLineDash([]);
+  if(layers.shadow){ctx.save();ctx.translate(cx,cy);const pr=probePos(t);ctx.rotate(Math.atan2(pr.y,pr.x));
+    ctx.fillStyle="rgba(224,93,79,0.12)";ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,areoR+28,-OCCULT*Math.PI/180,OCCULT*Math.PI/180);ctx.closePath();ctx.fill();ctx.restore();}
+  drawMars(cx,cy,marsR);
+  const win=windowAt(t), occ=occulted(t), ph=phobosPos(t), px=cx+ph.x/km, py=cy-ph.y/km;
+  const qy=Math.max(36,cy-areoR-56), qx=cx+(probePos(t).x/HALF)*Math.min(w*0.42,280);
+  ctx.setLineDash([3,8]);ctx.strokeStyle="rgba(242,210,122,0.35)";ctx.beginPath();ctx.moveTo(cx-Math.min(w*0.42,280),qy);ctx.lineTo(cx+Math.min(w*0.42,280),qy);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle="#f2d27a";ctx.beginPath();ctx.moveTo(qx+10,qy);ctx.lineTo(qx-8,qy-5);ctx.lineTo(qx-8,qy+5);ctx.closePath();ctx.fill();
+  ctx.font="600 11px Rajdhani,sans-serif";ctx.fillStyle="#f2d27a";ctx.fillText("ВОЯДЖЕР-6",qx+14,qy-8);
+  ctx.font="11px IBM Plex Sans,sans-serif";ctx.fillStyle="#9aa3b2";ctx.fillText("масштаб сжат",qx+14,qy+8);
+  if(layers.areo){
+    for(let i=0;i<3;i++){const th=areoTheta(i,t);ctx.fillStyle="#5eead4";ctx.beginPath();ctx.arc(cx+areoR*Math.cos(th),cy-areoR*Math.sin(th),4,0,Math.PI*2);ctx.fill();}
+    if(layers.beams){ctx.strokeStyle="rgba(94,234,212,0.35)";ctx.lineWidth=1;
+      for(let i=0;i<3;i++){const a=areoTheta(i,t),b=areoTheta((i+1)%3,t);ctx.beginPath();ctx.moveTo(cx+areoR*Math.cos(a),cy-areoR*Math.sin(a));ctx.lineTo(cx+areoR*Math.cos(b),cy-areoR*Math.sin(b));ctx.stroke();}}
+    ctx.fillStyle="#9aa3b2";ctx.font="11px IBM Plex Sans,sans-serif";ctx.fillText("Ареостационар 17 032 км",cx+areoR-20,cy-8);
+  }
+  if(layers.molniya){
+    const mx=cx+18,my=cy-Math.min(h,w)*0.38;
+    ctx.strokeStyle="rgba(154,163,178,0.35)";ctx.setLineDash([2,4]);ctx.beginPath();ctx.ellipse(cx,cy-Math.min(h,w)*0.12,36,Math.min(h,w)*0.32,0.05,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#9aa3b2";ctx.beginPath();ctx.arc(mx,my,5,0,Math.PI*2);ctx.fill();ctx.font="11px IBM Plex Sans,sans-serif";ctx.fillText("Молния · полюс",mx+10,my+4);
+    if(layers.beams && (win.kind==="link"||win.kind==="acc")){ctx.strokeStyle=win.kind==="link"?"rgba(94,234,212,0.45)":"rgba(232,184,109,0.4)";ctx.beginPath();ctx.moveTo(qx,qy);ctx.lineTo(mx,my);ctx.lineTo(px,py);ctx.stroke();}
+  }
+  ctx.save();ctx.translate(px,py);ctx.rotate(-ph.th);
+  ctx.fillStyle=occ?"#5a4a46":"#b7c0cc";ctx.beginPath();ctx.ellipse(0,0,16,12,0,0,Math.PI*2);ctx.fill();
+  if(layers.cable){ctx.strokeStyle=win.kind==="link"?"#5eead4":"#6b7382";ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(0,0,19,14,0,0,Math.PI*2);ctx.stroke();
+    STATIONS.forEach((s,i)=>{ctx.fillStyle=i===0?"#e07a4a":"#5eead4";ctx.beginPath();ctx.arc(Math.cos(s.lon)*19,Math.sin(s.lon)*14,3.2,0,Math.PI*2);ctx.fill();});}
+  ctx.restore();
+  ctx.font="600 12px Rajdhani,sans-serif";ctx.fillStyle="#e8e4d8";ctx.fillText("ФОБОС",px+20,py-10);
+  ctx.font="11px IBM Plex Sans,sans-serif";ctx.fillStyle="#9aa3b2";ctx.fillText(occ?"за диском Марса":"видимость с Вояджера-6",px+20,py+4);
+  if(layers.beams && win.kind==="link" && !occ){ctx.strokeStyle="rgba(94,234,212,0.65)";ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(qx,qy);ctx.lineTo(px,py);ctx.stroke();}
+  else if(layers.beams && win.kind!=="link"){ctx.strokeStyle=kindColor(win.kind)+"66";ctx.setLineDash([4,6]);ctx.beginPath();ctx.moveTo(qx,qy);ctx.lineTo(px,py);ctx.stroke();ctx.setLineDash([]);}
+  ctx.fillStyle="#9aa3b2";ctx.font="11px IBM Plex Sans,sans-serif";ctx.fillText("орбита Фобоса 9 376 км · 7.65 ч",cx-phoR-4,cy+phoR+16);
+  badge(16,16,"Марс с Вояджера-6: "+marsAng(t).toFixed(1)+"′",kindColor(win.kind));
+}
+function drawFlyby(w,h){
+  const cx=w*0.5,cy=h*0.58;drawMars(cx,cy,22);const b=96;
+  ctx.setLineDash([6,8]);ctx.strokeStyle="rgba(242,210,122,0.5)";ctx.beginPath();ctx.moveTo(24,cy-b);ctx.lineTo(w-24,cy-b);ctx.stroke();ctx.setLineDash([]);
+  const x=24+(t/24)*(w-48),y=cy-b;
+  ctx.fillStyle="#f2d27a";ctx.beginPath();ctx.moveTo(x+12,y);ctx.lineTo(x-9,y-6);ctx.lineTo(x-9,y+6);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(232,228,216,0.25)";ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.stroke();
+  const d=marsAng(t),disk=Math.max(6,(d/40)*28);
+  ctx.strokeStyle="#e07a4a";ctx.beginPath();ctx.arc(x,y-36,disk,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle="#e8e4d8";ctx.font="12px IBM Plex Sans,sans-serif";ctx.fillText("угловой размер Марса "+d.toFixed(1)+"′",x-70,y-36-disk-8);
+  ctx.fillStyle="#9aa3b2";ctx.font="11px IBM Plex Sans,sans-serif";
+  ctx.fillText("прямая · 50 км/с · 4 320 000 км за 24 ч",24,28);
+  ctx.fillText("прицельный параметр 577 500 км",24,46);
+  ctx.fillText("t = 0 ч",24,cy-b+22);ctx.fillText("t = 12 ч",cx-18,cy-b+22);ctx.fillText("t = 24 ч",w-70,cy-b+22);
+  badge(16,h-40,windowAt(t).title,kindColor(windowAt(t).kind));
+}
+function drawSky(w,h){
+  const cx=w/2,cy=h*0.52,marsPx=Math.min(w,h)*0.34;drawMars(cx,cy,marsPx);
+  ctx.fillStyle="#9aa3b2";ctx.font="12px IBM Plex Sans,sans-serif";ctx.fillText("Небо подмарсианской базы · Марс в зените, диск ≈ 42°",16,28);
+  const bearing=(t/7.65)*Math.PI*2,radius=marsPx+36+Math.sin(bearing)*18,ang=-Math.PI/2+bearing;
+  const px=cx+Math.cos(ang)*radius,py=cy+Math.sin(ang)*radius, occ=occulted(t), win=windowAt(t);
+  if(occ){ctx.fillStyle="rgba(224,93,79,0.12)";ctx.beginPath();ctx.arc(cx,cy,marsPx,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle="#f2d27a";ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#e8e4d8";ctx.fillText("Вояджер-6",px+10,py+4);
+  ctx.strokeStyle="rgba(232,228,216,0.12)";ctx.beginPath();ctx.arc(cx,cy,Math.min(w,h)*0.46,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle="#6b7382";ctx.fillText("горизонт Фобоса",16,h-24);
+  badge(16,48,occ?"Вояджер-6 за диском Марса":(win.kind==="link"?"окно связи":win.title),kindColor(win.kind));
+}
+function paint(){
+  const parent=canvas.parentElement,dpr=Math.min(devicePixelRatio||1,2),w=parent.clientWidth,h=parent.clientHeight;
+  if(canvas.width!==Math.floor(w*dpr)||canvas.height!==Math.floor(h*dpr)){canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr);canvas.style.width=w+"px";canvas.style.height=h+"px";}
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,"#0b0e14");bg.addColorStop(1,"#121722");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);fillStars(w,h);
+  ctx.save();ctx.translate(w/2+cam.x,h/2+cam.y);ctx.scale(cam.scale,cam.scale);ctx.translate(-w/2,-h/2);
+  if(view==="sky")drawSky(w,h);else if(view==="flyby")drawFlyby(w,h);else drawSystem(w,h);
+  ctx.restore();
+  const zp=document.getElementById("zPct"); if(zp) zp.textContent=Math.round(cam.scale*100)+"%";
+}
+function zoomAt(cx,cy,factor){
+  const rect=canvas.getBoundingClientRect();
+  const mx=cx-rect.left-rect.width/2, my=cy-rect.top-rect.height/2;
+  const next=Math.min(MAX_Z,Math.max(MIN_Z,cam.scale*factor));
+  const k=next/cam.scale;
+  cam={scale:next,x:mx-(mx-cam.x)*k,y:my-(my-cam.y)*k};
+}
+canvas.addEventListener("wheel",e=>{e.preventDefault();zoomAt(e.clientX,e.clientY,e.deltaY<0?1.12:1/1.12);},{passive:false});
+let dragging=false,lx=0,ly=0;
+canvas.addEventListener("pointerdown",e=>{if(e.button!==0)return;dragging=true;lx=e.clientX;ly=e.clientY;canvas.setPointerCapture(e.pointerId);canvas.style.cursor="grabbing";});
+canvas.addEventListener("pointermove",e=>{if(!dragging)return;cam={scale:cam.scale,x:cam.x+(e.clientX-lx),y:cam.y+(e.clientY-ly)};lx=e.clientX;ly=e.clientY;});
+canvas.addEventListener("pointerup",()=>{dragging=false;canvas.style.cursor="grab";});
+canvas.addEventListener("dblclick",()=>{cam={scale:1,x:0,y:0};});
+document.getElementById("zIn").onclick=()=>{cam={...cam,scale:Math.min(MAX_Z,cam.scale*1.25)};};
+document.getElementById("zOut").onclick=()=>{cam={...cam,scale:Math.max(MIN_Z,cam.scale/1.25)};};
+document.getElementById("zRst").onclick=()=>{cam={scale:1,x:0,y:0};};
+document.getElementById("fs").onclick=()=>{
+  const panel=document.querySelector(".panel");
+  if(!panel)return;
+  if(document.fullscreenElement) document.exitFullscreen();
+  else panel.requestFullscreen();
+};
+function sync(){
+  clockEl.textContent=clock(t);slider.value=t;needle.style.left=(t/MISSION*100)+"%";
+  const win=windowAt(t),tone=win.kind==="link"?"ok":win.kind==="acc"?"warn":"bad";
+  const st=document.getElementById("status");st.className="card "+tone;
+  document.getElementById("kind").textContent=LABELS[win.kind];
+  document.getElementById("wtitle").textContent=win.title;
+  document.getElementById("wdetail").textContent=win.detail;
+  document.getElementById("dist").textContent=(marsDist(t)/1000).toFixed(0)+" тыс. км";
+  const a=marsAng(t);document.getElementById("ang").textContent=a.toFixed(1)+"′";
+  document.getElementById("angh").textContent=a>30?"крупнее Луны":"меньше Луны";
+  paint();
+}
+let last=performance.now();
+function loop(now){
+  const dt=(now-last)/1000;last=now;
+  if(playing){t+=dt*speed*0.08;if(t>=MISSION)t=0;}
+  sync();requestAnimationFrame(loop);
+}
+new ResizeObserver(paint).observe(canvas.parentElement);
+requestAnimationFrame(loop);
+</script>
+
+
+<script type="text/javascript">_translatepage_7172fd2c3a75a7fb3ca66970039adce0("ru");</script></body></html>
