@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Попаданцы и альтернативная история — викторина</title>
+
+<!-- Open Graph -->
+<meta property="og:title" content="Насколько хорошо ты знаешь жанр попаданцев?" />
+<meta property="og:description" content="12 вопросов об альтернативной истории, прогрессорстве и выживании в прошлом." />
+<meta property="og:image" content="https://asahichang.github.io/main/preview.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://asahichang.github.io/main/time_travel_quiz.html" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Насколько хорошо ты знаешь жанр попаданцев?" />
+<meta name="twitter:description" content="12 вопросов об альтернативной истории, прогрессорстве и выживании в прошлом." />
+<meta name="twitter:image" content="https://asahichang.github.io/main/preview.jpg" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a18;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 640px; width: 100%; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 0.35rem; color: #1a1a18; }
+  .subtitle { font-size: 14px; color: #888780; margin-bottom: 1.75rem; }
+  .q-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+  }
+  .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+  .q-counter { font-size: 13px; color: #888780; }
+  .dots-row { display: flex; gap: 4px; flex-wrap: wrap; max-width: 180px; justify-content: flex-end; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #d3d1c7; display: inline-block; }
+  .dot.correct { background: #3B6D11; }
+  .dot.wrong { background: #A32D2D; }
+  .q-progress { height: 3px; background: #f1efe8; border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+  .q-progress-fill { height: 100%; background: #8B5A2B; border-radius: 2px; transition: width 0.4s ease; }
+  .q-category {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8B5A2B;
+    margin-bottom: 0.5rem;
+  }
+  .q-text { font-size: 15px; line-height: 1.55; margin-bottom: 1.25rem; color: #1a1a18; }
+  .q-options { display: flex; flex-direction: column; gap: 8px; }
+  .q-option {
+    padding: 10px 14px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a18;
+    cursor: pointer;
+    background: transparent;
+    text-align: left;
+    line-height: 1.45;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+  }
+  .q-option:hover:not(:disabled) { background: #f5f4f0; border-color: rgba(0,0,0,0.35); }
+  .q-option.correct { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option.wrong { background: #FCEBEB; border-color: #E24B4A; color: #A32D2D; }
+  .q-option.reveal { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+  .q-option:disabled { cursor: default; }
+  .q-explain {
+    margin-top: 1rem;
+    padding: 10px 14px;
+    background: #f5f4f0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #5f5e5a;
+    line-height: 1.6;
+    border-left: 2px solid #8B5A2B;
+    display: none;
+  }
+  .q-next {
+    margin-top: 1.25rem;
+    padding: 9px 20px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    display: none;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .q-next:hover { background: #f5f4f0; }
+  .result-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  .result-score { font-size: 52px; font-weight: 500; color: #1a1a18; margin-bottom: 0.25rem; }
+  .result-label { font-size: 15px; color: #888780; margin-bottom: 1.25rem; }
+  .result-grid { display: grid; gap: 5px; max-width: 300px; margin: 0 auto 1.5rem; }
+  .result-dot { width: 100%; aspect-ratio: 1; border-radius: 4px; }
+  .result-comment { font-size: 14px; color: #5f5e5a; line-height: 1.65; max-width: 420px; margin: 0 auto 1.75rem; }
+  .restart-btn {
+    padding: 9px 24px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #1a1a18;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .restart-btn:hover { background: #f5f4f0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Попаданцы и альтернативная история</h1>
+  <p class="subtitle">12 вопросов о прогрессорстве, выживании в прошлом и ловушках жанра</p>
+  <div id="quiz-main"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    category: "Альтернативная история",
+    q: "Ваш герой предотвратил убийство эрцгерцога Франца Фердинанда в 1914 году. Какое последствие будет наиболее реалистичным и интересным для сюжета?",
+    opts: [
+      "Первая мировая война отменяется навсегда, наступает вечный мир",
+      "Германия и Россия сразу же объединятся и покорят мир",
+      "Война всё равно начнётся из-за системных противоречий (союзнических обязательств, гонки вооружений), но повод будет другим — инцидент на море или в колониях",
+      "Героя немедленно арестует полиция за вмешательство в ход истории"
+    ],
+    correct: 2,
+    explain: "Читатели альтернативки не любят «тепличные» миры. Системные кризисы никуда не деваются. Смена «спускового крючка» даёт автору пространство для манёвра и новых интриг — это гораздо интереснее полной отмены войны."
+  },
+  {
+    category: "Эффект бабочки",
+    q: "На какой срок вперёд герой, изменивший крупное историческое событие в 1812 году, может достоверно знать будущее?",
+    opts: [
+      "До конца XXI века — он помнит учебник истории",
+      "Максимум на 3–5 лет: дальше «карта мира» меняется из-за хаотичных связей",
+      "Только до момента своей собственной смерти",
+      "Знание сохраняется, пока герой не вступит в интимную связь с местной жительницей"
+    ],
+    correct: 1,
+    explain: "Золотое правило альтернативки. Чем дальше от точки бифуркации, тем сильнее эффект бабочки. Знание дат рождения Наполеона или Ленина уже не поможет — их родители могли попросту не встретиться."
+  },
+  {
+    category: "Историческая достоверность",
+    q: "Герой попадает в Европу XII века. Он знает английский, немецкий или французский. Какая главная проблема ждёт его в общении с местными?",
+    opts: [
+      "Языковой барьер: язык изменился фонетически и лексически, взаимопонимание — 20–30%, потребуется время на адаптацию",
+      "Его примут за бога, потому что акцент звучит божественно",
+      "Местные говорят на латыни, а герой её не знает",
+      "Его сожгут на костре за неправильное произношение"
+    ],
+    correct: 0,
+    explain: "Избегать языкового барьера — дурной тон в серьёзной прозе. Средневековый диалект и Великий сдвиг гласных (в английском) сделают современного носителя языка почти иностранцем. Проработка этой детали сразу отличает внимательного автора."
+  },
+  {
+    category: "Выживание в прошлом",
+    q: "Что является самой частой и реалистичной причиной смерти современного человека в Средневековье в первые же две недели?",
+    opts: [
+      "Его убивают разбойники на дороге",
+      "Его казнят за ересь",
+      "Он не выдерживает психологического давления и сходит с ума",
+      "Он умирает от дизентерии, выпив некипячёной воды, или от инфекции из-за царапины"
+    ],
+    correct: 3,
+    explain: "Антисанитария, отсутствие иммунитета к местным штаммам бактерий и элементарная грязь убивают попаданцев чаще, чем мечи. Упоминание борьбы за чистоту воды и мытьё рук — маркер хорошего тона автора."
+  },
+  {
+    category: "Прогрессорство",
+    q: "Герой хочет сделать пенициллин в XV веке, чтобы спасти армию. Какую «техническую деталь» авторы часто игнорируют, вызывая гнев читателей?",
+    opts: [
+      "Плесень не растёт в хлебе",
+      "Инквизиция запрещает использовать плесень",
+      "У людей того времени аллергия на грибы",
+      "Плесень без специальной очистки скорее убьёт пациента, чем вылечит"
+    ],
+    correct: 3,
+    explain: "Вырастить плесень легко, но очистить действующее вещество без лабораторного оборудования невозможно — препарат либо не сработает, либо убьёт пациента токсинами. «Достать плесень и скормить больному» — главный мем и ругательство в среде читателей прогрессорства. Очистка антибиотиков требует сложной химии: экстракция, спирты, кислоты."
+  },
+  {
+    category: "Прогрессорство",
+    q: "Герой внедряет паровой или печатный станок. Какова будет первая реакция местной элиты и гильдий?",
+    opts: [
+      "Они увидят угрозу своему монополизму и укладу жизни — и попытаются уничтожить изобретение или самого героя",
+      "Они сразу поймут гениальность героя и сделают его министром",
+      "Они попросят героя научить их, чтобы самим разбогатеть",
+      "Они будут равнодушны, пока станок не начнёт говорить"
+    ],
+    correct: 0,
+    explain: "Прогрессорство — это не только чертежи, но и социальное сопротивление. Гильдии ремесленников, церковь, феодалы будут саботировать изменения, угрожающие их власти. Конфликт с «системой» обязателен — иначе книга теряет драматизм."
+  },
+  {
+    category: "Назад в СССР",
+    q: "Что является самым частым и разрушительным упрёком читателей к книгам жанра «Назад в СССР», если автор игнорирует этот аспект?",
+    opts: [
+      "Герой слишком много ест чёрной икры и пьёт коньяк",
+      "Герой не вступает в КПСС или комсомол в первой же главе",
+      "Отсутствие узнаваемых бытовых реалий: дефицита, блата, очередей, специфического сленга, талонов, быта коммуналок",
+      "Герой слишком легко находит общий язык с участковым милиционером"
+    ],
+    correct: 2,
+    explain: "Читатель этого жанра приходит за «ламповой», узнаваемой атмосферой. Игнорирование бытовых реалий — или их карикатурное сгущение до «ужасов тоталитаризма» без полутонов — разрушает погружение. Важен живой, детализированный баланс."
+  },
+  {
+    category: "Назад в СССР",
+    q: "Глобальная цель героя — предотвратить распад СССР. Какой подход считается наиболее проработанным в серьёзной альтернативке?",
+    opts: [
+      "Одиночка-мститель просто убивает всех «предателей» и западных шпионов из пистолета с глушителем",
+      "Построение собственной финансовой, кадровой или силовой базы влияния, постепенное замещение ключевых постов и реформирование экономики с учётом знаний о будущих кризисах",
+      "Написать анонимное письмо в «Правду» с изложением плана на 20 лет вперёд",
+      "Сбежать на Запад, заработать там миллиарды и оттуда управлять страной через подставных лиц"
+    ],
+    correct: 1,
+    explain: "«Одиночка-мститель» работает только в лёгком боевике. Серьёзная альтернативка требует понимания: системные изменения невозможны без системных рычагов влияния. Герой должен играть по правилам системы, чтобы её изменить, или создавать свою «империю» в тени."
+  },
+  {
+    category: "Этика попаданца",
+    q: "Герой знает, что историческая личность, которую он лечит, в будущем совершит ужасные преступления. Какое решение сделает книгу сильнее?",
+    opts: [
+      "Герой без колебаний спасает всех — он хороший врач, и история сама разберётся",
+      "Герой хладнокровно убивает пациента, чтобы «спасти будущее»",
+      "Герой осознаёт моральный груз своего знания, пытается найти компромисс и сталкивается с последствиями своего выбора",
+      "Герой игнорирует дилемму и просто выставляет пациенту огромный счёт"
+    ],
+    correct: 2,
+    explain: "Плоские решения («спасаю всех» или «убиваю злодеев») упрощают книгу до примитива. Настоящая драма медицинского попаданца строится на цене знаний. Осознанный выбор и его тяжёлые последствия формируют глубокую арку персонажа."
+  },
+  {
+    category: "Прогрессорство",
+    q: "Герой-фармацевт знает формулу аспирина, новокаина или сульфаниламидов. В чём главная сложность их производства в XVIII–XIX веке?",
+    opts: [
+      "Сложности с легализацией кустарного производства без разрешений гильдий",
+      "Отсутствие химически чистых реактивов и подходящего оборудования для синтеза",
+      "Ингредиенты растут только в определённых местах и их невозможно доставить",
+      "Местные жители боятся белых таблеток и предпочитают отвары трав"
+    ],
+    correct: 1,
+    explain: "Знать формулу мало — нужна химическая база. Описание процесса поиска или создания чистых веществ (например, выделение салициловой кислоты из коры ивы или создание простейшего дистиллятора) добавляет тексту «веса». Читатели обожают детали «кустарного хайтека»."
+  },
+  {
+    category: "Гаджеты в прошлом",
+    q: "У героя есть смартфон с 100% заряда и скачанной офлайн-Википедией. Какое использование этого «читерства» вызовет наибольшее уважение у читателей?",
+    opts: [
+      "Герой смотрит сериалы, чтобы не сойти с ума от скуки",
+      "Герой пытается дозвониться в полицию",
+      "Герой показывает местным фотографии, чтобы они поверили, что он маг",
+      "Герой тратит заряд на поиск точных пропорций компонентов для пороха или базовой металлургии, записывая данные на пергамент"
+    ],
+    correct: 3,
+    explain: "Читатели любят прагматичных героев. Использование гаджета как базы знаний для выживания и прогрессорства — канон. Разрядка телефона должна быть моментом драмы и перехода на «чистое» выживание без костылей из будущего."
+  },
+  {
+    category: "Логика жанра",
+    q: "Почему в жанре попаданцев герой почти всегда стремится получить дворянский титул или стать «серым кардиналом» при дворе?",
+    opts: [
+      "Потому что автор — тайный монархист",
+      "Он хочет собрать гарем из принцесс",
+      "Только так герой сможет заработать достаточно денег на внедрение своих идей",
+      "Титул даёт ресурс и иммунитет: без него любые инновации приведут к тому, что героя ограбят или сожгут как еретика"
+    ],
+    correct: 3,
+    explain: "Без титула и защиты сильных мира любые инновации заканчиваются ограблением или костром. Крестьянину или купцу не дадут строить заводы, вводить новые законы или иметь армию. Титул — это легальная броня от инквизиции и жадных феодалов. Это вопрос выживания, а не амбиций."
+  }
+];
+
+let current = 0, score = 0, answered = false;
+let answers = new Array(questions.length).fill(null);
+
+function render() {
+  const container = document.getElementById('quiz-main');
+  if (current >= questions.length) { renderResult(container); return; }
+  const q = questions[current];
+  const pct = (current / questions.length) * 100;
+  const dotsHtml = questions.map((_, i) => {
+    let cls = 'dot';
+    if (answers[i] === true) cls += ' correct';
+    else if (answers[i] === false) cls += ' wrong';
+    return `<span class="${cls}"></span>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="q-card">
+      <div class="q-header">
+        <span class="q-counter">Вопрос ${current + 1} из ${questions.length}</span>
+        <div class="dots-row">${dotsHtml}</div>
+      </div>
+      <div class="q-progress"><div class="q-progress-fill" style="width:${pct}%"></div></div>
+      <div class="q-category">${q.category}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.opts.map((opt, i) => `<button class="q-option" data-i="${i}">${opt}</button>`).join('')}
+      </div>
+      <div id="explain" class="q-explain"></div>
+      <button class="q-next" id="next-btn">${current < questions.length - 1 ? 'Следующий вопрос →' : 'Посмотреть результат →'}</button>
+    </div>`;
+
+  document.querySelectorAll('.q-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (answered) return;
+      answered = true;
+      const chosen = parseInt(this.dataset.i);
+      document.querySelectorAll('.q-option').forEach((b, i) => {
+        b.disabled = true;
+        if (i === q.correct) b.classList.add('reveal');
+        else if (i === chosen && chosen !== q.correct) b.classList.add('wrong');
+      });
+      answers[current] = (chosen === q.correct);
+      if (chosen === q.correct) score++;
+      const exp = document.getElementById('explain');
+      exp.style.display = 'block';
+      exp.textContent = q.explain;
+      document.getElementById('next-btn').style.display = 'inline-block';
+    });
+  });
+
+  document.getElementById('next-btn').addEventListener('click', () => {
+    current++; answered = false; render();
+  });
+}
+
+function renderResult(container) {
+  const n = questions.length;
+  const pct = score / n;
+  let label, comment;
+  if (pct >= 0.84) {
+    label = 'Серый кардинал истории';
+    comment = 'Вы знаете жанр изнутри: понимаете эффект бабочки, ловушки прогрессорства и зачем герою нужен титул. Можно садиться писать альтернативку.';
+  } else if (pct >= 0.58) {
+    label = 'Бывалый попаданец';
+    comment = 'Хорошее понимание логики жанра. Несколько ловушек поймали вас — но вы бы точно выжили в Средневековье дольше двух недель.';
+  } else if (pct >= 0.33) {
+    label = 'Новобранец с учебником истории';
+    comment = 'Вы помните, кто такой Фердинанд, но эффект бабочки и пенициллин вас пока подводят. Ещё пара книг жанра — и всё встанет на место.';
+  } else {
+    label = 'Жертва дизентерии';
+    comment = 'Не отчаивайтесь — большинство попаданцев тоже не выживают в первые две недели. Главное: не пейте некипячёную воду и читайте больше альтернативки.';
+  }
+
+  const gridHtml = answers.map(a => `<div class="result-dot" style="background:${a ? '#639922' : '#E24B4A'}"></div>`).join('');
+
+  container.innerHTML = `
+    <div class="result-card">
+      <div class="result-score">${score}/${n}</div>
+      <div class="result-label">${label}</div>
+      <div class="result-grid" style="grid-template-columns:repeat(${n},1fr)">${gridHtml}</div>
+      <div class="result-comment">${comment}</div>
+      <button class="restart-btn" id="restart">Пройти снова</button>
+    </div>`;
+
+  document.getElementById('restart').addEventListener('click', () => {
+    current = 0; score = 0; answered = false;
+    answers = new Array(questions.length).fill(null);
+    render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
