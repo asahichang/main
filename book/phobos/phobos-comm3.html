@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Фобос-линк</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Rajdhani:wght@600;700&display=swap" />
+  <style>
+    :root {
+      --bg: #0b0e14; --bg2: #121722; --surface: #171d2a; --surface2: #1e2636;
+      --fg: #e8e4d8; --muted: #9aa3b2; --faint: #6b7382; --primary: #5eead4;
+      --mars: #c45c32; --warn: #e8b86d; --danger: #e05d4f; --border: #2a3346; --probe: #f2d27a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: "IBM Plex Sans", sans-serif; min-height: 100%; }
+    h1 { font-family: Rajdhani, sans-serif; margin: 0; font-size: 1.75rem; letter-spacing: .04em; }
+    .kicker { font-family: Rajdhani, sans-serif; font-size: .75rem; letter-spacing: .22em; color: var(--primary); margin: 0; }
+    header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+    .clock { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .clock b { background: var(--surface); color: var(--fg); padding: 4px 8px; border-radius: 6px; font-weight: 500; }
+    .wrap { display: grid; gap: 16px; padding: 16px; grid-template-columns: minmax(0, 1.4fr) minmax(260px, .8fr); }
+    @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; min-height: 360px; overflow: hidden; }
+    .tabs, .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    .controls { border-bottom: 0; border-top: 1px solid var(--border); }
+    button { cursor: pointer; border: 0; background: transparent; color: var(--muted); font: inherit; padding: 8px 12px; border-radius: 8px; min-height: 40px; }
+    button.on { background: var(--surface2); color: var(--primary); }
+    button.play { background: var(--primary); color: var(--bg); min-width: 44px; }
+    .stage { position: relative; flex: 1; min-height: 260px; }
+    canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+    .zoom { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 4px; }
+    .zoom button, .zoom span { min-width: 44px; min-height: 44px; background: var(--surface); color: var(--fg); border: 1px solid var(--border); border-radius: 8px; font-size: 18px; }
+    .zoom span { display: flex; align-items: center; justify-content: center; font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--muted); }
+    .panel:fullscreen, .panel:-webkit-full-screen { width: 100%; height: 100%; border-radius: 0; background: var(--bg); }
+    aside { display: flex; flex-direction: column; gap: 12px; }
+    .card { border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 14px; }
+    .card.ok { border-color: #5eead466; } .card.warn { border-color: #e8b86d66; } .card.bad { border-color: #e05d4f66; }
+    .label { font-size: 11px; letter-spacing: .12em; color: var(--muted); margin: 0 0 4px; }
+    .title { font-family: Rajdhani, sans-serif; font-size: 1.6rem; margin: 0; }
+    .muted { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat dt { font-size: 12px; color: var(--muted); } .stat dd { margin: 0; font-family: "IBM Plex Mono", monospace; font-size: 1.1rem; }
+    .hint { font-size: 12px; color: var(--faint); margin: 0; }
+    .arch { width: 100%; text-align: left; border: 1px solid var(--border); background: var(--bg); color: var(--fg); }
+    .arch span { display: block; margin-top: 8px; color: var(--muted); font-size: 14px; }
+    .bar { position: relative; height: 40px; background: var(--bg); border-radius: 8px; overflow: hidden; margin: 0 10px 6px; }
+    .seg { position: absolute; top: 0; height: 100%; border: 0; border-radius: 0; padding: 0; }
+    .seg.link { background: #5eead4b3; } .seg.acc { background: #e8b86dcc; } .seg.occult, .seg.sabotage { background: #e05d4fb3; }
+    .needle { position: absolute; top: 0; width: 2px; height: 100%; background: var(--fg); pointer-events: none; }
+    .legend { display: flex; justify-content: space-between; font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--faint); padding: 0 10px 10px; }
+    input[type=range] { flex: 1; min-width: 160px; accent-color: var(--primary); }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <p class="kicker">МАРС · ФОБОС · 24 Ч</p>
+      <h1>Фобос-линк</h1>
+    </div>
+    <div class="clock"><b id="clock">12:00</b><span>/ 24:00</span></div>
+  </header>
+  <div class="wrap">
+    <section class="panel">
+      <div class="tabs">
+        <button class="on" data-view="system">Система</button>
+        <button data-view="flyby">Пролёт</button>
+        <button data-view="sky">Небо базы</button>
+        <span style="flex:1"></span>
+        <button class="on" data-layer="cable">Кабель</button>
+        <button class="on" data-layer="areo">АСС</button>
+        <button class="on" data-layer="molniya">Молния</button>
+        <button class="on" data-layer="beams">Лучи</button>
+        <button class="on" data-layer="shadow">Тень</button>
+      </div>
+      <div class="stage"><canvas id="cv" aria-label="Схема системы Марс–Фобос–Вояджер-6"></canvas>
+        <div class="zoom">
+          <button type="button" id="zIn" aria-label="Приблизить">+</button>
+          <button type="button" id="zOut" aria-label="Отдалить">−</button>
+          <button type="button" id="zRst" aria-label="Сбросить">↺</button>
+          <button type="button" id="fs" aria-label="На весь экран">⛶</button>
+          <span id="zPct">100%</span>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="play" id="play" aria-label="Пауза">❚❚</button>
+        <button data-speed="0.25">0.25×</button>
+        <button class="on" data-speed="1">1×</button>
+        <button data-speed="4">4×</button>
+        <button data-speed="16">16×</button>
+        <label class="sr">Время миссии</label>
+        <input id="slider" type="range" min="0" max="24" step="0.01" value="12" />
+      </div>
+      <div class="bar" id="bar"></div>
+      <div class="legend"><span>00:00</span><span>перицентр 12:00</span><span>24:00</span></div>
+    </section>
+    <aside>
+      <div class="card ok" id="status">
+        <p class="label">КАНАЛ</p>
+        <p class="title" id="kind">Связь есть</p>
+        <p id="wtitle"></p>
+        <p class="muted" id="wdetail"></p>
+      </div>
+      <dl class="stats">
+        <div class="card stat"><dt>Дистанция до Марса</dt><dd id="dist">—</dd></div>
+        <div class="card stat"><dt>Угловой размер</dt><dd id="ang">—</dd><p class="hint" id="angh"></p></div>
+        <div class="card stat"><dt>Скорость Вояджера-6</dt><dd>50 км/с</dd></div>
+        <div class="card stat"><dt>Орбита Фобоса</dt><dd>7.65 ч</dd></div>
+      </dl>
+      <div class="card">
+        <p class="label">АРХИТЕКТУРА СЕТИ</p>
+        <button class="arch" data-arch="cable">Кабельное кольцо<span>3–4 приёмопередатчика по экватору Фобоса, 70 км оптоволокна. Снимает уход зонда за горизонт. Не закрывает радиотень Марса (~53 мин, в сюжете ~2 ч).</span></button>
+        <button class="arch" data-arch="molniya">Полярная «Молния»<span hidden>Высокоэллиптический ретранслятор над полюсом. Марс не перекрывает линию зонд ↔ спутник. Видит минимум половину Фобоса.</span></button>
+        <button class="arch" data-arch="areo">Ареостационар (АСС)<span hidden>Три КА на 17 032 км с шагом 120°. Лазерные линки и спуск на подмарсианскую антенну. Сюжетные провалы: приоритет колоний, углы антенн, солнечная засветка.</span></button>
+        <button class="arch" data-arch="sub">Подмарсианская база<span hidden>Герой здесь. Марс неподвижен в зените (диск 42°). Основные зеркала смотрят в планету; зонд ловят боковыми лепестками и всенаправленными антеннами.</span></button>
+      </div>
+    </aside>
+  </div>
+<script>
+const MARS_R=3389.5, PHOBOS_A=9376, PHOBOS_P=7.65, AREO_A=17032, AREO_P=24.6229;
+const PROBE_B=577500, PROBE_V=50, MISSION=24, HALF=PROBE_V*3600*(MISSION/2), OCCULT=21.2;
+const STATIONS=[{lon:0},{lon:Math.PI/2},{lon:Math.PI},{lon:3*Math.PI/2}];
+const WINDOWS=[
+  {t0:0,t1:5.5,kind:"link",title:"Цикл 1 · стабильный канал",detail:"Фобос на видимой стороне. Кольцевая сеть станций и антимарсианская антенна держат зонд на фоне открытого космоса."},
+  {t0:5.5,t1:6.5,kind:"acc",title:"Перегрузка АСС",detail:"Ареостационарные ретрансляторы отдают приоритет колониям. Неофициальный глубококосмический канал зонда отключён на 1 час."},
+  {t0:6.5,t1:7.667,kind:"link",title:"Цикл 1 · доворот",detail:"Сеть Фобоса снова ведёт зонд до планового ухода спутника за диск."},
+  {t0:7.667,t1:9.667,kind:"occult",title:"Радиотень Марса · I",detail:"Фобос физически заходит за диск Марса. Весь спутник в радиотени ~2 часа. Наземная сеть бессильна."},
+  {t0:9.667,t1:15.167,kind:"link",title:"Цикл 2 · перицентр",detail:"Фобос выныривает с другой стороны. В 12:00 — максимальное сближение: Марс 40′ на небе зонда."},
+  {t0:15.167,t1:17.417,kind:"occult",title:"Радиотень Марса · II",detail:"Второй уход Фобоса за планету. Геометрия повторяется каждые 7.65 ч."},
+  {t0:17.417,t1:19.417,kind:"link",title:"Межокно · компенсация АСС",detail:"Полярный «Молния» и ареостационарный треугольник перекрывают горизонт Фобоса, пока спутник разворачивается."},
+  {t0:19.417,t1:21.5,kind:"link",title:"Цикл 3 · сброс данных",detail:"Активная передача телеметрии до конца пролёта."},
+  {t0:21.5,t1:22.5,kind:"acc",title:"Перегрузка АСС · II",detail:"Второй приоритетный слот внутренней сети Марса. Зонд выпадает из расписания ретрансляторов."},
+  {t0:22.5,t1:24,kind:"sabotage",title:"Саботаж канала",detail:"Длительный внеплановый провал: ориентация антенн АСС сорвана, лазерные межспутниковые линки погашены."}
+];
+const LABELS={link:"Связь есть",acc:"Провал АСС",occult:"Радиотень Марса",sabotage:"Саботаж"};
+function clamp(t){return Math.min(MISSION,Math.max(0,t));}
+function windowAt(t){t=clamp(t);return WINDOWS.find(w=>t>=w.t0&&t<w.t1)||WINDOWS.at(-1);}
+function probePos(t){return {x:-HALF+PROBE_V*3600*t,y:PROBE_B};}
+function marsDist(t){const p=probePos(t);return Math.hypot(p.x,p.y);}
+function marsAng(t){return (2*Math.atan(MARS_R/marsDist(t))*180/Math.PI)*60;}
+function phobosPos(t){const th=Math.PI/2+(2*Math.PI*t)/PHOBOS_P;return {x:PHOBOS_A*Math.cos(th),y:PHOBOS_A*Math.sin(th),th};}
+function occulted(t){const ph=phobosPos(t),pr=probePos(t);const rPh=Math.hypot(ph.x,ph.y),rPr=Math.hypot(pr.x,pr.y);
+  const dot=(ph.x*pr.x+ph.y*pr.y)/(rPh*rPr);const sep=Math.acos(Math.min(1,Math.max(-1,dot)))*180/Math.PI;
+  return sep<OCCULT && rPh<rPr && ph.x*pr.x+ph.y*pr.y>0;}
+function areoTheta(i,t){return i*2*Math.PI/3+(2*Math.PI*t)/AREO_P;}
+function clock(t){const h=Math.floor(t),m=Math.floor((t-h)*60);return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");}
+function kindColor(k){return k==="link"?"#5eead4":k==="acc"?"#e8b86d":"#e05d4f";}
+
+let t=12, playing=true, speed=4, view="system";
+const layers={cable:true,areo:true,molniya:true,beams:true,shadow:true};
+let cam={scale:1,x:0,y:0};
+const MIN_Z=0.45, MAX_Z=10;
+if (matchMedia("(prefers-reduced-motion: reduce)").matches) playing=false;
+
+const canvas=document.getElementById("cv");
+const ctx=canvas.getContext("2d");
+const clockEl=document.getElementById("clock");
+const slider=document.getElementById("slider");
+const playBtn=document.getElementById("play");
+const bar=document.getElementById("bar");
+const needle=document.createElement("div"); needle.className="needle"; bar.appendChild(needle);
+WINDOWS.forEach(w=>{
+  const b=document.createElement("button");
+  b.className="seg "+w.kind;
+  b.style.left=(w.t0/MISSION*100)+"%";
+  b.style.width=((w.t1-w.t0)/MISSION*100)+"%";
+  b.title=clock(w.t0)+"–"+clock(w.t1)+" "+w.title;
+  b.onclick=()=>{playing=false;t=(w.t0+w.t1)/2;sync();};
+  bar.appendChild(b);
+});
+
+document.querySelectorAll("[data-view]").forEach(btn=>{
+  btn.onclick=()=>{view=btn.dataset.view;cam={scale:1,x:0,y:0};document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("on",x===btn));};
+});
+document.querySelectorAll("[data-layer]").forEach(btn=>{
+  btn.onclick=()=>{const k=btn.dataset.layer;layers[k]=!layers[k];btn.classList.toggle("on",layers[k]);};
+});
+document.querySelectorAll("[data-speed]").forEach(btn=>{
+  btn.onclick=()=>{speed=Number(btn.dataset.speed);document.querySelectorAll("[data-speed]").forEach(x=>x.classList.toggle("on",x===btn));};
+});
+playBtn.onclick=()=>{playing=!playing;playBtn.textContent=playing?"❚❚":"▶";};
+slider.oninput=()=>{playing=false;t=Number(slider.value);playBtn.textContent="▶";};
+document.querySelectorAll("[data-arch]").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll("[data-arch] span").forEach(s=>{if(s.parentElement!==btn)s.hidden=true;});
+    const sp=btn.querySelector("span"); sp.hidden=!sp.hidden;
+  };
+});
+
+function fillStars(w,h){let s=17;const rnd=()=>{s=(s*16807)%2147483647;return (s-1)/2147483646;};
+  for(let i=0;i<140;i++){ctx.fillStyle=`rgba(232,228,216,${0.15+rnd()*0.55})`;ctx.fillRect(rnd()*w,rnd()*h,rnd()>0.9?2:1,rnd()>0.9?2:1);} }
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawMars(x,y,r,phobosTh){
+  const lx=phobosTh==null?-0.45:Math.cos(phobosTh);
+  const ly=phobosTh==null?-0.55:-Math.sin(phobosTh);
+  const g=ctx.createRadialGradient(x-lx*r*0.35,y-ly*r*0.35,r*0.08,x,y,r);
+  g.addColorStop(0,"#e07a4a");g.addColorStop(0.48,"#c45c32");g.addColorStop(1,"#6b2e1c");
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+  ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.clip();
+  ctx.fillStyle="rgba(232,228,216,0.55)";ctx.beginPath();ctx.ellipse(x,y-r*0.92,r*0.42,r*0.18,0,0,Math.PI*2);ctx.fill();
+  const night=ctx.createRadialGradient(x-lx*r*0.55,y-ly*r*0.55,r*0.05,x-lx*r*0.2,y-ly*r*0.2,r*1.15);
+  night.addColorStop(0,"rgba(8,6,10,0.72)");night.addColorStop(0.45,"rgba(20,10,12,0.38)");night.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=night;ctx.fillRect(x-r,y-r,r*2,r*2);
+  if(phobosTh!=null){
+    const ux=x+lx*r*0.42,uy=y+ly*r*0.42;
+    const umbra=ctx.createRadialGradient(ux,uy,r*0.02,ux,uy,r*0.38);
+    umbra.addColorStop(0,"rgba(6,4,8,0.88)");umbra.addColorStop(0.35,"rgba(28,12,14,0.55)");umbra.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=umbra;ctx.beginPath();ctx.ellipse(ux,uy,r*0.22,r*0.16,Math.atan2(ly,lx),0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.strokeStyle="rgba(224,122,74,0.55)";ctx.lineWidth=1.5;ctx.stroke();
+}
+function badge(x,y,text,color){ctx.font="12px IBM Plex Sans,sans-serif";const tw=ctx.measureText(text).width;
+  ctx.fillStyle="rgba(23,29,42,0.92)";roundRect(x,y,tw+22,26,8);ctx.fill();
+  ctx.fillStyle=color;ctx.beginPath();ctx.arc(x+11,y+13,4,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#e8e4d8";ctx.fillText(text,x+20,y+17);}
+
+function drawSystem(w,h){
+  const cx=w*0.42,cy=h*0.52,marsR=Math.min(w,h)*(h<320?0.09:0.11),km=MARS_R/marsR,phoR=PHOBOS_A/km,areoR=AREO_A/km;
+  ctx.strokeStyle="rgba(154,163,178,0.28)";ctx.setLineDash([4,6]);ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,phoR,0,Math.PI*2);ctx.stroke();
+  if(layers.areo){ctx.strokeStyle="rgba(94,234,212,0.28)";ctx.beginPath();ctx.arc(cx,cy,areoR,0,Math.PI*2);ctx.stroke();}
+  ctx.setLineDash([]);
+  if(layers.shadow){ctx.save();ctx.translate(cx,cy);ctx.rotate(-phobosPos(t).th);
+    ctx.fillStyle="rgba(224,93,79,0.12)";ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,areoR+28,-OCCULT*Math.PI/180,OCCULT*Math.PI/180);ctx.closePath();ctx.fill();ctx.restore();}
+  const win=windowAt(t), occ=occulted(t), ph=phobosPos(t), px=cx+ph.x/km, py=cy-ph.y/km;
+  drawMars(cx,cy,marsR,ph.th);
+  const qy=Math.max(36,cy-areoR-56), qx=cx+(probePos(t).x/HALF)*Math.min(w*0.42,280);
+  ctx.setLineDash([3,8]);ctx.strokeStyle="rgba(242,210,122,0.35)";ctx.beginPath();ctx.moveTo(cx-Math.min(w*0.42,280),qy);ctx.lineTo(cx+Math.min(w*0.42,280),qy);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle="#f2d27a";ctx.beginPath();ctx.moveTo(qx+10,qy);ctx.lineTo(qx-8,qy-5);ctx.lineTo(qx-8,qy+5);ctx.closePath();ctx.fill();
+  ctx.font="600 11px Rajdhani,sans-serif";ctx.fillStyle="#f2d27a";ctx.fillText("ВОЯДЖЕР-6",qx+14,qy-8);
+  ctx.font="11px IBM Plex Sans,sans-serif";ctx.fillStyle="#9aa3b2";ctx.fillText("масштаб сжат",qx+14,qy+8);
+  if(layers.areo){
+    for(let i=0;i<3;i++){const th=areoTheta(i,t);ctx.fillStyle="#5eead4";ctx.beginPath();ctx.arc(cx+areoR*Math.cos(th),cy-areoR*Math.sin(th),4,0,Math.PI*2);ctx.fill();}
+    if(layers.beams){ctx.strokeStyle="rgba(94,234,212,0.35)";ctx.lineWidth=1;
+      for(let i=0;i<3;i++){const a=areoTheta(i,t),b=areoTheta((i+1)%3,t);ctx.beginPath();ctx.moveTo(cx+areoR*Math.cos(a),cy-areoR*Math.sin(a));ctx.lineTo(cx+areoR*Math.cos(b),cy-areoR*Math.sin(b));ctx.stroke();}}
+    ctx.fillStyle="#9aa3b2";ctx.font="11px IBM Plex Sans,sans-serif";ctx.fillText("Ареостационар 17 032 км",cx+areoR-20,cy-8);
+  }
+  if(layers.molniya){
+    const mx=cx+18,my=cy-Math.min(h,w)*0.38;
+    ctx.strokeStyle="rgba(154,163,178,0.35)";ctx.setLineDash([2,4]);ctx.beginPath();ctx.ellipse(cx,cy-Math.min(h,w)*0.12,36,Math.min(h,w)*0.32,0.05,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#9aa3b2";ctx.beginPath();ctx.arc(mx,my,5,0,Math.PI*2);ctx.fill();ctx.font="11px IBM Plex Sans,sans-serif";ctx.fillText("Молния · полюс",mx+10,my+4);
+    if(layers.beams && (win.kind==="link"||win.kind==="acc")){ctx.strokeStyle=win.kind==="link"?"rgba(94,234,212,0.45)":"rgba(232,184,109,0.4)";ctx.beginPath();ctx.moveTo(qx,qy);ctx.lineTo(mx,my);ctx.lineTo(px,py);ctx.stroke();}
+  }
+  ctx.save();ctx.translate(px,py);ctx.rotate(-ph.th);
+  ctx.fillStyle=occ?"#5a4a46":"#b7c0cc";ctx.beginPath();ctx.ellipse(0,0,16,12,0,0,Math.PI*2);ctx.fill();
+  if(layers.cable){ctx.strokeStyle=win.kind==="link"?"#5eead4":"#6b7382";ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(0,0,19,14,0,0,Math.PI*2);ctx.stroke();
+    STATIONS.forEach((s,i)=>{ctx.fillStyle=i===0?"#e07a4a":"#5eead4";ctx.beginPath();ctx.arc(Math.cos(s.lon)*19,Math.sin(s.lon)*14,3.2,0,Math.PI*2);ctx.fill();});}
+  ctx.restore();
+  ctx.font="600 12px Rajdhani,sans-serif";ctx.fillStyle="#e8e4d8";ctx.fillText("ФОБОС",px+20,py-10);
+  ctx.font="11px IBM Plex Sans,sans-serif";ctx.fillStyle="#9aa3b2";ctx.fillText(occ?"за диском Марса":"видимость с Вояджера-6",px+20,py+4);
+  if(layers.beams && win.kind==="link" && !occ){ctx.strokeStyle="rgba(94,234,212,0.65)";ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(qx,qy);ctx.lineTo(px,py);ctx.stroke();}
+  else if(layers.beams && win.kind!=="link"){ctx.strokeStyle=kindColor(win.kind)+"66";ctx.setLineDash([4,6]);ctx.beginPath();ctx.moveTo(qx,qy);ctx.lineTo(px,py);ctx.stroke();ctx.setLineDash([]);}
+  ctx.fillStyle="#9aa3b2";ctx.font="11px IBM Plex Sans,sans-serif";ctx.fillText("орбита Фобоса 9 376 км · 7.65 ч",cx-phoR-4,cy+phoR+16);
+}
+function drawFlyby(w,h){
+  const cx=w*0.5,cy=h*0.58;drawMars(cx,cy,22,phobosPos(t).th);const b=96;
+  ctx.setLineDash([6,8]);ctx.strokeStyle="rgba(242,210,122,0.5)";ctx.beginPath();ctx.moveTo(24,cy-b);ctx.lineTo(w-24,cy-b);ctx.stroke();ctx.setLineDash([]);
+  const x=24+(t/24)*(w-48),y=cy-b;
+  ctx.fillStyle="#f2d27a";ctx.beginPath();ctx.moveTo(x+12,y);ctx.lineTo(x-9,y-6);ctx.lineTo(x-9,y+6);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(232,228,216,0.25)";ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.stroke();
+  const d=marsAng(t),disk=Math.max(6,(d/40)*28);
+  ctx.strokeStyle="#e07a4a";ctx.beginPath();ctx.arc(x,y-36,disk,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle="#e8e4d8";ctx.font="12px IBM Plex Sans,sans-serif";ctx.fillText("угловой размер Марса "+d.toFixed(1)+"′",x-70,y-36-disk-8);
+  ctx.fillStyle="#9aa3b2";ctx.font="11px IBM Plex Sans,sans-serif";
+  ctx.fillText("прямая · 50 км/с · 4 320 000 км за 24 ч",24,28);
+  ctx.fillText("прицельный параметр 577 500 км",24,46);
+  ctx.fillText("t = 0 ч",24,cy-b+22);ctx.fillText("t = 12 ч",cx-18,cy-b+22);ctx.fillText("t = 24 ч",w-70,cy-b+22);
+}
+function drawSky(w,h){
+  const cx=w/2,cy=h*0.52,marsPx=Math.min(w,h)*0.34;drawMars(cx,cy,marsPx,phobosPos(t).th);
+  ctx.fillStyle="#9aa3b2";ctx.font="12px IBM Plex Sans,sans-serif";ctx.fillText("Небо подмарсианской базы · Марс в зените, диск ≈ 42°",16,28);
+  const bearing=(t/7.65)*Math.PI*2,radius=marsPx+36+Math.sin(bearing)*18,ang=-Math.PI/2+bearing;
+  const px=cx+Math.cos(ang)*radius,py=cy+Math.sin(ang)*radius, occ=occulted(t), win=windowAt(t);
+  if(occ){ctx.fillStyle="rgba(224,93,79,0.12)";ctx.beginPath();ctx.arc(cx,cy,marsPx,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle="#f2d27a";ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#e8e4d8";ctx.fillText("Вояджер-6",px+10,py+4);
+  ctx.strokeStyle="rgba(232,228,216,0.12)";ctx.beginPath();ctx.arc(cx,cy,Math.min(w,h)*0.46,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle="#6b7382";ctx.fillText("горизонт Фобоса",16,h-24);
+}
+function paint(){
+  const parent=canvas.parentElement,dpr=Math.min(devicePixelRatio||1,2),w=parent.clientWidth,h=parent.clientHeight;
+  if(canvas.width!==Math.floor(w*dpr)||canvas.height!==Math.floor(h*dpr)){canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr);canvas.style.width=w+"px";canvas.style.height=h+"px";}
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,"#0b0e14");bg.addColorStop(1,"#121722");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);fillStars(w,h);
+  ctx.save();ctx.translate(w/2+cam.x,h/2+cam.y);ctx.scale(cam.scale,cam.scale);ctx.translate(-w/2,-h/2);
+  if(view==="sky")drawSky(w,h);else if(view==="flyby")drawFlyby(w,h);else drawSystem(w,h);
+  ctx.restore();
+  const win=windowAt(t);
+  if(view==="system") badge(16,16,"Марс с Вояджера-6: "+marsAng(t).toFixed(1)+"′",kindColor(win.kind));
+  else if(view==="flyby") badge(16,h-40,win.title,kindColor(win.kind));
+  else {
+    const occ=occulted(t);
+    badge(16,48,occ?"Вояджер-6 за диском Марса":(win.kind==="link"?"окно связи":win.title),kindColor(win.kind));
+  }
+  const zp=document.getElementById("zPct"); if(zp) zp.textContent=Math.round(cam.scale*100)+"%";
+}
+function zoomAt(cx,cy,factor){
+  const rect=canvas.getBoundingClientRect();
+  const mx=cx-rect.left-rect.width/2, my=cy-rect.top-rect.height/2;
+  const next=Math.min(MAX_Z,Math.max(MIN_Z,cam.scale*factor));
+  const k=next/cam.scale;
+  cam={scale:next,x:mx-(mx-cam.x)*k,y:my-(my-cam.y)*k};
+}
+canvas.addEventListener("wheel",e=>{e.preventDefault();zoomAt(e.clientX,e.clientY,e.deltaY<0?1.12:1/1.12);},{passive:false});
+let dragging=false,lx=0,ly=0;
+canvas.addEventListener("pointerdown",e=>{if(e.button!==0)return;dragging=true;lx=e.clientX;ly=e.clientY;canvas.setPointerCapture(e.pointerId);canvas.style.cursor="grabbing";});
+canvas.addEventListener("pointermove",e=>{if(!dragging)return;cam={scale:cam.scale,x:cam.x+(e.clientX-lx),y:cam.y+(e.clientY-ly)};lx=e.clientX;ly=e.clientY;});
+canvas.addEventListener("pointerup",()=>{dragging=false;canvas.style.cursor="grab";});
+canvas.addEventListener("dblclick",()=>{cam={scale:1,x:0,y:0};});
+document.getElementById("zIn").onclick=()=>{cam={...cam,scale:Math.min(MAX_Z,cam.scale*1.25)};};
+document.getElementById("zOut").onclick=()=>{cam={...cam,scale:Math.max(MIN_Z,cam.scale/1.25)};};
+document.getElementById("zRst").onclick=()=>{cam={scale:1,x:0,y:0};};
+document.getElementById("fs").onclick=()=>{
+  const panel=document.querySelector(".panel");
+  if(!panel)return;
+  if(document.fullscreenElement) document.exitFullscreen();
+  else panel.requestFullscreen();
+};
+function sync(){
+  clockEl.textContent=clock(t);slider.value=t;needle.style.left=(t/MISSION*100)+"%";
+  const win=windowAt(t),tone=win.kind==="link"?"ok":win.kind==="acc"?"warn":"bad";
+  const st=document.getElementById("status");st.className="card "+tone;
+  document.getElementById("kind").textContent=LABELS[win.kind];
+  document.getElementById("wtitle").textContent=win.title;
+  document.getElementById("wdetail").textContent=win.detail;
+  document.getElementById("dist").textContent=(marsDist(t)/1000).toFixed(0)+" тыс. км";
+  const a=marsAng(t);document.getElementById("ang").textContent=a.toFixed(1)+"′";
+  document.getElementById("angh").textContent=a>30?"крупнее Луны":"меньше Луны";
+  paint();
+}
+let last=performance.now();
+function loop(now){
+  const dt=(now-last)/1000;last=now;
+  if(playing){t+=dt*speed*0.08;if(t>=MISSION)t=0;}
+  sync();requestAnimationFrame(loop);
+}
+new ResizeObserver(paint).observe(canvas.parentElement);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
