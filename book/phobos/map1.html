@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Фобос — карта в проекции Меркатора</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:#0b0c10;color:#d8d4cc;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+h1{font-size:20px;margin:0 0 4px}
+p{margin:4px 0 12px;color:#9a968f;max-width:900px}
+.wrap{max-width:1000px;margin:0 auto}
+.mp{position:relative}
+canvas{width:100%;height:auto;display:block;border:1px solid #2a2b30;border-radius:6px;background:#000;touch-action:none;cursor:grab;user-select:none}
+canvas:active{cursor:grabbing}
+.zb{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px}
+.zb button{width:34px;height:34px;border:1px solid #444;border-radius:6px;background:rgba(20,21,25,.85);color:#eee;font-size:18px;cursor:pointer}
+label{margin-right:16px;cursor:pointer;white-space:nowrap}
+.ctl{margin:10px 0}
+small{color:#7d7a74}
+details{margin:12px 0}summary{cursor:pointer;color:#e6e2da}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:4px 10px;border-bottom:1px solid #24252a;white-space:nowrap}
+th{color:#9a968f;font-weight:600}
+tr[data-i]{cursor:pointer}tr[data-i]:hover{background:#17181d}
+</style></head><body><div class="wrap">
+<h1>Фобос — карта в проекции Меркатора</h1>
+<p>Перетаскивайте карту мышью или пальцем, масштабируйте колесом, щипком или кнопками +/−, двойной клик приближает. При приближении рельеф перерисовывается с большей детализацией. Клик по строке таблицы переносит к объекту.</p>
+<div class="ctl"><label><input type="checkbox" id="g" checked> Сетка</label><label><input type="checkbox" id="l" checked> Названия</label><label><input type="checkbox" id="o" checked> Контуры</label><span id="st">Рендер…</span></div>
+<div class="mp"><canvas id="c"></canvas><div class="zb"><button id="zi" title="Приблизить">+</button><button id="zo" title="Отдалить">−</button><button id="zr" title="Сбросить вид">⟲</button></div></div>
+<details open><summary>Список объектов</summary><div class="tw"><table id="tb"></table></div></details>
+<p><small>Координаты и диаметры — по Gazetteer of Planetary Nomenclature (МАС/USGS). На карте долгота растёт на восток, 0° — направление на Марс (в каталоге долгота считается на запад). Карта по горизонтали зациклена. Фобос заменён сферой радиуса 11,1 км; рельеф вокруг мелких кратеров, борозд и регионов — художественный, не реальный. Борозда Кеплера, равнина Лагадо и область Лапута отмечены только контуром.</small></p>
+</div>
+<script>
+const CW=960,CH=640,TP=2*Math.PI,D=Math.PI/180,LM=85,YM=Math.log(Math.tan(Math.PI/4+LM*D/2)),RB=11.1;
+const cv=document.getElementById('c');cv.width=CW;cv.height=CH;const ctx=cv.getContext('2d');
+const bmp=document.createElement('canvas');bmp.width=CW;bmp.height=CH;const bx=bmp.getContext('2d');
+const F=[
+['Стикни',1,-49,9,'к'],['Лимток',-11,-54,2,'к'],['Клюстрил',60,-91,3.4,'к'],['Д’Арре',-39,-179,2.1,'к'],
+['Друнло',36.5,-92,4.2,'к'],['Флимнап',60,10,1.5,'к'],['Грилдриг',81,165,2.6,'к'],['Гулливер',62,-163,5.5,'к'],
+['Холл',-80,150,5.4,'к'],['Рельдресаль',41,-39,2.9,'к'],['Рош',53,177,2.3,'к'],['Шарплесс',-27.5,-154,1.8,'к'],
+['Шкловский',24,112,2,'к'],['Скайреш',52.5,40,1.5,'к'],['Тодд',-9,-153,2.6,'к'],['Уэнделл',-1,-132,1.7,'к'],
+['Эпик',-7,63,2,'к'],['борозда Кеплера',-45,4,15,'д'],['равнина Лагадо',19,129,4,'р'],['область Лапута',0,95,14,'о']];
+const TN={к:'кратер',д:'борозда (dorsum)',р:'равнина (planitia)',о:'область (regio)'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=rng(11);
+const vr=(la,lo)=>[Math.cos(la)*Math.cos(lo),Math.cos(la)*Math.sin(lo),Math.sin(la)];
+const vec=(la,lo)=>vr(la*D,lo*D);
+const merc=la=>Math.log(Math.tan(Math.PI/4+la*D/2));
+const cr=[];
+function add(v,r,old){cr.push({x:v[0],y:v[1],z:v[2],r,c:Math.cos(2.4*r),dp:0.17*r*old,rm:0.05*r*old})}
+F.forEach(f=>{if(f[4]=='к')add(vec(f[1],f[2]),f[3]/2/RB,1)});
+function rnd(n,k,mx){for(let i=0;i<n;i++){const u=0.01+0.99*R(),r=Math.min(mx,k*Math.pow(u,-0.85));
+ const z=2*R()-1,a=TP*R(),s=Math.sqrt(1-z*z);add([s*Math.cos(a),s*Math.sin(a),z],r,0.5+0.5*R())}}
+rnd(420,0.012,0.12);rnd(3000,0.0015,0.012);
+const ph=[];for(let i=0;i<6;i++)ph.push([R()*6.28,R()*6.28,R()*6.28,2+i*1.7,R()*6.28]);
+const ga=vec(0,90),gl=[-27,-18,-9,0,9,18,27].map((o,i)=>(90+o+(i%2?1.5:-1))*D),cs=vec(0,-20);
+const h=new Float32Array(CW*CH),alb=new Float32Array(CW*CH);
+const ZMIN=CH*TP/(2*YM*CW),ZMAX=60;
+let z=ZMIN,cx=0,cy=0,bz=z,bcx=0,bcy=0;
+const ppr=()=>z*CW/TP;
+function clampView(){const p=ppr(),half=CH/2/p;cy=half>=YM?0:Math.max(-YM+half,Math.min(YM-half,cy));cx=((cx+Math.PI)%TP+TP)%TP-Math.PI}
+function render(){
+ const p=ppr(),vcx=cx,vcy=cy;
+ const cl=new Float32Array(CW),sl=new Float32Array(CW);
+ for(let i=0;i<CW;i++){const l=vcx+(i+.5-CW/2)/p;cl[i]=Math.cos(l);sl[i]=Math.sin(l)}
+ let list=cr.filter(c=>c.r*p>=1.4);
+ if(CW/p<TP*0.9){const cen=vr(2*Math.atan(Math.exp(vcy))-Math.PI/2,vcx);let Rv=0;
+  for(const [dx,dy] of [[-1,-1],[1,-1],[-1,1],[1,1],[0,-1],[0,1],[-1,0],[1,0],[0,0]]){
+   const y=Math.max(-YM,Math.min(YM,vcy-dy*CH/2/p)),v=vr(2*Math.atan(Math.exp(y))-Math.PI/2,vcx+dx*CW/2/p);
+   Rv=Math.max(Rv,Math.acos(Math.max(-1,Math.min(1,v[0]*cen[0]+v[1]*cen[1]+v[2]*cen[2]))))}
+  list=list.filter(c=>Math.acos(Math.max(-1,Math.min(1,c.x*cen[0]+c.y*cen[1]+c.z*cen[2])))<Rv+2.4*c.r)}
+ const st=cr[0],n=list.length;
+ for(let j=0;j<CH;j++){const y=vcy-(j+.5-CH/2)/p;
+  if(Math.abs(y)>YM){h.fill(0,j*CW,(j+1)*CW);continue}
+  const lat=2*Math.atan(Math.exp(y))-Math.PI/2,cp=Math.cos(lat),sp=Math.sin(lat);
+  for(let i=0;i<CW;i++){const px=cp*cl[i],py=cp*sl[i],pz=sp;let v=0,al=0;
+   for(let k=0;k<ph.length;k++){const q=ph[k];v+=0.012*Math.sin(q[3]*px+q[0])*Math.sin(q[3]*py+q[1])*Math.cos(q[3]*pz+q[2])/(1+k*0.4)}
+   for(let k=0;k<n;k++){const c=list[k],d0=px*c.x+py*c.y+pz*c.z;if(d0<c.c)continue;
+    const t=Math.acos(d0>1?1:d0)/c.r;
+    if(t<1){v-=c.dp*(1-t*t);al+=0.05*(1-t)}else v+=0.3*c.rm*Math.exp(-(t-1)*3);
+    v+=c.rm*Math.exp(-(t-1)*(t-1)/0.04)}
+   const m=(px*cs[0]+py*cs[1]+pz*cs[2]+0.2)/0.6;
+   if(m>0){const g=Math.acos(Math.max(-1,Math.min(1,px*ga[0]+py*ga[1]+pz*ga[2])));
+    for(let k=0;k<gl.length;k++){const e=(g-gl[k]+0.008*Math.sin(lat*9+k))/0.011;if(e<3)v-=0.007*Math.min(m,1)*Math.exp(-e*e)*(0.6+0.4*Math.sin(lat*70+k))}}
+   const dS=px*st.x+py*st.y+pz*st.z;if(dS>Math.cos(0.68))al+=0.05*Math.min(1,(dS-Math.cos(0.68))/0.2);
+   h[j*CW+i]=v;alb[j*CW+i]=al+0.05*Math.sin(2.3*px+1)*Math.sin(2.1*py+2)}}
+ const img=bx.createImageData(CW,CH),dd=img.data,S=3.2;
+ for(let j=0;j<CH;j++){const y=vcy-(j+.5-CH/2)/p;if(Math.abs(y)>YM)continue;const ds=1/p/Math.cosh(y);
+  for(let i=0;i<CW;i++){const a=j*CW+i,i0=Math.max(0,i-1),i1=Math.min(CW-1,i+1),j0=Math.max(0,j-1),j1=Math.min(CH-1,j+1);
+   const hx=S*(h[j*CW+i1]-h[j*CW+i0])/(2*ds),hy=-S*(h[j1*CW+i]-h[j0*CW+i])/(2*ds);
+   let sh=(0.6*hx-0.6*hy+0.6)/Math.sqrt(1+hx*hx+hy*hy);sh=Math.max(0.05,Math.min(1.4,sh*1.15));
+   const b=(0.36+alb[a])*sh,o=a*4;dd[o]=Math.min(255,b*261);dd[o+1]=Math.min(255,b*242);dd[o+2]=Math.min(255,b*(230+(alb[a]>0.04?20:0)));dd[o+3]=255}}
+ bx.putImageData(img,0,0);bz=z;bcx=vcx;bcy=vcy}
+const nl=d=>((d%360)+540)%360-180;
+function compose(){
+ ctx.fillStyle='#000';ctx.fillRect(0,0,CW,CH);
+ const p=ppr(),pb=bz*CW/TP,s=p/pb,y0=CH/2-(bcy+CH/2/pb-cy)*p;
+ for(let k=-2;k<=2;k++){const x0=CW/2+(bcx-CW/2/pb-cx+k*TP)*p;if(x0>CW||x0+CW*s<0)continue;ctx.drawImage(bmp,x0,y0,CW*s,CH*s)}
+ const X=(lo,k)=>CW/2+(lo-cx+k*TP)*p,Y=la=>CH/2-(merc(la)-cy)*p,fm=v=>v<1?v.toFixed(1):v;
+ if(g.checked){const sts=[0.1,0.2,0.5,1,2,5,10,15,30,60,90];const step=sts.find(t=>t*D*p>=70)||90;
+  ctx.font='12px system-ui,sans-serif';ctx.lineWidth=1;ctx.strokeStyle='rgba(255,255,255,.2)';ctx.fillStyle='rgba(255,255,255,.65)';ctx.textAlign='left';
+  const l1=(cx-CW/2/p)/D,l2=(cx+CW/2/p)/D;
+  for(let m=Math.ceil(l1/step);m*step<=l2;m++){const lo=m*step,x=CW/2+(lo*D-cx)*p;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,CH);ctx.stroke();
+   const n=nl(lo);ctx.fillText(fm(Math.abs(n))+'°'+(n<0?'з':n>0?'в':''),x+3,CH-4)}
+  const a1=Math.max(-LM,Math.atan(Math.sinh(cy-CH/2/p))/D),a2=Math.min(LM,Math.atan(Math.sinh(cy+CH/2/p))/D);
+  for(let m=Math.ceil(a1/step);m*step<=a2;m++){const la=m*step,y=Y(la);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(CW,y);ctx.stroke();
+   ctx.fillText(fm(Math.abs(la))+'°'+(la<0?'ю':la>0?'с':''),4,y-3)}}
+ if(o.checked){ctx.lineWidth=1.2;F.forEach(f=>{const la=f[1]*D,lo=f[2]*D,r=f[3]/2/RB;ctx.strokeStyle=f[4]=='к'?'rgba(255,255,255,.75)':'rgba(255,205,110,.9)';
+  const rp=r*p/Math.cos(la);
+  for(let k=-2;k<=2;k++){const xc=X(lo,k);if(xc+rp<-5||xc-rp>CW+5)continue;ctx.beginPath();ctx.setLineDash(f[4]=='к'?[]:[5,4]);let pen=false;
+   for(let q=0;q<=64;q++){const b=q/64*TP,sl=Math.asin(Math.sin(la)*Math.cos(r)+Math.cos(la)*Math.sin(r)*Math.cos(b));
+    if(Math.abs(sl/D)>LM-0.5){pen=false;continue}
+    const ln=lo+Math.atan2(Math.sin(b)*Math.sin(r)*Math.cos(la),Math.cos(r)-Math.sin(la)*Math.sin(sl));
+    const xx=X(ln,k),yy=Y(sl/D);pen?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);pen=true}
+   ctx.stroke()}ctx.setLineDash([])})}
+ if(l.checked){ctx.font='bold 12px system-ui,sans-serif';ctx.lineWidth=3;ctx.lineJoin='round';
+  F.forEach(f=>{const la=f[1]*D,rp=f[3]/2/11.1*p/Math.cos(la);
+   for(let k=-2;k<=2;k++){const xc=X(f[2]*D,k),yc=Y(f[1]);if(xc<-150||xc>CW+150||yc<-20||yc>CH+20)continue;
+    let x=xc+rp+4,y=yc+4,al='left';
+    if(f[0]=='Стикни'&&rp>25){x=xc;y=yc+4;al='center'}
+    else if(f[0]=='Лимток'){x=xc;y=yc+rp+14;al='center'}
+    else if(xc>CW-110){x=xc-rp-4;al='right'}
+    ctx.textAlign=al;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.fillStyle=f[4]=='к'?'#fff':'#ffd27a';ctx.strokeText(f[0],x,y);ctx.fillText(f[0],x,y)}});ctx.textAlign='left'}}
+const g=document.getElementById('g'),l=document.getElementById('l'),o=document.getElementById('o'),st=document.getElementById('st');
+let busy=false,tm=0,raf=0;
+function sched(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;compose()});clearTimeout(tm);tm=setTimeout(rerender,220)}
+function rerender(){busy=true;st.textContent='Рендер…';setTimeout(()=>{render();compose();busy=false;st.textContent='Готово'},10)}
+function zoomAt(fx,fy,f){const z0=z,p0=ppr(),lam=cx+(fx-CW/2)/p0,y=cy-(fy-CH/2)/p0;z=Math.max(ZMIN,Math.min(ZMAX,z*f));
+ const p1=ppr();cx=lam-(fx-CW/2)/p1;cy=y+(fy-CH/2)/p1;clampView();if(z!=z0)sched();else compose()}
+function reset(){z=ZMIN;cx=0;cy=0;sched()}
+document.getElementById('zi').onclick=()=>zoomAt(CW/2,CH/2,2);
+document.getElementById('zo').onclick=()=>zoomAt(CW/2,CH/2,0.5);
+document.getElementById('zr').onclick=reset;
+g.onchange=l.onchange=o.onchange=compose;
+const pt=new Map(),fl=(v,a,b)=>Math.abs(v)+'° '+(v<0?a:b);
+const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*CW/r.width,(e.clientY-r.top)*CH/r.height]};
+const pd=()=>{const a=[...pt.values()];return Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1])};
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pt.set(e.pointerId,[e.clientX,e.clientY])});
+cv.addEventListener('pointermove',e=>{
+ if(pt.has(e.pointerId)){const pv=pt.get(e.pointerId),k=CW/cv.getBoundingClientRect().width;
+  if(pt.size==1){const p=ppr();cx-=(e.clientX-pv[0])*k/p;cy+=(e.clientY-pv[1])*k/p;pt.set(e.pointerId,[e.clientX,e.clientY]);clampView();sched()}
+  else{const d0=pd();pt.set(e.pointerId,[e.clientX,e.clientY]);const d1=pd(),a=[...pt.values()],r=cv.getBoundingClientRect();
+   zoomAt(((a[0][0]+a[1][0])/2-r.left)*k,((a[0][1]+a[1][1])/2-r.top)*k,d1/d0)}return}
+ const[x,y]=pos(e),p=ppr(),lo=nl((cx+(x-CW/2)/p)/D),la=Math.atan(Math.sinh(cy-(y-CH/2)/p))/D;
+ if(!busy)st.textContent='Курсор: '+fl(+la.toFixed(1),'ю.ш.','с.ш.')+', '+fl(+lo.toFixed(1),'з.д.','в.д.');
+ let best=null,bd=18;F.forEach(f=>{for(let k=-2;k<=2;k++){const d=Math.hypot(CW/2+(f[2]*D-cx+k*TP)*p-x,CH/2-(merc(f[1])-cy)*p-y);if(d<bd){bd=d;best=f}}});
+ cv.title=best?`${best[0]} — ${TN[best[4]]}, ${fl(best[1],'ю.ш.','с.ш.')}, ${fl(best[2],'з.д.','в.д.')}, ${best[3]} км`:''});
+const up=e=>{pt.delete(e.pointerId)};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('wheel',e=>{e.preventDefault();const[x,y]=pos(e);zoomAt(x,y,Math.exp(-e.deltaY*(e.ctrlKey?0.01:0.0018)))},{passive:false});
+cv.addEventListener('dblclick',e=>{const[x,y]=pos(e);zoomAt(x,y,2)});
+document.getElementById('tb').innerHTML='<tr><th>Название</th><th>Тип</th><th>Широта</th><th>Долгота</th><th>Размер, км</th></tr>'+
+ F.map((f,i)=>[f,i]).sort((a,b)=>a[0][0].localeCompare(b[0][0],'ru')).map(([f,i])=>`<tr data-i="${i}"><td>${f[0]}</td><td>${TN[f[4]]}</td><td>${fl(f[1],'ю.ш.','с.ш.')}</td><td>${fl(f[2],'з.д.','в.д.')}</td><td>${f[3]}</td></tr>`).join('');
+document.getElementById('tb').onclick=e=>{const tr=e.target.closest('tr[data-i]');if(!tr)return;const f=F[+tr.dataset.i];
+ z=Math.max(ZMIN,Math.min(ZMAX,(120*Math.cos(f[1]*D)/(f[3]/2/RB))*TP/CW));cx=f[2]*D;cy=merc(f[1]);clampView();sched();cv.scrollIntoView({block:'center',behavior:'smooth'})};
+rerender();
+</script></body></html>
