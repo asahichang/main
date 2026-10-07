@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Реголитная фабрика на Фобосе</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#0a0b0e;--panel:#14161b;--ink:#e8e6e1;--mut:#9a9aa3;--acc:#ff9b3d;--line:#262a33}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:1000px;margin:0 auto;padding:18px 14px 40px}
+h1{font-size:clamp(20px,4vw,30px);margin:0 0 2px;letter-spacing:.2px}
+.sub{color:var(--mut);margin:0 0 14px}
+nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}
+nav button{flex:1 0 auto;background:var(--panel);color:var(--mut);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;font:inherit;white-space:nowrap}
+nav button.on{color:#111;background:var(--acc);border-color:var(--acc);font-weight:600}
+figure{margin:8px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#000;position:relative}
+figure svg{display:block;width:100%;height:auto}
+.tag{position:absolute;left:10px;top:10px;background:#000a;border:1px solid #fff3;border-radius:6px;padding:3px 9px;font-size:12px;color:#ddd}
+.row{display:flex;gap:8px;justify-content:space-between;align-items:center;margin:8px 0}
+.row button{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer;font:inherit}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h2{margin:0 0 6px;font-size:20px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chips span{background:#0006;border:1px solid var(--line);border-radius:99px;padding:2px 11px;font-size:13px;color:var(--acc)}
+.card ul{margin:8px 0 0;padding-left:18px;color:#cfcdc8}.card li{margin:4px 0}.card b{color:var(--ink)}
+.light{color:var(--mut);font-size:13px;margin-top:10px}
+@keyframes b{0%{transform:translate(0,0)}50%{transform:translate(var(--x),-26px)}100%{transform:translate(calc(var(--x)*2),0)}}
+@keyframes sh{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+@keyframes pu{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes fl{0%,100%{opacity:.75}50%{opacity:1}}
+@keyframes st{0%,88%,100%{opacity:0}92%{opacity:.28}}
+.g{animation:b 3.2s infinite ease-out}
+.sv{animation:sh .5s infinite ease-in-out}
+.pu{animation:pu 1.6s infinite}.fl{animation:fl 1.3s infinite}.stb{animation:st .7s infinite}
+.off *{animation-play-state:paused!important}
+</style></head><body><div class="w">
+<h1>Реголитная фабрика · Фобос</h1>
+<p class="sub">Шесть уровней: от приёмной шахты до сотового склада базальтовых блоков.</p>
+<nav id="nav"></nav>
+<figure id="fig"><span class="tag" id="tag"></span><div id="art"></div></figure>
+<div class="row"><button id="pv">← Назад</button><button id="an">⏸ Анимация</button><button id="nx">Дальше →</button></div>
+<div class="card" id="info"></div>
+</div>
+<script>
+let sd=7;const rs=()=>sd=7,r=()=>(sd=sd*16807%2147483647)/2147483647;
+const D='<defs>',E='</defs>';
+const V=(b)=>`<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">${b}</svg>`;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const S={
+1(){rs();let st='',pr='',gr='';
+for(let i=0;i<90;i++)st+=`<circle cx="${r()*800}" cy="${r()*260}" r="${r()*1.2+.3}" fill="#fff" opacity="${.4+r()*.6}"/>`;
+for(let i=0;i<260;i++){const x=r()*800,y=r()*450;if(((x-400)/330)**2+((y-130)/105)**2>1.15)pr+=`<circle cx="${x|0}" cy="${y|0}" r="${1+r()*4}" fill="${r()>.5?'#08080a':'#34343a'}" opacity=".7"/>`}
+for(let i=0;i<14;i++)gr+=`<circle class="g" style="--x:${(r()*30+10)|0}px;animation-delay:${-r()*3}s" cx="${455+r()*30|0}" cy="${160+r()*6|0}" r="1.4" fill="#b8a591"/>`;
+return V(`${D}<radialGradient id="m" cx=".35" cy=".35"><stop offset="0" stop-color="#d9976a"/><stop offset=".7" stop-color="#8a4a30"/><stop offset="1" stop-color="#2e150f"/></radialGradient>
+<radialGradient id="sun"><stop offset="0" stop-color="#fff"/><stop offset=".15" stop-color="#fffbe8" stop-opacity=".8"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<radialGradient id="mg" cx=".7" cy=".1" r=".8"><stop offset="0" stop-color="#a0643c" stop-opacity=".45"/><stop offset="1" stop-color="#a0643c" stop-opacity="0"/></radialGradient>
+<radialGradient id="am"><stop offset="0" stop-color="#ffb000"/><stop offset="1" stop-color="#ffb000" stop-opacity="0"/></radialGradient>
+<clipPath id="op"><ellipse cx="400" cy="130" rx="330" ry="105"/></clipPath>${E}
+<rect width="800" height="450" fill="#111114"/>
+<g clip-path="url(#op)"><rect width="800" height="300" fill="#000"/>${st}
+<circle cx="170" cy="62" r="60" fill="url(#sun)"/>
+<circle cx="580" cy="150" r="125" fill="url(#m)"/><g fill="#4a2318" opacity=".35"><circle cx="540" cy="130" r="30"/><circle cx="610" cy="175" r="22"/><circle cx="585" cy="95" r="14"/></g>
+<polygon points="60,215 70,190 130,178 190,186 250,165 320,172 360,160 450,162 520,170 560,160 640,180 700,176 740,215" fill="#1d1c1f"/>
+<polyline points="70,190 130,178 190,186 250,165 320,172 360,160 450,162 520,170 560,160 640,180 700,176" fill="none" stroke="#fff" stroke-width="1.5" opacity=".75"/>
+<g stroke="#7d8591" stroke-width="1.6" fill="none"><path d="M372 150 L270 172M372 152 L330 176M432 152 L520 174M430 150 L600 178"/></g>
+<polygon points="352,166 448,166 428,146 372,146" fill="#98a1ad"/><ellipse cx="400" cy="146" rx="28" ry="5" fill="#2a2d33"/><polygon points="352,166 372,146 380,146 366,166" fill="#fff" opacity=".35"/>
+<g><rect x="470" y="160" width="26" height="9" fill="#6b727c"/><rect x="468" y="168" width="30" height="4" rx="2" fill="#222"/><rect x="480" y="154" width="8" height="6" fill="#aab"/></g>
+<g><rect x="280" y="168" width="22" height="8" fill="#6b727c"/><rect x="278" y="175" width="26" height="4" rx="2" fill="#222"/></g>${gr}</g>
+<path fill="#1b1a1d" fill-rule="evenodd" d="M0 0H800V450H0Z M70 130a330 105 0 1 0 660 0a330 105 0 1 0 -660 0Z"/>
+<ellipse cx="400" cy="130" rx="330" ry="105" fill="none" stroke="#3a3a40" stroke-width="5" stroke-dasharray="40 7 15 11 60 5"/>${pr}
+<rect width="800" height="450" fill="url(#mg)"/>
+<g stroke="#4e5560" stroke-width="5" fill="none"><path d="M215 450 L158 218M585 450 L642 218"/></g><g stroke="#8d96a3" stroke-width="1.5"><path d="M215 450 L158 218M585 450 L642 218"/></g>
+<g fill="none" stroke="#c05a1a" stroke-width="4" opacity=".85"><path d="M300 450 Q290 330 250 232M510 450 Q520 330 560 232"/><path d="M310 450 Q300 330 262 235" stroke="#2c2c34"/></g>
+<g fill="none" stroke="#778" stroke-width="5"><ellipse cx="400" cy="290" rx="200" ry="38"/><ellipse cx="400" cy="395" rx="290" ry="56"/></g>
+<g stroke="#aab" stroke-width="2"><path d="M300 290l-12-14M360 327l-4-16M440 327l4-16M500 290l12-14M260 402l-20-22M540 402l20-22M400 451v-18"/></g>
+<g><circle cx="175" cy="330" r="34" fill="url(#am)" class="pu"/><circle cx="625" cy="330" r="34" fill="url(#am)" class="pu" style="animation-delay:-.8s"/><circle cx="120" cy="415" r="40" fill="url(#am)" class="pu" style="animation-delay:-.4s"/><circle cx="680" cy="415" r="40" fill="url(#am)" class="pu" style="animation-delay:-1.2s"/>
+<g fill="#ffd27a"><circle cx="175" cy="330" r="4"/><circle cx="625" cy="330" r="4"/><circle cx="120" cy="415" r="4"/><circle cx="680" cy="415" r="4"/></g></g>`)},
+2(){rs();let sp='',w='';
+for(let i=0;i<260;i++)w+=`<circle cx="${r()*800|0}" cy="${r()*450|0}" r="${.8+r()*2}" fill="${r()>.5?'#4a443c':'#161412'}" opacity=".6"/>`;
+const sv=[[60,110,300,160],[330,200,100,250],[60,280,300,330]];
+let sieve='';sv.forEach((s,i)=>{const[x1,y1,x2,y2]=s;
+sieve+=`<g class="sv" style="animation-delay:${-i*.17}s"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#aeb4bd" stroke-width="6"/><line x1="${x1}" y1="${y1+4}" x2="${x2}" y2="${y2+4}" stroke="#555a63" stroke-width="3" stroke-dasharray="2 4"/>
+<polyline points="${x1+10},${y1+4} ${x1+4},${y1+12} ${x1+16},${y1+20} ${x1+4},${y1+28} ${x1+16},${y1+36}" fill="none" stroke="#c7ccd4" stroke-width="2"/>
+<polyline points="${x2-10},${y2+4} ${x2-4},${y2+12} ${x2-16},${y2+20} ${x2-4},${y2+28} ${x2-16},${y2+36}" fill="none" stroke="#c7ccd4" stroke-width="2"/>`;
+for(let k=0;k<7;k++){const t=k/7;const dx=x2-x1,dy=y2-y1;
+sieve+=`<circle r="${k%3?2:3.4}" fill="${k%3?'#a89984':'#6e6458'}"><animateMotion dur="${3+k%3}s" begin="${-k*.6}s" repeatCount="indefinite" path="M${x1+8} ${y1-5} L${x2-8} ${y2-5}"/></circle>`}
+sieve+='</g>'});
+let cy='';[480,570,660].forEach((x,i)=>{
+cy+=`<rect x="${x}" y="255" width="70" height="125" rx="12" fill="#26282d" stroke="#555a64" stroke-width="2"/><rect x="${x+8}" y="262" width="10" height="110" rx="5" fill="#fff" opacity=".12"/>`;
+for(let k=0;k<9;k++)cy+=`<line x1="${x-3}" y1="${268+k*13}" x2="${x+73}" y2="${272+k*13}" stroke="#ff3a1a" stroke-width="4" class="fl" style="animation-delay:${-k*.1}s"/>`;
+cy+=`<rect x="${x+29}" y="95" width="12" height="160" fill="#a8d8e0" opacity=".4" stroke="#cdeff5" stroke-width="1.2"/>
+<circle cx="${x+35}" cy="${70}" r="22" fill="#dff3f8" opacity=".85"/><circle cx="${x+30}" cy="64" r="14" fill="#fff" opacity=".6"/><text x="${x+35}" y="108" fill="#bdd" font-size="9" text-anchor="middle">${['H₂O','CO₂','N₂'][i]}</text>`});
+return V(`${D}<radialGradient id="a" cx=".4" cy=".3" r=".9"><stop offset="0" stop-color="#4b443b"/><stop offset="1" stop-color="#13110f"/></radialGradient>
+<linearGradient id="c" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>${E}
+<rect width="800" height="450" fill="url(#a)"/>${w}
+<path d="M0 410 Q400 380 800 410V450H0Z" fill="#0d0c0b"/>
+<line x1="440" y1="52" x2="780" y2="52" stroke="#889" stroke-width="5"/>
+<polygon points="100,0 160,0 200,200 60,200" fill="url(#c)" opacity=".35" transform="translate(60 0)"/><polygon points="280,0 320,0 420,230 250,230" fill="url(#c)" opacity=".3" transform="translate(-60 0)"/>
+<circle cx="190" cy="6" r="6" fill="#fff"/><circle cx="270" cy="6" r="6" fill="#fff"/>
+${sieve}<g fill="#8f949c"><rect x="350" y="360" width="90" height="30" rx="6"/><rect x="40" y="355" width="70" height="40" rx="6"/></g><text x="395" y="380" fill="#222" font-size="10" text-anchor="middle">песок</text><text x="75" y="379" fill="#222" font-size="10" text-anchor="middle">валуны</text>${cy}
+<path d="M0 0V450" stroke="#333" stroke-width="0"/>`)},
+3(){rs();let w='';
+for(let i=0;i<130;i++)w+=`<circle cx="${r()*800|0}" cy="${r()*450|0}" r="${1+r()*3}" fill="#000" opacity=".4"/>`;
+let bars='';for(let k=0;k<5;k++)bars+=`<rect x="292" y="${215+k*30}" width="216" height="9" rx="4.5" fill="#c87533"/><rect x="292" y="${215+k*30}" width="216" height="3" rx="1.5" fill="#ffc690" opacity=".7"/>`;
+let sc='';for(let i=0;i<9;i++)sc+=`<line x1="${70+i*30}" y1="150" x2="${58+i*30}" y2="${182-0}" stroke="#a89" stroke-width="3" opacity=".0"/>`;
+let hel='';for(let i=0;i<14;i++)hel+=`<line x1="${70+i*20}" y1="132" x2="${82+i*20}" y2="166" stroke="#8c92a0" stroke-width="3"/>`;
+let sand='';for(let i=0;i<10;i++)sand+=`<circle r="2" fill="#c9b79c"><animateMotion dur="1.6s" begin="${-i*.16}s" repeatCount="indefinite" path="M370 160 L${385+r()*30|0} 195"/></circle>`;
+let bub='';for(let i=0;i<8;i++)bub+=`<circle r="${3+i%3*2}" fill="#fff2a0"><animate attributeName="cx" values="${350+i*14};${352+i*14}" dur="2s" repeatCount="indefinite"/><animate attributeName="cy" values="206;196;206" dur="${1+i*.2}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" dur="${1.4+i*.1}s" repeatCount="indefinite"/></circle>`;
+return V(`${D}<radialGradient id="g1" cx=".5" cy=".42" r=".75"><stop offset="0" stop-color="#ffb347" stop-opacity=".95"/><stop offset=".35" stop-color="#e2561a" stop-opacity=".5"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<radialGradient id="mg" cx=".5" cy=".5"><stop offset="0" stop-color="#fff6a8"/><stop offset=".5" stop-color="#ffb52e"/><stop offset="1" stop-color="#e2531a"/></radialGradient>
+<radialGradient id="bl" cx=".5" cy=".5"><stop offset="0" stop-color="#9fd0ff"/><stop offset=".4" stop-color="#2f6bff" stop-opacity=".8"/><stop offset="1" stop-color="#1030ff" stop-opacity="0"/></radialGradient>
+<linearGradient id="nb" x1="0" x2="1"><stop offset="0" stop-color="#3b4048"/><stop offset=".35" stop-color="#8b929d"/><stop offset="1" stop-color="#2a2d33"/></linearGradient>${E}
+<rect width="800" height="450" fill="#0f0d0c"/>${w}
+<rect width="800" height="450" fill="url(#g1)" class="fl"/>
+<polygon points="300,380 150,450 650,450 500,380" fill="#050404" opacity=".7"/>
+<polygon points="290,200 0,300 0,450 300,380" fill="#000" opacity=".25"/>
+<rect x="40" y="130" width="330" height="36" rx="6" fill="#2b2e35" stroke="#555" stroke-width="2"/>${hel}<text x="60" y="122" fill="#aab" font-size="11">Вакуумные шнеки · Mo</text>${sand}
+<rect x="300" y="195" width="200" height="190" fill="url(#nb)"/><ellipse cx="400" cy="385" rx="100" ry="20" fill="#2a2d33"/>
+<ellipse cx="400" cy="195" rx="100" ry="26" fill="#2a2d33"/><ellipse cx="400" cy="197" rx="94" ry="22" fill="#3a2a22" /><ellipse cx="400" cy="199" rx="76" ry="16" fill="url(#mg)" class="fl"/>${bub}
+${bars}
+<g fill="#c87533"><rect x="262" y="215" width="14" height="150" rx="5"/><rect x="524" y="215" width="14" height="150" rx="5"/></g>
+<text x="400" y="420" fill="#ffd9a0" font-size="14" text-anchor="middle">Индукционный тигель · Nb · 1250 °C</text><text x="400" y="162" fill="#ffd9a0" font-size="10" text-anchor="middle">гарнисаж</text>
+<rect x="590" y="140" width="190" height="270" rx="6" fill="#0a0d16" stroke="#444a58" stroke-width="3"/><circle cx="685" cy="290" r="120" fill="url(#bl)" class="pu"/>
+<rect x="670" y="190" width="30" height="170" rx="6" fill="#aab6d0"/><g fill="#6fa6ff"><rect x="676" y="200" width="4" height="150"/><rect x="684" y="200" width="4" height="150"/><rect x="692" y="200" width="4" height="150"/></g>
+<rect x="598" y="150" width="174" height="250" fill="#8cc0ff" opacity=".12"/>
+<g stroke="#667" stroke-width="4"><path d="M643 150V400M727 150V400M598 275H772"/></g>
+<text x="685" y="131" fill="#9fc4ff" font-size="12" text-anchor="middle">Реактор · Черенков</text>`)},
+4(){rs();let mold='',sparks='',cap=`<ellipse cx="400" cy="235" rx="250" ry="120" fill="none" stroke="#fff" stroke-width="0"/>`;
+for(let i=0;i<14;i++){const a=i/14*Math.PI*2,x=400+250*Math.cos(a),y=235+120*Math.sin(a),d=a*180/Math.PI;
+mold+=`<g transform="translate(${x|0} ${y|0}) rotate(${(d+90)|0}) scale(1 ${.85+.15*Math.sin(a)*0+0})"><rect x="-17" y="-14" width="34" height="28" rx="3" fill="#2a2d34" stroke="#6e7480" stroke-width="2"/><rect x="-11" y="-8" width="22" height="16" fill="#e0262a" class="fl" style="animation-delay:${-i*.1}s"/><path d="M-5-8l5 4 5-4M-5 8l5-4 5 4" stroke="#ff8a70" fill="none" stroke-width="1.5"/></g>`}
+for(let i=0;i<16;i++){const a=r()*6.28,x=400+270*Math.cos(a),y=235+130*Math.sin(a);
+sparks+=`<circle r="2" fill="#ffa43a"><animateMotion dur="${.9+r()}s" begin="${-r()*2}s" repeatCount="indefinite" path="M${x|0} ${y|0} l${Math.cos(a)*(90+r()*120)|0} ${Math.sin(a)*(70+r()*100)|0}"/><animate attributeName="opacity" values="1;0" dur="1.2s" repeatCount="indefinite"/></circle>`}
+let sp='';for(let i=0;i<20;i++){const a=i/20*6.28;sp+=`<line x1="400" y1="235" x2="${400+235*Math.cos(a)|0}" y2="${235+110*Math.sin(a)|0}" stroke="#3a3e47" stroke-width="5"/>`}
+const rob=(x,y,f)=>`<g stroke="#9aa1ad" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M${x} ${y}l${f*-30} -50 l${f*-30} 10 l${f*-14} 44"/><path d="M${x} ${y}l${f*-50} -20 l${f*-40} 30 l${f*-6} 30"/><path d="M${x} ${y}l${f*-16} 40 l${f*-30} 20"/></g><circle cx="${x}" cy="${y}" r="13" fill="#444a55" stroke="#9aa1ad" stroke-width="2"/><circle cx="${x}" cy="${y}" r="3" fill="#ff5a3a" class="pu"/>`;
+let blur='';for(let i=0;i<3;i++)blur+=`<ellipse cx="400" cy="235" rx="${250-i*8}" ry="${120-i*4}" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="12" stroke-dasharray="${30+i*10} ${60+i*20}"><animate attributeName="stroke-dashoffset" values="0;-${180+i*30}" dur="${.5+i*.12}s" repeatCount="indefinite"/></ellipse>`;
+return V(`${D}<linearGradient id="bg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#0a0b0d"/><stop offset="1" stop-color="#1c2028"/></linearGradient><radialGradient id="hb"><stop offset="0" stop-color="#ffcf8a"/><stop offset="1" stop-color="#ff7a2a" stop-opacity="0"/></radialGradient>${E}
+<rect width="800" height="450" fill="url(#bg)"/>
+<g transform="rotate(-16 400 235)"><ellipse cx="400" cy="235" rx="300" ry="150" fill="#000" opacity=".4" transform="translate(0 40)"/>
+<ellipse cx="400" cy="235" rx="262" ry="130" fill="#15181d" stroke="#555b66" stroke-width="12"/>${sp}${blur}
+<ellipse cx="400" cy="235" rx="40" ry="26" fill="#3d424c" stroke="#9aa1ad" stroke-width="3"/><circle cx="400" cy="235" r="14" fill="url(#hb)" class="fl"/>${mold}${sparks}
+<ellipse cx="400" cy="235" rx="278" ry="142" fill="none" stroke="#7bd" stroke-width="1" stroke-dasharray="3 9" opacity=".6"/></g>
+${rob(55,300,-1)}${rob(745,175,1)}
+<rect width="800" height="450" fill="#fff" class="stb"/>
+<text x="400" y="430" fill="#9ab" font-size="12" text-anchor="middle">магнитные подшипники · 10–12 м · стробоскопическая синхронизация</text>`)},
+5(){let o='',fr='',br='',pt='';
+const cols=(t)=>{const k=[[0,[255,138,31]],[.45,[220,48,24]],[.75,[100,16,28]],[1,[17,17,19]]];for(let i=1;i<4;i++)if(t<=k[i][0]){const a=k[i-1],b=k[i],u=(t-a[0])/(b[0]-a[0]);return`rgb(${[0,1,2].map(j=>lerp(a[1][j],b[1][j],u)|0)})`}return'#111'};
+for(let i=0;i<12;i++){const t=.8**i,w=900*t,h=520*t,x=400-w/2,y=215-h/2,p=i/11,c=cols(p);
+fr+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${i%2?'#16181c':'#1d2025'}" stroke="${c}" stroke-opacity="${.9-p*.6}" stroke-width="${3*t+.5}"/>`;
+const by=215+h*.30;
+br+=`<rect x="${400-110*t}" y="${by-34*t}" width="${220*t}" height="${34*t}" rx="${3*t}" fill="${cols(p)}"/><rect x="${400-110*t}" y="${by-34*t}" width="${220*t}" height="${6*t}" fill="#fff" opacity="${.35*(1-p)}"/>`;
+const cy2=215-h*.1;
+pt+=`<circle cx="${x+22*t}" cy="${cy2}" r="${15*t}" fill="#0a1218" stroke="#889" stroke-width="${2*t}"/><circle cx="${x+22*t}" cy="${cy2}" r="${9*t}" fill="${c}" opacity=".85"/><circle cx="${x+w-22*t}" cy="${cy2}" r="${15*t}" fill="#0a1218" stroke="#889" stroke-width="${2*t}"/><circle cx="${x+w-22*t}" cy="${cy2}" r="${9*t}" fill="${c}" opacity=".85"/>`}
+return V(`${D}<radialGradient id="h" cx=".5" cy=".55" r=".6"><stop offset="0" stop-color="#ff7a1f" stop-opacity=".8"/><stop offset="1" stop-color="#ff7a1f" stop-opacity="0"/></radialGradient><linearGradient id="fd" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset=".7" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#8fd0ff" stop-opacity=".18"/></linearGradient>${E}
+<rect width="800" height="450" fill="#0b0c0e"/>${fr.split('</rect>').reverse().join('')}
+<circle cx="400" cy="290" r="270" fill="url(#h)" class="fl"/>
+<g stroke="#556" stroke-width="2" opacity=".8"><path d="M0 450L400 215M800 450L400 215M0 0L400 215M800 0L400 215"/></g>
+<path d="M40 450L385 220M760 450L415 220" stroke="#8a929d" stroke-width="4" stroke-dasharray="20 10"><animate attributeName="stroke-dashoffset" values="0;-30" dur=".8s" repeatCount="indefinite"/></path>
+${br}${pt}<rect width="800" height="450" fill="url(#fd)" style="mix-blend-mode:normal"/>
+<g font-size="13" fill="#ffd9a0"><text x="30" y="420">1100 °C</text><text x="330" y="330" fill="#ff8a7a">700 °C</text><text x="470" y="262" fill="#b66">~300 °C</text><text x="402" y="205" fill="#9fd" font-size="10">LED · 20 °C</text></g>`)},
+6(){rs();let hx='',h=19,dx=h*1.732,dy=h*1.5;
+for(let row=0;row<20;row++)for(let c=0;c<27;c++){const x=c*dx+(row%2?dx/2:0),y=row*dy+10;
+const p=[0,1,2,3,4,5].map(k=>[x+h*Math.cos(Math.PI/6+k*Math.PI/3),y+h*Math.sin(Math.PI/6+k*Math.PI/3)]);
+hx+=`<polygon points="${p.map(a=>a[0].toFixed(0)+','+a[1].toFixed(0)).join(' ')}" fill="#0b0b0e" stroke="#2c3039" stroke-width="1.6"/><path d="M${p[3][0]|0} ${p[3][1]|0}L${p[4][0]|0} ${p[4][1]|0}L${p[5][0]|0} ${p[5][1]|0}" stroke="#4b5260" stroke-width="1.4" fill="none" opacity=".6"/><circle cx="${x|0}" cy="${y|0}" r="3" fill="#000" stroke="#1d2027"/>`}
+let rods='';for(let i=0;i<10;i++)rods+=`<line x1="${40+i*80}" y1="0" x2="${40+i*80}" y2="450" stroke="#7b8088" stroke-width="2" opacity=".7"/>`;
+let grid='';for(let i=-4;i<=4;i++)grid+=`<line x1="${400+i*20}" y1="95" x2="${400+i*20}" y2="360" stroke="#ff3030" stroke-width=".8" opacity=".6"/>`;for(let j=0;j<8;j++)grid+=`<line x1="320" y1="${110+j*30}" x2="480" y2="${110+j*30}" stroke="#ff3030" stroke-width=".8" opacity=".6"/>`;
+return V(`${D}<radialGradient id="v" cx=".5" cy=".42" r=".75"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset=".45" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity=".95"/></radialGradient>
+<linearGradient id="co" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#eaf2ff" stop-opacity=".75"/><stop offset="1" stop-color="#eaf2ff" stop-opacity=".02"/></linearGradient>${E}
+<rect width="800" height="450" fill="#050507"/>${hx}${rods}
+<g><animateTransform attributeName="transform" type="translate" values="-150 0;150 0;-150 0" dur="14s" repeatCount="indefinite"/>
+<polygon points="385,62 415,62 540,380 260,380" fill="url(#co)"/>${grid}
+<rect x="350" y="52" width="100" height="26" rx="5" fill="#59606c" stroke="#aeb6c2" stroke-width="2"/><rect x="392" y="78" width="16" height="22" fill="#7a818c"/>
+<g stroke="#aeb6c2" stroke-width="4" stroke-linecap="round"><path d="M400 100l-26 22M400 100l26 22"/></g>
+<polygon points="378,126 400,114 422,126 422,150 400,162 378,150" fill="#101116" stroke="#e8eef8" stroke-width="2"/><circle cx="400" cy="64" r="5" fill="#fff"/></g>
+<rect width="800" height="450" fill="url(#v)"/>
+<rect x="0" y="0" width="800" height="40" fill="#14161b"/><rect x="0" y="32" width="800" height="8" fill="#6b717c"/>
+<g stroke="#454a54" stroke-width="2"><path d="M0 12H800M0 22H800"/></g>
+<text x="14" y="26" fill="#9aa4b4" font-size="11">РЕЛЬСОВЫЙ ПОРТАЛ · 5000 K</text>
+<rect y="418" width="800" height="32" fill="#0c0d10"/><text x="400" y="438" fill="#667" font-size="11" text-anchor="middle">базальтовые стержни-направляющие · Hex-Interlock · «ласточкин хвост»</text>`)}
+};
+const FX='<defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter><filter id="nz"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .9 0"/></filter><radialGradient id="sh" cx=".3" cy=".3" r=".85"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/></radialGradient><radialGradient id="vg"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".65"/></radialGradient></defs>';
+const GR='<rect width="800" height="450" fill="url(#vg)"/><rect width="800" height="450" filter="url(#nz)" opacity=".16" style="mix-blend-mode:overlay"/>';
+const bolt=(x,y,c='#9aa3b0')=>`<circle cx="${x|0}" cy="${y|0}" r="2.4" fill="${c}"/><circle cx="${(x-.6)|0}" cy="${(y-.6)|0}" r=".9" fill="#fff" opacity=".7"/>`;
+const X={
+1(){rs();let a=`<g clip-path="url(#op)"><circle cx="580" cy="150" r="125" fill="url(#sh)"/><ellipse cx="575" cy="38" rx="30" ry="8" fill="#fff" opacity=".65"/><path d="M515 165q45 14 95 5" stroke="#2c130d" stroke-width="5" fill="none" opacity=".5"/><g fill="none" stroke="#2c130d" opacity=".4"><circle cx="640" cy="120" r="9"/><circle cx="525" cy="110" r="6"/><circle cx="600" cy="205" r="7"/></g>
+<rect x="10" y="61" width="320" height="2" fill="#fff" opacity=".45"/><rect x="169" y="0" width="2" height="150" fill="#fff" opacity=".3"/><circle cx="170" cy="62" r="130" fill="#fff" opacity=".05"/>
+<g stroke="#c8ced8" stroke-width="1.5"><path d="M400 146V108M392 112l16 0"/><path d="M372 150l18-24M428 150l-18-24" stroke-width="2"/></g><circle cx="400" cy="106" r="3" fill="#f33" class="pu"/><path d="M455 160q10-14 22-10" stroke="#aab" fill="none" stroke-width="2"/></g>`;
+for(let i=0;i<46;i++){const g=r()*6.28,k=1.03+r()*.22,x=400+330*k*Math.cos(g),y=130+105*k*Math.sin(g);let p=`${x|0},${y|0}`;for(let j=0;j<3;j++)p+=` ${(x+(r()-.5)*40)|0},${(y+j*8+r()*14)|0}`;a+=`<polyline points="${p}" fill="none" stroke="#000" stroke-width="2" opacity=".6"/><polyline points="${p}" transform="translate(1.5 -1.5)" fill="none" stroke="#6a6a74" stroke-width="1" opacity=".5"/>`}
+a+=`<polygon points="120,150 680,150 560,450 240,450" fill="#fff" opacity=".035"/><ellipse cx="400" cy="290" rx="200" ry="38" fill="none" stroke="#e8b100" stroke-width="5" stroke-dasharray="14 14" opacity=".5"/>`;
+for(let i=0;i<9;i++){const t=i/8;a+=bolt(lerp(215,158,t),lerp(450,218,t))+bolt(lerp(585,642,t),lerp(450,218,t))}
+for(let i=0;i<34;i++)a+=`<circle class="pu" style="animation-delay:${-r()*2}s" cx="${150+r()*500|0}" cy="${230+r()*210|0}" r="${.7+r()*1.2}" fill="#ffd9a0"/>`;
+a+=`<g fill="#556"><rect x="296" y="360" width="10" height="16"/><rect x="494" y="360" width="10" height="16"/></g><g fill="none" stroke="#b9bfc9" stroke-width="2"><path d="M200 260h20M580 260h20"/></g>`;return a},
+2(){rs();let a='';
+for(let i=0;i<6;i++){const x=i*150+20;a+=`<path d="M${x} 410V60" stroke="#050403" stroke-width="12" opacity=".5"/><path d="M${x} 410V60" stroke="#6a6258" stroke-width="3" opacity=".55"/>`}
+a+=`<g stroke="#7a828d" stroke-width="5"><path d="M0 22H800M0 34H800" /></g><g stroke="#c87533" stroke-width="3"><path d="M0 44H800"/></g>`;
+for(let x=20;x<800;x+=80)a+=`<rect x="${x}" y="17" width="8" height="22" fill="#aeb6c2"/>${bolt(x+4,21)}${bolt(x+4,35)}`;
+[480,570,660].forEach((x,i)=>{const c=x+35;
+a+=`<ellipse cx="${c}" cy="320" rx="64" ry="85" fill="#ff3a1a" opacity=".28" filter="url(#gl)" class="fl"/><ellipse cx="${c}" cy="70" rx="38" ry="38" fill="#bfe8f5" opacity=".3" filter="url(#gl)"/>`;
+for(let k=0;k<8;k++){const g=k*.785;a+=`<path d="M${c+Math.cos(g)*20|0} ${70+Math.sin(g)*20|0}l${Math.cos(g)*7|0} ${Math.sin(g)*7|0}" stroke="#fff" stroke-width="1.6"/>`}
+a+=`<circle class="g" style="--x:2px;animation-delay:${-i}s" cx="${c}" cy="94" r="2" fill="#bdf"/><rect x="${x-2}" y="250" width="74" height="7" rx="3" fill="#555b66"/><rect x="${x-2}" y="376" width="74" height="7" rx="3" fill="#555b66"/>${bolt(x+4,253)}${bolt(x+66,253)}<circle cx="${x+58}" cy="285" r="8" fill="#e8ecf2" stroke="#333" stroke-width="2"/><path d="M${x+58} 285l4-5" stroke="#d22" stroke-width="1.6"/>`});
+a+=`<path d="M20 120V400M44 120V400" stroke="#8c929c" stroke-width="3"/>`;for(let y=130;y<400;y+=16)a+=`<path d="M20 ${y}H44" stroke="#8c929c" stroke-width="2"/>`;
+a+=`<g fill="#6b6459"><polygon points="20,418 40,390 70,396 90,418"/><polygon points="120,420 150,398 185,410 200,420"/></g><rect x="190" y="0" width="22" height="9" fill="#444"/><rect x="262" y="0" width="22" height="9" fill="#444"/><ellipse cx="201" cy="12" rx="40" ry="10" fill="#fff" opacity=".4" filter="url(#gl)"/>`;return a},
+3(){rs();let a=`<ellipse cx="400" cy="205" rx="130" ry="46" fill="#ffb347" opacity=".7" filter="url(#gl)" class="fl"/><ellipse cx="400" cy="300" rx="190" ry="130" fill="#ff7a2a" opacity=".12" filter="url(#gl)"/>`;
+for(let i=0;i<16;i++){const g=i/16*6.28;a+=`<path d="M${400+Math.cos(g)*76|0} ${199+Math.sin(g)*16|0}L${400+Math.cos(g)*94|0} ${197+Math.sin(g)*22|0}" stroke="#1a110e" stroke-width="2.4"/>`}
+for(let k=0;k<5;k++)a+=`<path d="M292 ${219+k*30}h216" stroke="#ff9a4a" stroke-width="1.2" opacity=".5"/>`;
+a+=`<path d="M300 385q-60 30-200 40" stroke="#3b8bd0" stroke-width="5" fill="none" stroke-dasharray="14 8"><animate attributeName="stroke-dashoffset" values="0;-22" dur=".6s" repeatCount="indefinite"/></path><path d="M500 385q60 30 100 40" stroke="#d05a3b" stroke-width="5" fill="none"/>`;
+a+=`<circle cx="685" cy="290" r="70" fill="#4a8bff" opacity=".55" filter="url(#gl)" class="pu"/>`;
+for(let k=0;k<4;k++)a+=`<ellipse cx="685" cy="${200+k*45}" rx="44" ry="9" fill="none" stroke="#6fa6ff" stroke-width="2.4" opacity=".8"/>`;
+a+=`<path d="M598 150h174M598 400h174" stroke="#2d3340" stroke-width="8"/><circle cx="780" cy="130" r="4" fill="#f33" class="pu"/><text x="612" y="172" fill="#ffd34a" font-size="14">☢</text>`;
+for(let i=0;i<12;i++)a+=`<circle cx="${60+i*16}" cy="${300+(i%3)*14}" r="3" fill="${['#3f3','#fb3','#f44'][i%3]}" class="pu" style="animation-delay:${-i*.2}s"/>`;
+a+=`<rect x="50" y="290" width="200" height="50" fill="none" stroke="#555" stroke-width="2"/>`;
+for(let i=0;i<14;i++)a+=`<circle r="1.8" fill="#ffd27a"><animateMotion dur="${.8+r()}s" begin="${-r()*2}s" repeatCount="indefinite" path="M400 195q${(r()-.5)*160|0} -${60+r()*60|0} ${(r()-.5)*260|0} 40"/></circle>`;return a},
+4(){rs();let a=`<ellipse cx="400" cy="400" rx="300" ry="26" fill="#ff5a2a" opacity=".18" filter="url(#gl)"/><g transform="rotate(-16 400 235)"><ellipse cx="400" cy="235" rx="262" ry="130" fill="none" stroke="#ff2a1a" stroke-width="10" opacity=".35" filter="url(#gl)" class="fl"/>`;
+for(let i=0;i<8;i++){const g=i*.785;a+=bolt(400+30*Math.cos(g),235+19*Math.sin(g),'#cfd6e0')}
+for(let i=0;i<24;i++){const g=r()*6.28,l=20+r()*40;a+=`<line x1="${400+250*Math.cos(g)|0}" y1="${235+120*Math.sin(g)|0}" x2="${400+(250+l)*Math.cos(g)|0}" y2="${235+(120+l*.5)*Math.sin(g)|0}" stroke="#ffb060" stroke-width="1.2" opacity=".6"/>`}
+a+=`</g><g stroke="#2f3440" stroke-width="10"><path d="M0 395H260M540 395H800"/></g><g fill="#ff9a3a">`;for(let x=20;x<260;x+=26)a+=`<rect x="${x}" y="391" width="10" height="3"/>`;a+=`</g>`;
+[[60,40],[740,40],[60,420],[740,420]].forEach(p=>a+=`<rect x="${p[0]-10}" y="${p[1]-5}" width="20" height="10" fill="#888"/><polygon points="${p[0]},${p[1]} ${p[0]+(p[0]<400?160:-160)},${p[1]+(p[1]<200?170:-170)} ${p[0]+(p[0]<400?60:-60)},${p[1]+(p[1]<200?220:-220)}" fill="#cfe4ff" opacity=".06"/><circle cx="${p[0]}" cy="${p[1]}" r="4" fill="#fff" class="stb" style="opacity:1"/>`);return a},
+5(){let a='';
+for(let i=1;i<11;i++){const t=.8**i,w=900*t,h=520*t,p=i/11,x=400-w/2,y=215-h/2;
+a+=`<path d="M${x} ${y+h}L${x} ${y}M${x+w} ${y+h}L${x+w} ${y}" stroke="#000" stroke-width="${6*t}" opacity=".5"/><rect x="${x}" y="${y}" width="${w}" height="${12*t}" fill="${i%2?'#2a2d33':'#34383f'}"/><circle cx="${400}" cy="${y+16*t}" r="${4*t}" fill="${p<.35?'#f84':p<.65?'#fa3':'#7df'}" class="pu" style="animation-delay:${-i*.2}s"/>`;
+if(i%3==1){const px=x+22*t,py=215-h*.1;a+=`<path d="M${px} ${py}L${400-30*t} ${215+h*.18}" stroke="#ff3030" stroke-width="${1.4*t+.4}" opacity=".7"/><path d="M${x+w-22*t} ${py}L${400+30*t} ${215+h*.18}" stroke="#ff3030" stroke-width="${1.4*t+.4}" opacity=".7"/>`}}
+a+=`<ellipse cx="400" cy="345" rx="220" ry="26" fill="#ff7a1f" opacity=".45" filter="url(#gl)" class="fl"/><ellipse cx="400" cy="250" rx="90" ry="40" fill="#ff5a1a" opacity=".25" filter="url(#gl)"/>`;
+for(let i=0;i<7;i++)a+=`<rect x="${380+i*7}" y="${215+i*3}" width="3" height="${(60-i*6)}" fill="#fff" opacity=".05"/>`;return a},
+6(){rs();const h=19,dx=h*1.732,dy=h*1.5;let a='';
+const hp=(row,c,f,o)=>{const x=c*dx+(row%2?dx/2:0),y=row*dy+10;return`<polygon points="${[0,1,2,3,4,5].map(k=>(x+h*Math.cos(Math.PI/6+k*Math.PI/3)).toFixed(0)+','+(y+h*Math.sin(Math.PI/6+k*Math.PI/3)).toFixed(0)).join(' ')}" fill="${f}" opacity="${o}" stroke="#7b8494" stroke-width=".8"/>`};
+for(let i=0;i<70;i++)a+=hp(r()*19|0,r()*26|0,'#1c2029',.9);
+for(let i=0;i<10;i++){const row=r()*18|0,c=r()*26|0;a+=`<rect x="${c*dx+(row%2?dx/2:0)-6}" y="${row*dy+7}" width="12" height="5" fill="#e87a1a" opacity=".85"/>`}
+a+=`<g><animateTransform attributeName="transform" type="translate" values="-150 0;150 0;-150 0" dur="14s" repeatCount="indefinite"/><path d="M400 100v-40" stroke="#c9d1dc" stroke-width="2"/>`;
+for(let i=-4;i<=4;i++)for(let j=0;j<8;j++)a+=`<circle cx="${400+i*20}" cy="${110+j*30}" r="1.8" fill="#ff4040" class="pu" style="animation-delay:${-(i+j)*.15}s"/>`;
+a+=`<circle cx="400" cy="70" r="40" fill="#eaf2ff" opacity=".5" filter="url(#gl)"/></g><rect x="0" y="40" width="800" height="3" fill="#fff" opacity=".12"/>`;
+for(let x=60;x<800;x+=120)a+=`<rect x="${x}" y="408" width="40" height="6" fill="#dfe8f5" opacity=".6"/>`;return a}
+};
+const L=[
+{n:'Приём',t:'Поверхностный бункер и приёмная шахта',tag:'Низкий ракурс снизу вверх',c:['Глубина: 0 – 40 м','g ≈ 0,0057 м/с²','Вакуум'],d:'Вид из шахты на поверхность: зазубренный кратерный срез, чёрный космос и диск Марса. Низкий титановый купол-воронка заанкерен в породу натянутыми тросами.',u:['<b>Транспортная зона:</b> гусеничные роверы сгружают пушистый реголит; пыль не клубится, а разлетается отдельными крупинками по баллистическим траекториям.','<b>Шахта:</b> рельсовые направляющие, лепестковые шлюзовые клапаны, пучки силовых кабелей.','<b>Свет:</b> жёсткое Солнце, коричневатый отсвет Марса, пульсирующие янтарные маяки.']},
+{n:'Сепарация',t:'Цех вибро-сепарации и дегазации',tag:'Средний план · набрызг-бетон',c:['Без моторов','Фобосотрясения','Газы → ловушки'],d:'Каверна укреплена набрызг-бетоном и тёмным полимером. Многоярусные сита висят на демпферных пружинах и качаются от естественной микросейсмики.',u:['<b>Сейсмо-каскад:</b> реголит течёт по ситам как эмульсия, разделяясь на песок и валуны.','<b>Дегазаторы:</b> герметичные цилиндры с раскалёнными спиралями; летучие уходят по кварцевым трубкам в заиндевевшие баллоны-ловушки.','<b>Свет:</b> холодные белые прожекторы на сетках.']},
+{n:'Плавка',t:'Ядерно-индукционный плавильный цех',tag:'Центральный кадр · самый глубокий бункер',c:['1250 °C','Тигель: ниобий','Свет Черенкова'],d:'Цилиндрический тигель из ниобиевого сплава оплетён водоохлаждаемыми медными шинами. Внутри бурлит базальтовая магма, у стенок застывает гарнисаж.',u:['<b>Подача:</b> вакуумные молибденовые шнеки сыплют сухой песок в центр расплава.','<b>Реактор:</b> блок в боковой нише за свинцово-гидридным стеклом, синее мягкое свечение.','<b>Свет:</b> ослепительный оранжево-жёлтый от расплава и длинные резкие тени.']},
+{n:'Отливка',t:'Центробежно-литейная карусель',tag:'Диагональный динамичный ракурс',c:['Ø 10–12 м','Магн. подшипники','Искры по прямым'],d:'Огромное стальное колесо парит на магнитных подшипниках. По ободу зажаты матрицы, магма впрыскивается через центральный распределитель.',u:['<b>Движение:</b> радиальные полосы размытия; излишки расплава вылетают искрами строго по прямым.','<b>Роботы:</b> паукообразные манипуляторы снимают светящиеся блоки.','<b>Свет:</b> стробоскоп, вишнёвые замки свежих блоков на тёмном корпусе.']},
+{n:'Отжиг',t:'Термотуннель раскристаллизации',tag:'Перспектива «сквозь туннель»',c:['1100 → 20 °C','Магн. подвес','Пирометры'],d:'Длинный конвейер под теплоизолирующими экранами. Блоки на магнитных подвесах идут друг за другом и постепенно остывают.',u:['<b>Остывание:</b> ярко-оранжевые → вишнёвые (700 °C) → тёмно-бордовые → матово-чёрные.','<b>Окна:</b> кварцевые иллюминаторы, через них пирометры считывают температуру кристаллизации.','<b>Свет:</b> градиент от тёплого свечения до холодного LED на выходе.']},
+{n:'Склад',t:'Автоматизированный сотовый склад',tag:'Панорама подземного хранилища',c:['Высота ≈ 10 м','Hex-Interlock','5000 K'],d:'Стены зала выложены чёрными гексагональными блоками, как гигантские соты. Базальтовые стержни пронизывают отверстия блоков, чтобы штабели не разлетались в микрогравитации.',u:['<b>Краны:</b> тихие портальные манипуляторы на потолочных рельсах; лазерные дальномеры рисуют сетку позиционирования.','<b>Замки:</b> «ласточкин хвост» и глянцевые фаски на матовом базальте.','<b>Свет:</b> чистый холодный белый от прожекторов крана.']}
+];
+let cur=0;const $=i=>document.getElementById(i);
+$('nav').innerHTML=L.map((l,i)=>`<button data-i="${i}">${i+1}. ${l.n}</button>`).join('');
+function go(i){cur=(i+6)%6;const l=L[cur];$('art').innerHTML=S[cur+1]().replace('>','>'+FX).replace(/<\/svg>$/,X[cur+1]()+GR+'</svg>');$('tag').textContent='Уровень '+(cur+1)+' · '+l.tag;
+$('info').innerHTML=`<h2>Уровень ${cur+1}: ${l.t}</h2><div class="chips">${l.c.map(c=>`<span>${c}</span>`).join('')}</div><p>${l.d}</p><ul>${l.u.map(u=>`<li>${u}</li>`).join('')}</ul>`;
+document.querySelectorAll('nav button').forEach((b,k)=>b.classList.toggle('on',k==cur));
+if(off)$('art').querySelector('svg').pauseAnimations()}
+let off=false;
+$('nav').onclick=e=>{const b=e.target.closest('button');if(b)go(+b.dataset.i)};
+$('pv').onclick=()=>go(cur-1);$('nx').onclick=()=>go(cur+1);
+$('an').onclick=()=>{off=!off;const s=$('art').querySelector('svg');off?s.pauseAnimations():s.unpauseAnimations();$('fig').classList.toggle('off',off);$('an').textContent=off?'▶ Анимация':'⏸ Анимация'};
+addEventListener('keydown',e=>{if(e.key=='ArrowRight')go(cur+1);if(e.key=='ArrowLeft')go(cur-1)});
+go(0);
+</script></body></html>
