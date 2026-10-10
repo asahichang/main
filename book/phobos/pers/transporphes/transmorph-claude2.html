@@ -1,0 +1,613 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Портрет трансморфа</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@200;300;400&family=Onest:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a tall portrait plate on the left, a quiet specimen sheet on the right with the controls and the field notes. */
+:root{
+  --bg:#ebe9f2;
+  --panel:#f7f6fb;
+  --ink:#17122c;
+  --mute:#585272;
+  --line:#cdc8de;
+  --accent:#5a2ed0;
+  --on-accent:#ffffff;
+  --f-display:"Geologica","Onest",system-ui,sans-serif;
+  --f-body:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0916;--panel:#14112a;--ink:#ece9f7;--mute:#a09bbc;--line:#2c2748;--accent:#ab8cff;--on-accent:#140b33;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0916;--panel:#14112a;--ink:#ece9f7;--mute:#a09bbc;--line:#2c2748;--accent:#ab8cff;--on-accent:#140b33;color-scheme:dark;
+}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--f-body)}
+main{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 56px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(24px,4.5vw,64px);align-items:start}
+figure{margin:0;min-width:0;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+figcaption{font:400 12px/1.5 var(--f-mono);color:var(--mute);letter-spacing:.04em;margin-top:10px}
+#art{display:block;width:100%;height:auto;border-radius:4px;isolation:isolate;background:#0a0e22}
+aside{min-width:0}
+.eyebrow{font:500 12px/1.4 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+h1{font:200 clamp(46px,7.2vw,92px)/.95 var(--f-display);letter-spacing:-.025em;margin:0 0 18px;text-wrap:balance}
+.lead{margin:0 0 28px;max-width:46ch;color:var(--mute);font-size:17px}
+.ctl{display:grid;gap:14px;margin-bottom:12px}
+.lbl{font:500 12px/1.4 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin:0 0 6px}
+.seg{display:inline-flex;flex-wrap:wrap;gap:2px;border:1.5px solid var(--ink);border-radius:999px;padding:3px}
+.seg label{position:relative;cursor:pointer}
+.seg input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.seg span{display:block;padding:7px 16px;border-radius:999px;font:500 14px/1.3 var(--f-body)}
+.seg input:checked + span{background:var(--ink);color:var(--bg)}
+.seg input:focus-visible + span{outline:3px solid var(--accent);outline-offset:2px}
+.acts{display:flex;flex-wrap:wrap;gap:10px}
+.act{font:500 14px/1.3 var(--f-body);color:var(--on-accent);background:var(--accent);border:0;border-radius:999px;padding:10px 20px;cursor:pointer}
+.act:disabled{opacity:.55;cursor:default}
+.act.alt{background:none;color:var(--ink);border:1.5px solid var(--ink)}
+.act:focus-visible,.note:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#status{min-height:3.4em;margin:6px 0 26px;padding-left:14px;border-left:2px solid var(--accent);color:var(--ink);font-size:15px;max-width:52ch}
+.notes{list-style:none;margin:0;padding:0;display:grid;border-top:1px solid var(--line)}
+.notes li{border-bottom:1px solid var(--line)}
+.note{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:minmax(0,9.5rem) minmax(0,1fr);gap:6px 18px;padding:14px 6px;cursor:pointer;border-radius:4px}
+.note:hover,.note[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.nk{font:500 12px/1.6 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);padding-top:2px}
+.nt{font-size:15px;color:var(--ink)}
+.hint{font:400 12px/1.5 var(--f-mono);color:var(--mute);margin:10px 0 0}
+@media (max-width:900px){
+  main{grid-template-columns:minmax(0,1fr)}
+  figure{position:static;max-width:560px;margin-inline:auto;width:100%}
+}
+@media (max-width:520px){.note{grid-template-columns:minmax(0,1fr)}}
+
+/* artwork states */
+#art .ov{transition:opacity .9s ease}
+#art .ovMars{opacity:0}
+#art.m-mars .ovMars{opacity:.6}
+#art .ovMars2{opacity:0}
+#art.m-mars .ovMars2{opacity:.5}
+#art .ovUv{opacity:0}
+#art.m-uv .ovUv{opacity:.78}
+#art .ovLamp{opacity:0}
+#art.m-uv .ovLamp{opacity:.6}
+#art .uv{opacity:0;transition:opacity .9s ease}
+#art.m-uv .uv{opacity:1}
+#art .lat{opacity:.3;transition:opacity .9s}
+#art.m-uv .lat{opacity:.5}
+#art .rimR{transition:opacity .9s;opacity:.8}
+#art.m-mars .rimR{opacity:1}
+#art .rad{opacity:var(--heat,.12)}
+#art .radv{opacity:calc(.5 + var(--heat,.12) * .5)}
+#art .tw{animation:tw 3.4s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.25}to{opacity:1}}
+#art .mote{animation:mote 9s ease-in-out infinite alternate}
+@keyframes mote{from{transform:translate(0,0)}to{transform:translate(16px,-48px)}}
+#art .ring{opacity:0;transition:opacity .25s;filter:drop-shadow(0 0 2px rgba(0,0,0,.85))}
+#art .ring.on{opacity:1}
+@media (prefers-reduced-motion:reduce){#art .tw,#art .mote{animation:none}#art .ov,#art .uv{transition:none}}
+</style>
+
+<main>
+<figure>
+<svg id="art" viewBox="0 0 800 1000" role="img" aria-labelledby="art-t art-d" style="--heat:.12">
+<title id="art-t">Портрет трансморфа</title>
+<desc id="art-d">Бледный лысый человек с высоким гладким лбом, тёмными глазами без белков и тонкой шеей на фоне иллюминатора, за которым виден Марс на закате.</desc>
+<defs>
+  <!-- shapes -->
+  <path id="headP" d="M400 80C480 80 551 134 552 240C553 306 548 352 550 402C551 452 542 500 528 548C514 598 478 646 440 669C426 678 414 683 400 683C386 683 374 678 360 669C322 646 286 598 272 548C258 500 249 452 250 402C252 352 247 306 248 240C249 134 320 80 400 80Z"/>
+  <path id="torsoP" d="M366 600L362 770C358 800 300 806 236 828C190 846 150 880 130 940L112 1000L688 1000L670 940C650 880 610 846 564 828C500 806 442 800 438 770L434 600Z"/>
+  <clipPath id="cHead"><use href="#headP"/></clipPath>
+  <clipPath id="cTorso"><use href="#torsoP"/></clipPath>
+  <clipPath id="cPort"><circle cx="400" cy="470" r="346"/></clipPath>
+  <clipPath id="cEyeL"><path d="M296 397C304 374 346 366 369 395C352 413 312 417 296 397Z"/></clipPath>
+  <clipPath id="cEyeR"><path d="M504 397C496 374 454 366 431 395C448 413 488 417 504 397Z"/></clipPath>
+  <clipPath id="cMemL"><path id="mcL" d="M0 352Q-9 396 0 440L150 440L150 352Z" transform="translate(373 0)"/></clipPath>
+  <clipPath id="cMemR"><path id="mcR" d="M0 352Q9 396 0 440L-150 440L-150 352Z" transform="translate(427 0)"/></clipPath>
+
+  <!-- blur family -->
+  <filter id="b1" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation=".8"/></filter>
+  <filter id="b2" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation="2"/></filter>
+  <filter id="b3" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation="3"/></filter>
+  <filter id="b4" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation="4"/></filter>
+  <filter id="b6" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="b8" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation="8"/></filter>
+  <filter id="b10" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation="10"/></filter>
+  <filter id="b14" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation="14"/></filter>
+  <filter id="b18" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation="18"/></filter>
+  <filter id="b22" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation="22"/></filter>
+  <filter id="b30" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation="30"/></filter>
+  <filter id="glow" filterUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000"><feGaussianBlur stdDeviation="3.2" result="bl"/><feMerge><feMergeNode in="bl"/><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="grain" filterUnits="userSpaceOnUse" x="240" y="70" width="320" height="620"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .22  0 0 0 0 .16  0 0 0 0 .3  .8 0 0 0 -.28"/></filter>
+  <filter id="grainT" filterUnits="userSpaceOnUse" x="100" y="590" width="600" height="410"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="8"/><feColorMatrix values="0 0 0 0 .22  0 0 0 0 .16  0 0 0 0 .3  .8 0 0 0 -.28"/></filter>
+
+  <!-- gradients -->
+  <linearGradient id="gWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a0e22"/><stop offset=".55" stop-color="#151c37"/><stop offset="1" stop-color="#0a0d1f"/></linearGradient>
+  <linearGradient id="gMetal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a7596"/><stop offset=".35" stop-color="#2c3350"/><stop offset=".7" stop-color="#12172c"/><stop offset="1" stop-color="#46507a"/></linearGradient>
+  <linearGradient id="gSky" gradientUnits="userSpaceOnUse" x1="0" y1="124" x2="0" y2="816"><stop offset="0" stop-color="#0b0720"/><stop offset=".3" stop-color="#24124a"/><stop offset=".5" stop-color="#5e2766"/><stop offset=".66" stop-color="#b24668"/><stop offset=".78" stop-color="#ee8a56"/><stop offset="1" stop-color="#ffc983"/></linearGradient>
+  <radialGradient id="gSunGlow"><stop offset="0" stop-color="#cdeeff" stop-opacity=".95"/><stop offset=".22" stop-color="#7fc6ff" stop-opacity=".55"/><stop offset="1" stop-color="#7fc6ff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="gDuneF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c6625a"/><stop offset="1" stop-color="#7a3040"/></linearGradient>
+  <linearGradient id="gDuneM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8d3541"/><stop offset="1" stop-color="#4a1a2e"/></linearGradient>
+  <linearGradient id="gDuneN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4c1b31"/><stop offset="1" stop-color="#1f0b1b"/></linearGradient>
+  <radialGradient id="gHalo"><stop offset="0" stop-color="#ff9a5c" stop-opacity=".5"/><stop offset=".5" stop-color="#b0488f" stop-opacity=".22"/><stop offset="1" stop-color="#5a2ed0" stop-opacity="0"/></radialGradient>
+  <radialGradient id="gVig" cx=".5" cy=".46" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></radialGradient>
+  <radialGradient id="gHeat"><stop offset="0" stop-color="#ff3b7a" stop-opacity=".95"/><stop offset=".6" stop-color="#ff3b7a" stop-opacity=".35"/><stop offset="1" stop-color="#ff3b7a" stop-opacity="0"/></radialGradient>
+  <linearGradient id="gSkin" gradientUnits="userSpaceOnUse" x1="250" y1="80" x2="550" y2="520"><stop offset="0" stop-color="#f5ebe2"/><stop offset=".4" stop-color="#e3d7ce"/><stop offset=".75" stop-color="#c3b1b8"/><stop offset="1" stop-color="#9a85a6"/></linearGradient>
+  <linearGradient id="gTorso" gradientUnits="userSpaceOnUse" x1="130" y1="0" x2="670" y2="0"><stop offset="0" stop-color="#dccfc8"/><stop offset=".5" stop-color="#c6b5bc"/><stop offset="1" stop-color="#8d799c"/></linearGradient>
+  <linearGradient id="gNeckCyl" gradientUnits="userSpaceOnUse" x1="360" y1="0" x2="440" y2="0"><stop offset="0" stop-color="#4b3a6b" stop-opacity=".5"/><stop offset=".3" stop-color="#4b3a6b" stop-opacity="0"/><stop offset=".65" stop-color="#2f2050" stop-opacity="0"/><stop offset="1" stop-color="#2f2050" stop-opacity=".65"/></linearGradient>
+  <linearGradient id="gRim" gradientUnits="userSpaceOnUse" x1="250" y1="0" x2="550" y2="0"><stop offset="0" stop-color="#8fe6ff" stop-opacity=".75"/><stop offset=".3" stop-color="#8fe6ff" stop-opacity="0"/><stop offset=".7" stop-color="#ff9a5a" stop-opacity="0"/><stop offset="1" stop-color="#ff8a4a" stop-opacity=".95"/></linearGradient>
+  <linearGradient id="gRimT" gradientUnits="userSpaceOnUse" x1="130" y1="0" x2="670" y2="0"><stop offset="0" stop-color="#8fe6ff" stop-opacity=".6"/><stop offset=".3" stop-color="#8fe6ff" stop-opacity="0"/><stop offset=".7" stop-color="#ff9a5a" stop-opacity="0"/><stop offset="1" stop-color="#ff8a4a" stop-opacity=".9"/></linearGradient>
+  <linearGradient id="gSuit" gradientUnits="userSpaceOnUse" x1="110" y1="830" x2="690" y2="1000"><stop offset="0" stop-color="#27226a"/><stop offset=".5" stop-color="#17143c"/><stop offset="1" stop-color="#0f0d2a"/></linearGradient>
+  <linearGradient id="gIrid" gradientUnits="userSpaceOnUse" x1="120" y1="840" x2="680" y2="990"><stop offset="0" stop-color="#ff7ac8" stop-opacity=".0"/><stop offset=".25" stop-color="#7a6bff" stop-opacity=".35"/><stop offset=".6" stop-color="#3fe0d0" stop-opacity=".25"/><stop offset="1" stop-color="#ffb35c" stop-opacity=".0"/></linearGradient>
+  <linearGradient id="gTrim" gradientUnits="userSpaceOnUse" x1="236" y1="0" x2="564" y2="0"><stop offset="0" stop-color="#7ee7ff"/><stop offset=".5" stop-color="#b79bff"/><stop offset="1" stop-color="#ff9bd0"/></linearGradient>
+  <pattern id="mesh" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M0 4.5L4.5 0L9 4.5L4.5 9Z" fill="none" stroke="#9fc4ff" stroke-opacity=".12" stroke-width=".6"/></pattern>
+  <radialGradient id="gSclera" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#4d3d3c"/><stop offset=".7" stop-color="#2b2022"/><stop offset="1" stop-color="#150e10"/></radialGradient>
+  <radialGradient id="gIris"><stop offset="0" stop-color="#0d0a12"/><stop offset=".4" stop-color="#1d3640"/><stop offset=".72" stop-color="#37606c"/><stop offset=".92" stop-color="#5a8c94"/><stop offset="1" stop-color="#232430"/></radialGradient>
+  <linearGradient id="gLidShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1020" stop-opacity=".75"/><stop offset="1" stop-color="#1b1020" stop-opacity="0"/></linearGradient>
+  <linearGradient id="gMemL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#efe8df" stop-opacity=".7"/><stop offset="1" stop-color="#d8cec8" stop-opacity=".42"/></linearGradient>
+  <linearGradient id="gMemR" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#efe8df" stop-opacity=".7"/><stop offset="1" stop-color="#d8cec8" stop-opacity=".42"/></linearGradient>
+  <linearGradient id="gPearl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffe3ee"/><stop offset=".3" stop-color="#ffffff"/><stop offset=".6" stop-color="#d9f4ea"/><stop offset="1" stop-color="#e6d6ff"/></linearGradient>
+  <linearGradient id="gOil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb259"/><stop offset=".5" stop-color="#7a3a12"/><stop offset="1" stop-color="#2c1608"/></linearGradient>
+  <radialGradient id="gSunRad" cx=".85" cy=".62" r=".6"><stop offset="0" stop-color="#ffb066" stop-opacity=".9"/><stop offset="1" stop-color="#ffb066" stop-opacity="0"/></radialGradient>
+  <radialGradient id="gLamp" cx=".5" cy=".22" r=".7"><stop offset="0" stop-color="#9a5cff" stop-opacity=".85"/><stop offset="1" stop-color="#9a5cff" stop-opacity="0"/></radialGradient>
+</defs>
+
+<!-- station wall -->
+<rect width="800" height="1000" fill="url(#gWall)"/>
+<path d="M92 0V1000M708 0V1000M0 62H800M0 940H800" stroke="#222c52" stroke-width="2" fill="none"/>
+<g id="rivets" fill="#2d3860"></g>
+<g><circle cx="38" cy="40" r="4" fill="#4de3c2"/><circle cx="56" cy="40" r="4" fill="#ffb347"/><circle cx="74" cy="40" r="4" fill="#3a4470"/></g>
+
+<!-- porthole -->
+<g id="port">
+  <circle cx="400" cy="470" r="378" fill="#04050d"/>
+  <circle cx="400" cy="470" r="372" fill="url(#gMetal)"/>
+  <circle cx="400" cy="470" r="350" fill="#0a0e24"/>
+  <g clip-path="url(#cPort)">
+    <rect x="54" y="124" width="692" height="692" fill="url(#gSky)"/>
+    <g id="stars"></g>
+    <circle cx="640" cy="660" r="200" fill="url(#gSunGlow)"/>
+    <circle cx="640" cy="662" r="9" fill="#eef9ff"/>
+    <g id="phobos"><circle cx="150" cy="330" r="25" fill="#7a6a6c"/><circle cx="150" cy="330" r="25" fill="none" stroke="#ffb27a" stroke-opacity=".7" stroke-width="3" stroke-dasharray="38 120" transform="rotate(-150 150 330)"/><circle cx="141" cy="322" r="5" fill="#4d4144" opacity=".7"/><circle cx="160" cy="338" r="3.4" fill="#4d4144" opacity=".7"/><circle cx="152" cy="346" r="2.2" fill="#4d4144" opacity=".7"/></g>
+    <circle cx="655" cy="300" r="6" fill="#a99a9a"/>
+    <g transform="translate(0 -44)"><path d="M40 708C140 690 220 714 320 700C420 690 520 718 620 702C700 692 760 706 800 700L800 900L40 900Z" fill="url(#gDuneF)"/>
+    <path d="M40 742C150 716 260 754 380 736C500 718 600 762 800 732L800 900L40 900Z" fill="url(#gDuneM)"/>
+    <path d="M40 802C160 772 280 812 400 792C520 772 640 818 800 782L800 900L40 900Z" fill="url(#gDuneN)"/>
+    <path d="M40 742C150 716 260 754 380 736C500 718 600 762 800 732" fill="none" stroke="#ffb27a" stroke-opacity=".5" stroke-width="2"/></g>
+    <path d="M60 188L330 80L700 150" fill="none" stroke="#fff" stroke-opacity=".05" stroke-width="90" filter="url(#b14)"/>
+  </g>
+  <circle cx="400" cy="470" r="348" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="7"/>
+  <g id="bolts"></g>
+</g>
+
+<!-- backlight and ear radiators -->
+<circle cx="400" cy="420" r="330" fill="url(#gHalo)" style="mix-blend-mode:screen"/>
+<g class="rad"><ellipse cx="238" cy="440" rx="30" ry="52" fill="url(#gHeat)"/><ellipse cx="562" cy="440" rx="30" ry="52" fill="url(#gHeat)"/></g>
+
+<!-- neck and chest -->
+<g id="torso">
+  <use href="#torsoP" fill="url(#gTorso)"/>
+  <g clip-path="url(#cTorso)">
+    <path d="M366 610L363 776" fill="none" stroke="#43325f" stroke-opacity=".5" stroke-width="14" filter="url(#b6)"/><path d="M434 610L437 776" fill="none" stroke="#2a1b48" stroke-opacity=".7" stroke-width="14" filter="url(#b6)"/>
+    <path d="M338 640C358 712 442 712 462 640L462 580L338 580Z" fill="#2a1d4a" opacity=".6" filter="url(#b10)"/>
+    <path d="M372 662C376 720 388 780 398 820M428 662C424 720 412 780 402 820" fill="none" stroke="#7c6a93" stroke-opacity=".38" stroke-width="5" filter="url(#b3)"/>
+    <ellipse cx="400" cy="740" rx="14" ry="40" fill="#fff" opacity=".1" filter="url(#b6)"/>
+    <!-- radiators on the neck -->
+    <g class="rad"><ellipse cx="373" cy="724" rx="10" ry="62" fill="url(#gHeat)"/><ellipse cx="427" cy="724" rx="10" ry="62" fill="url(#gHeat)"/></g>
+    <g class="radv" fill="none" stroke="#3b1b6b" stroke-width="1.5" stroke-linecap="round" stroke-opacity=".9">
+      <path d="M372 664C366 700 368 742 374 794M370 700C377 716 379 740 376 762M369 730C362 742 362 762 366 780"/>
+      <path d="M428 664C434 700 432 742 426 794M430 700C423 716 421 740 424 762M431 730C438 742 438 762 434 780"/>
+    </g>
+    <g fill="none" stroke="#c4b0ff" stroke-width=".6" stroke-opacity=".5"><path d="M372 664C366 700 368 742 374 794"/><path d="M428 664C434 700 432 742 426 794"/></g>
+    <!-- clavicles -->
+    <g id="clavL">
+      <path d="M396 822C360 812 310 812 256 832" fill="none" stroke="#f6ece5" stroke-opacity=".4" stroke-width="7" stroke-linecap="round" filter="url(#b3)"/>
+      <path d="M396 834C360 828 312 830 262 848" fill="none" stroke="#54407a" stroke-opacity=".4" stroke-width="9" stroke-linecap="round" filter="url(#b4)"/>
+      <path d="M392 826C358 818 312 818 262 836" fill="none" stroke="#24103f" stroke-width="2.3" stroke-linecap="round" stroke-opacity=".92"/>
+      <path d="M392 826C358 818 312 818 262 836" fill="none" stroke="#b49cff" stroke-width=".6" stroke-opacity=".55"/>
+      <path d="M340 819C334 832 330 846 332 860M300 822C298 834 296 842 298 852" fill="none" stroke="#2b1448" stroke-width="1.4" stroke-opacity=".7" stroke-linecap="round"/>
+    </g>
+    <use href="#clavL" transform="translate(800 0) scale(-1 1)"/>
+    <ellipse cx="400" cy="880" rx="11" ry="46" fill="#4b3a6e" opacity=".28" filter="url(#b6)"/>
+    <ellipse cx="400" cy="818" rx="9" ry="5" fill="#33224f" opacity=".55" filter="url(#b3)"/>
+    <g fill="none" stroke="#6e5a8f" stroke-opacity=".28" stroke-width="1.4" stroke-linecap="round"><path d="M352 912C368 918 386 920 398 918M348 930C366 936 384 938 396 936"/><path d="M448 912C432 918 414 920 402 918M452 930C434 936 416 938 404 936"/></g>
+    <rect x="100" y="590" width="600" height="410" filter="url(#grainT)" opacity=".45"/>
+    <use href="#torsoP" fill="none" stroke="url(#gRimT)" stroke-width="14" filter="url(#b3)" class="rimR"/>
+  </g>
+</g>
+
+<!-- suit -->
+<g id="suit">
+  <path id="suitP" d="M112 1000L130 940C150 880 190 846 236 828C282 842 326 884 368 932C382 946 392 952 400 952C408 952 418 946 432 932C474 884 518 842 564 828C610 846 650 880 670 940L688 1000Z" fill="url(#gSuit)"/>
+  <use href="#suitP" fill="url(#mesh)"/>
+  <use href="#suitP" fill="url(#gIrid)" style="mix-blend-mode:screen"/>
+  <path d="M150 902C170 872 200 852 236 842M650 902C630 872 600 852 564 842" fill="none" stroke="#9db0ff" stroke-opacity=".4" stroke-width="5" stroke-linecap="round" filter="url(#b3)"/>
+  <path d="M200 1000C204 950 214 900 236 860M600 1000C596 950 586 900 564 860" fill="none" stroke="#0a0820" stroke-opacity=".55" stroke-width="2"/>
+  <path d="M236 828C282 842 326 884 368 932C382 946 392 952 400 952C408 952 418 946 432 932C474 884 518 842 564 828" fill="none" stroke="#7ee7ff" stroke-opacity=".5" stroke-width="9" filter="url(#b4)"/>
+  <path d="M236 828C282 842 326 884 368 932C382 946 392 952 400 952C408 952 418 946 432 932C474 884 518 842 564 828" fill="none" stroke="url(#gTrim)" stroke-width="3.2" stroke-linecap="round"/>
+  <g transform="translate(160 962) rotate(-14)"><rect width="66" height="21" rx="3" fill="#2a2186" stroke="#8d7dff" stroke-opacity=".6"/><text x="33" y="14.5" text-anchor="middle" font-family="JetBrains Mono,ui-monospace,monospace" font-size="11" fill="#dcd5ff" letter-spacing=".8">ACGTXY</text></g>
+</g>
+
+<!-- ears -->
+<g id="ears">
+  <path d="M254 376C236 366 224 388 228 414C231 436 243 450 255 442Z" fill="#cdbfba"/>
+  <path d="M248 392C238 394 236 412 244 428" fill="none" stroke="#8a7694" stroke-opacity=".7" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M546 376C564 366 576 388 572 414C569 436 557 450 545 442Z" fill="#9f8baa"/>
+  <path d="M552 392C562 394 564 412 556 428" fill="none" stroke="#5a4478" stroke-opacity=".8" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M546 376C564 366 576 388 572 414C569 436 557 450 545 442" fill="none" stroke="#ff9a5a" stroke-opacity=".7" stroke-width="2" class="rimR"/>
+  <path d="M254 376C236 366 224 388 228 414" fill="none" stroke="#8fe6ff" stroke-opacity=".6" stroke-width="1.6"/>
+</g>
+
+<!-- head -->
+<g id="head">
+  <use href="#headP" fill="url(#gSkin)"/>
+  <g clip-path="url(#cHead)">
+    <ellipse cx="385" cy="170" rx="95" ry="70" fill="#fff" opacity=".34" filter="url(#b18)"/>
+    <ellipse cx="318" cy="240" rx="64" ry="38" fill="#ffc0e0" opacity=".38" filter="url(#b22)"/>
+    <ellipse cx="482" cy="262" rx="58" ry="40" fill="#aef0da" opacity=".3" filter="url(#b22)"/>
+    <ellipse cx="400" cy="320" rx="90" ry="26" fill="#cdbfff" opacity=".22" filter="url(#b14)"/>
+    <ellipse cx="578" cy="400" rx="120" ry="320" fill="#40306e" opacity=".5" filter="url(#b30)"/>
+    <ellipse cx="400" cy="708" rx="160" ry="64" fill="#2c1f52" opacity=".55" filter="url(#b22)"/>
+    <ellipse cx="318" cy="528" rx="34" ry="56" transform="rotate(-14 318 528)" fill="#6f5d8e" opacity=".38" filter="url(#b14)"/>
+    <ellipse cx="482" cy="528" rx="34" ry="56" transform="rotate(14 482 528)" fill="#4b3b72" opacity=".5" filter="url(#b14)"/>
+    <ellipse cx="331" cy="397" rx="66" ry="38" fill="#6d5a88" opacity=".38" filter="url(#b10)"/>
+    <ellipse cx="469" cy="397" rx="66" ry="38" fill="#4d3d74" opacity=".46" filter="url(#b10)"/>
+    <ellipse cx="400" cy="346" rx="132" ry="12" fill="#fff" opacity=".16" filter="url(#b8)"/><ellipse cx="400" cy="66" rx="170" ry="46" fill="#5d4d86" opacity=".3" filter="url(#b14)"/><ellipse cx="331" cy="424" rx="42" ry="8" fill="#7d62a0" opacity=".3" filter="url(#b4)"/><ellipse cx="469" cy="424" rx="42" ry="8" fill="#5f4a8c" opacity=".36" filter="url(#b4)"/><ellipse cx="310" cy="474" rx="30" ry="12" transform="rotate(-20 310 474)" fill="#fff" opacity=".2" filter="url(#b8)"/><ellipse cx="490" cy="474" rx="30" ry="12" transform="rotate(20 490 474)" fill="#fff" opacity=".1" filter="url(#b8)"/><ellipse cx="266" cy="300" rx="18" ry="52" fill="#6a5690" opacity=".3" filter="url(#b10)"/><ellipse cx="534" cy="300" rx="18" ry="52" fill="#4b3a78" opacity=".4" filter="url(#b10)"/><path d="M374 538C368 552 366 566 368 575M426 538C432 552 434 566 432 575" fill="none" stroke="#6b567f" stroke-opacity=".22" stroke-width="3" stroke-linecap="round" filter="url(#b3)"/>
+    <ellipse cx="331" cy="370" rx="44" ry="9" fill="#8b6aa5" opacity=".3" filter="url(#b3)"/>
+    <ellipse cx="469" cy="370" rx="44" ry="9" fill="#7258a0" opacity=".34" filter="url(#b3)"/>
+    <!-- nose -->
+    <path d="M398 405C397 440 397 470 398 492" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="6" stroke-linecap="round" filter="url(#b3)"/>
+    <path d="M385 410C382 444 380 476 374 506" fill="none" stroke="#8a7494" stroke-opacity=".28" stroke-width="7" stroke-linecap="round" filter="url(#b4)"/>
+    <path d="M414 410C418 444 420 476 428 506" fill="none" stroke="#4d3a73" stroke-opacity=".5" stroke-width="9" stroke-linecap="round" filter="url(#b4)"/>
+    <ellipse cx="400" cy="503" rx="15" ry="11" fill="#fff" opacity=".22" filter="url(#b4)"/>
+    <path d="M375 508C372 520 384 526 392 520M425 508C428 520 416 526 408 520" fill="none" stroke="#6b567f" stroke-opacity=".6" stroke-width="1.6" stroke-linecap="round"/>
+    <ellipse cx="391" cy="519" rx="5" ry="2.4" transform="rotate(-12 391 519)" fill="#33233f" opacity=".75"/>
+    <ellipse cx="409" cy="519" rx="5" ry="2.4" transform="rotate(12 409 519)" fill="#33233f" opacity=".75"/>
+    <ellipse cx="400" cy="531" rx="22" ry="5" fill="#4d3a66" opacity=".32" filter="url(#b4)"/>
+    <path d="M394 536C393 548 392 556 391 566M406 536C407 548 408 556 409 566" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width="2.4" filter="url(#b2)"/>
+    <path d="M400 536L400 564" fill="none" stroke="#6b567f" stroke-opacity=".2" stroke-width="4" filter="url(#b3)"/>
+    <!-- mouth -->
+    <path d="M365 575C378 565 391 564 400 568C409 564 422 565 435 575C420 573 408 574 400 575C392 574 380 573 365 575Z" fill="#a9788d"/>
+    <path d="M367 577C380 593 420 593 433 577C420 580 380 580 367 577Z" fill="#c4949f"/>
+    <ellipse cx="400" cy="585" rx="18" ry="2.4" fill="#fff" opacity=".3" filter="url(#b1)"/>
+    <path d="M380 576.5C390 581.5 410 581.5 420 576.5C410 574.5 390 574.5 380 576.5Z" fill="url(#gPearl)"/>
+    <path d="M386 576.2V579.4M391 575.6V580.2M396 575.4V580.4M401 575.4V580.5M406 575.4V580.4M411 575.6V580.2M416 576.2V579.4" stroke="#9d86b5" stroke-opacity=".6" stroke-width=".5" fill="none"/>
+    <path d="M364 575.5C380 580 420 580 436 575.5" fill="none" stroke="#3f2540" stroke-opacity=".8" stroke-width="1.3" stroke-linecap="round"/>
+    <ellipse cx="363" cy="576" rx="5" ry="3" fill="#4d3a66" opacity=".4" filter="url(#b2)"/>
+    <ellipse cx="437" cy="576" rx="5" ry="3" fill="#4d3a66" opacity=".5" filter="url(#b2)"/>
+    <ellipse cx="400" cy="602" rx="26" ry="7" fill="#4d3a73" opacity=".38" filter="url(#b6)"/>
+    <ellipse cx="398" cy="642" rx="20" ry="14" fill="#fff" opacity=".18" filter="url(#b8)"/>
+    <!-- skin grain -->
+    <rect x="240" y="70" width="320" height="620" filter="url(#grain)" opacity=".5"/>
+    <!-- subdermal lattice and violet veins at the temples -->
+    <g id="latBase" class="lat"></g>
+    <use href="#latBase" transform="translate(800 0) scale(-1 1)" class="lat"/>
+    <g id="veinsL" fill="none" stroke-linecap="round">
+      <path d="M287 391C277 372 272 352 275 326C277 308 270 292 266 276M286 399C272 399 262 388 257 372M276 330C286 322 292 312 292 298" stroke="#4b2490" stroke-width="1.8" stroke-opacity=".85"/>
+      <path d="M287 391C277 372 272 352 275 326C277 308 270 292 266 276M286 399C272 399 262 388 257 372M276 330C286 322 292 312 292 298" stroke="#c3a8ff" stroke-width=".6" stroke-opacity=".55"/>
+    </g>
+    <use href="#veinsL" transform="translate(800 0) scale(-1 1)"/>
+    <!-- rim light -->
+    <use href="#headP" fill="none" stroke="url(#gRim)" stroke-width="18" filter="url(#b3)" class="rimR"/>
+  </g>
+</g>
+
+<!-- eyes -->
+<g id="eyes">
+  <g id="eyeL" transform="translate(331 396) scale(1.16) translate(-331 -396)">
+    <g clip-path="url(#cEyeL)">
+      <g id="ecL">
+        <rect x="290" y="360" width="86" height="64" fill="url(#gSclera)"/>
+        <ellipse cx="331" cy="381" rx="34" ry="9" fill="#fff" opacity=".07"/>
+        <circle cx="333" cy="393" r="15.5" fill="url(#gIris)"/>
+        <g id="spkL"></g>
+        <circle cx="333" cy="393" r="6.4" fill="#07050b"/>
+        <circle cx="333" cy="393" r="15.5" fill="none" stroke="#0c0a12" stroke-opacity=".8" stroke-width="1.6"/>
+        <ellipse cx="342" cy="384" rx="4.6" ry="3" fill="#effcff"/>
+        <path d="M344.3 397.1A12 12 0 0 1 337.1 404.3" fill="none" stroke="#ffa95c" stroke-opacity=".85" stroke-width="2.2" stroke-linecap="round"/>
+      </g>
+      <rect x="290" y="360" width="86" height="24" fill="url(#gLidShade)"/>
+      <g clip-path="url(#cMemL)">
+        <use href="#ecL" style="filter:blur(3.2px)"/>
+        <g id="memL" transform="translate(373 0)">
+          <path d="M0 352Q-9 396 0 440L150 440L150 352Z" fill="url(#gMemL)"/>
+          <path d="M0 372H150M0 386H150M0 400H150M0 414H150M0 428H150" stroke="#fff" stroke-opacity=".16" stroke-width=".7" fill="none"/>
+          <path id="tintL" d="M0 352Q-9 396 0 440L150 440L150 352Z" fill="#ffae3d" fill-opacity="0"/>
+          <path d="M1.4 352Q-7.6 396 1.4 440" fill="none" stroke="#5f4a52" stroke-opacity=".5" stroke-width="2"/>
+          <path d="M0 352Q-9 396 0 440" fill="none" stroke="#fff6e8" stroke-opacity=".75" stroke-width="1.3"/>
+        </g>
+      </g>
+    </g>
+    <path d="M296 397C304 374 346 366 369 395C352 413 312 417 296 397Z" fill="none" stroke="#3a2740" stroke-opacity=".9" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M300 402C314 415 346 415 364 399" fill="none" stroke="#f3dce2" stroke-opacity=".5" stroke-width="1.3" stroke-linecap="round"/>
+    <path d="M297 387C306 361 350 353 373 384" fill="none" stroke="#7d6790" stroke-opacity=".55" stroke-width="1.4" filter="url(#b1)"/>
+    <ellipse cx="367" cy="397" rx="3.6" ry="2.6" fill="#b8828f" opacity=".85"/>
+  </g>
+  <g id="eyeR" transform="translate(469 396) scale(1.16) translate(-469 -396)">
+    <g clip-path="url(#cEyeR)">
+      <g id="ecR">
+        <rect x="424" y="360" width="86" height="64" fill="url(#gSclera)"/>
+        <ellipse cx="469" cy="381" rx="34" ry="9" fill="#fff" opacity=".07"/>
+        <circle cx="467" cy="393" r="15.5" fill="url(#gIris)"/>
+        <g id="spkR"></g>
+        <circle cx="467" cy="393" r="6.4" fill="#07050b"/>
+        <circle cx="467" cy="393" r="15.5" fill="none" stroke="#0c0a12" stroke-opacity=".8" stroke-width="1.6"/>
+        <ellipse cx="476" cy="384" rx="4.6" ry="3" fill="#effcff"/>
+        <path d="M478.3 397.1A12 12 0 0 1 471.1 404.3" fill="none" stroke="#ffa95c" stroke-opacity=".85" stroke-width="2.2" stroke-linecap="round"/>
+      </g>
+      <rect x="424" y="360" width="86" height="24" fill="url(#gLidShade)"/>
+      <g clip-path="url(#cMemR)">
+        <use href="#ecR" style="filter:blur(3.2px)"/>
+        <g id="memR" transform="translate(427 0)">
+          <path d="M0 352Q9 396 0 440L-150 440L-150 352Z" fill="url(#gMemR)"/>
+          <path d="M0 372H-150M0 386H-150M0 400H-150M0 414H-150M0 428H-150" stroke="#fff" stroke-opacity=".16" stroke-width=".7" fill="none"/>
+          <path id="tintR" d="M0 352Q9 396 0 440L-150 440L-150 352Z" fill="#ffae3d" fill-opacity="0"/>
+          <path d="M-1.4 352Q7.6 396 -1.4 440" fill="none" stroke="#5f4a52" stroke-opacity=".5" stroke-width="2"/>
+          <path d="M0 352Q9 396 0 440" fill="none" stroke="#fff6e8" stroke-opacity=".75" stroke-width="1.3"/>
+        </g>
+      </g>
+    </g>
+    <path d="M504 397C496 374 454 366 431 395C448 413 488 417 504 397Z" fill="none" stroke="#3a2740" stroke-opacity=".9" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M500 402C486 415 454 415 436 399" fill="none" stroke="#f3dce2" stroke-opacity=".4" stroke-width="1.3" stroke-linecap="round"/>
+    <path d="M503 387C494 361 450 353 427 384" fill="none" stroke="#7d6790" stroke-opacity=".55" stroke-width="1.4" filter="url(#b1)"/>
+    <ellipse cx="433" cy="397" rx="3.6" ry="2.6" fill="#b8828f" opacity=".85"/>
+  </g>
+  <g id="drop" transform="translate(375 414) scale(0)" opacity="0">
+    <path d="M0 -6C4 -1 5 3 0 6C-5 3 -4 -1 0 -6Z" fill="url(#gOil)"/>
+    <ellipse cx="-1.4" cy="-1.5" rx="1.2" ry="2" fill="#fff" opacity=".85"/>
+  </g>
+</g>
+
+<!-- dust in the air -->
+<g id="motes" fill="#ffd9b0"></g>
+
+<!-- lighting overlays -->
+<rect width="800" height="1000" fill="url(#gVig)"/>
+<rect class="ov ovMars" width="800" height="1000" fill="#ff9a3d" style="mix-blend-mode:soft-light"/>
+<rect class="ov ovMars2" width="800" height="1000" fill="url(#gSunRad)" style="mix-blend-mode:screen"/>
+<rect class="ov ovUv" width="800" height="1000" fill="#14063f" style="mix-blend-mode:multiply"/>
+<rect class="ov ovLamp" width="800" height="1000" fill="url(#gLamp)" style="mix-blend-mode:screen"/>
+
+<!-- ultraviolet: lymph paths, implants and fluorescent markers -->
+<g class="uv" style="pointer-events:none">
+  <g filter="url(#glow)" fill="none" stroke-linecap="round">
+    <g stroke="#5ff5c8" stroke-width="2" stroke-opacity=".9">
+      <path d="M262 420C268 480 296 566 352 640C360 690 362 740 372 792C340 806 300 818 262 838"/>
+      <path d="M538 420C532 480 504 566 448 640C440 690 438 740 428 792C460 806 500 818 538 838"/>
+      <path d="M372 792C384 806 392 816 400 822C408 816 416 806 428 792"/>
+    </g>
+    <g fill="#9fffe0" stroke="none">
+      <circle cx="262" cy="420" r="3.4"/><circle cx="538" cy="420" r="3.4"/><circle cx="352" cy="640" r="3.6"/><circle cx="448" cy="640" r="3.6"/>
+      <circle cx="366" cy="716" r="3.4"/><circle cx="434" cy="716" r="3.4"/><circle cx="300" cy="826" r="3.4"/><circle cx="500" cy="826" r="3.4"/><circle cx="400" cy="822" r="3"/>
+    </g>
+    <g stroke="#7fd0ff" stroke-width="1.5" stroke-opacity=".85"><path d="M244 700L244 700"/></g>
+  </g>
+  <g id="latUvWrap" filter="url(#glow)"><g id="latUV"></g><use href="#latUV" transform="translate(800 0) scale(-1 1)"/></g>
+  <g id="fluor"></g>
+</g>
+
+<!-- field-note rings -->
+<g id="rings" fill="none" stroke="#fff" stroke-width="1.6" stroke-dasharray="4 5" style="pointer-events:none">
+  <g class="ring" data-k="eyes"><ellipse cx="331" cy="394" rx="52" ry="30"/><ellipse cx="469" cy="394" rx="52" ry="30"/></g>
+  <g class="ring" data-k="membrane"><circle cx="374" cy="396" r="17"/><circle cx="426" cy="396" r="17"/></g>
+  <g class="ring" data-k="skull"><ellipse cx="400" cy="210" rx="140" ry="124"/></g>
+  <g class="ring" data-k="mouth"><ellipse cx="400" cy="577" rx="52" ry="20"/></g>
+  <g class="ring" data-k="neck"><ellipse cx="373" cy="728" rx="24" ry="84"/><ellipse cx="427" cy="728" rx="24" ry="84"/></g>
+  <g class="ring" data-k="temples"><ellipse cx="274" cy="320" rx="34" ry="84"/><ellipse cx="526" cy="320" rx="34" ry="84"/></g>
+</g>
+</svg>
+<figcaption>Жилой модуль, иллюминатор 3. Марс на закате.</figcaption>
+</figure>
+
+<aside>
+  <p class="eyebrow">Homo spatialis · Тип-Т · первое поколение</p>
+  <h1>Трансморф</h1>
+  <p class="lead">Лицо узнаётся сразу. Чужое в нём складывается из мелочей: глаза без белков, веко, закрывающееся вбок, шея, которая краснеет вместо лица.</p>
+
+  <div class="ctl">
+    <div>
+      <p class="lbl" id="lbl-light">Свет</p>
+      <div class="seg" role="radiogroup" aria-labelledby="lbl-light">
+        <label><input type="radio" name="light" value="station" checked><span>Станция</span></label>
+        <label><input type="radio" name="light" value="mars"><span>Марс</span></label>
+        <label><input type="radio" name="light" value="uv"><span>Ультрафиолет</span></label>
+      </div>
+    </div>
+    <div>
+      <p class="lbl">Реакции</p>
+      <div class="acts">
+        <button type="button" class="act" id="btn-blink">Моргнуть перепонкой</button>
+        <button type="button" class="act alt" id="btn-emo">Эмоция</button>
+      </div>
+    </div>
+  </div>
+  <p id="status" aria-live="polite">Лампы станции. Перепонка прозрачна и убрана во внутренний угол глаза.</p>
+
+  <ul class="notes">
+    <li><button type="button" class="note" data-k="eyes" aria-pressed="false"><span class="nk">Тёмные склеры</span><span class="nt">Белки серо-коричневые, радужка почти сливается с ними. Куда смотрит трансморф, понять нельзя.</span></button></li>
+    <li><button type="button" class="note" data-k="membrane" aria-pressed="false"><span class="nk">Перепонка</span><span class="nt">Закрывается от внутреннего угла глаза и затягивает его матовой плёнкой. Сквозь неё видны только силуэты и свет.</span></button></li>
+    <li><button type="button" class="note" data-k="skull" aria-pressed="false"><span class="nk">Череп и лоб</span><span class="nt">Высокий гладкий лоб, ни бровей, ни ресниц, ни волос. Голова выглядит слишком большой для тонкой шеи.</span></button></li>
+    <li><button type="button" class="note" data-k="mouth" aria-pressed="false"><span class="nk">Рот</span><span class="nt">Узкая щель. Вместо зубов гладкая перламутровая дуга, поэтому улыбка выглядит чужой.</span></button></li>
+    <li><button type="button" class="note" data-k="neck" aria-pressed="false"><span class="nk">Радиаторы</span><span class="nt">Шея и зоны за ушами отводят тепло. При стрессе они краснеют, а вены под кожей темнеют.</span></button></li>
+    <li><button type="button" class="note" data-k="temples" aria-pressed="false"><span class="nk">Виски</span><span class="nt">Под тонкой кожей проступают серебристая сетка нано-имплантов и тёмно-фиолетовые вены.</span></button></li>
+  </ul>
+  <p class="hint">Нажмите на строку, чтобы отметить место на портрете.</p>
+</aside>
+</main>
+
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  var svg=document.getElementById('art');
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(id){return document.getElementById(id)}
+  function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a){e.setAttribute(k,a[k])}if(p){p.appendChild(e)}return e}
+  var seed=11;
+  function rnd(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}
+
+  /* stars */
+  var gs=$('stars'),i,x,y,r,c;
+  for(i=0;i<120;i++){
+    x=60+rnd()*680;y=130+rnd()*520;r=.5+rnd()*1.1;
+    c=el('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:r.toFixed(2),fill:'#fff','fill-opacity':((.25+rnd()*.7)*(1-(y-130)/620)).toFixed(2)},gs);
+    if(i%8===0){c.setAttribute('class','tw');c.style.animationDelay=(rnd()*3).toFixed(1)+'s'}
+  }
+  /* bolts around the porthole */
+  var gb=$('bolts'),a;
+  for(i=0;i<20;i++){
+    a=i*Math.PI/10+.1;x=400+361*Math.cos(a);y=470+361*Math.sin(a);
+    el('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:6,fill:'#1a2038',stroke:'#7683a8','stroke-opacity':.7,'stroke-width':1},gb);
+    el('path',{d:'M'+(x-3.2).toFixed(1)+' '+(y-3.2).toFixed(1)+'L'+(x+3.2).toFixed(1)+' '+(y+3.2).toFixed(1),stroke:'#05060f','stroke-width':1.3},gb);
+  }
+  /* wall rivets */
+  var gr=$('rivets');
+  for(y=100;y<940;y+=70){el('circle',{cx:92,cy:y,r:2.6},gr);el('circle',{cx:708,cy:y,r:2.6},gr)}
+  /* iris fibres */
+  function spokes(g,cx,cy){
+    var k,ang,r1=7.6,r2;
+    for(k=0;k<20;k++){
+      ang=k*Math.PI/10+.15;r2=13+(k%2)*1.3;
+      el('line',{x1:(cx+r1*Math.cos(ang)).toFixed(2),y1:(cy+r1*Math.sin(ang)).toFixed(2),x2:(cx+r2*Math.cos(ang)).toFixed(2),y2:(cy+r2*Math.sin(ang)).toFixed(2),stroke:k%3?'#d9a24a':'#8fe0d0','stroke-opacity':.32,'stroke-width':.7},g);
+    }
+  }
+  spokes($('spkL'),333,393);spokes($('spkR'),467,393);
+  /* temple lattice */
+  function lattice(g,cx,cy,rx,ry,col,boost){
+    var s=7,w=Math.sqrt(3)*s,h=1.5*s,row,cl,px,py,dx,dy,d,o,k,ang,pts;
+    seed=23;
+    for(row=-16;row<=16;row++){
+      for(cl=-6;cl<=6;cl++){
+        px=cx+cl*w+((row%2)?w/2:0);py=cy+row*h;
+        dx=(px-cx)/rx;dy=(py-cy)/ry;d=dx*dx+dy*dy;
+        if(d>1){continue}
+        o=(1-d)*(.35+.65*rnd())*boost;pts='';
+        for(k=0;k<6;k++){ang=Math.PI/6+k*Math.PI/3;pts+=(k?'L':'M')+(px+s*.92*Math.cos(ang)).toFixed(1)+' '+(py+s*.92*Math.sin(ang)).toFixed(1)}
+        el('path',{d:pts+'Z',fill:rnd()>.82?col:'none','fill-opacity':(o*.3).toFixed(2),stroke:col,'stroke-opacity':o.toFixed(2),'stroke-width':.7},g);
+      }
+    }
+  }
+  lattice($('latBase'),274,318,26,68,'#cfe9ff',1);
+  lattice($('latUV'),274,318,28,72,'#8fe8ff',1.6);
+  /* fluorescent markers in the skin */
+  var gf=$('fluor'),n=0,t=0,cols=['#5ff5c8','#7fd0ff','#9fffe0'];
+  while(n<170&&t<2000){
+    t++;x=400+(rnd()*2-1)*145;y=100+rnd()*560;
+    if(Math.pow((x-400)/145,2)+Math.pow((y-380)/300,2)>1){continue}
+    el('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:(.5+rnd()*.9).toFixed(2),fill:cols[n%3],'fill-opacity':(.25+rnd()*.6).toFixed(2)},gf);n++;
+  }
+  /* motes */
+  var gm=$('motes');
+  for(i=0;i<16;i++){
+    c=el('circle',{cx:(60+rnd()*680).toFixed(0),cy:(300+rnd()*600).toFixed(0),r:(.8+rnd()*1.6).toFixed(1),'fill-opacity':(.12+rnd()*.25).toFixed(2),class:'mote'},gm);
+    c.style.animationDuration=(7+rnd()*7).toFixed(1)+'s';c.style.animationDelay=(-rnd()*8).toFixed(1)+'s';
+  }
+
+  /* ---- animated state ---- */
+  var memL=$('memL'),memR=$('memR'),mcL=$('mcL'),mcR=$('mcR'),tintL=$('tintL'),tintR=$('tintR'),drop=$('drop');
+  var cur={cov:0,tint:0,heat:.12,drop:0},tgt={cov:0,tint:0,heat:.12,drop:0};
+  var bl={t0:null},running=false;
+  function ease(v){return v*v*(3-2*v)}
+  function blinkVal(now){
+    if(bl.t0===null){return 0}
+    var d=now-bl.t0;
+    if(d<280){return ease(d/280)}
+    if(d<520){return 1}
+    if(d<980){return 1-ease((d-520)/460)}
+    bl.t0=null;return 0;
+  }
+  function apply(cov,tint){
+    var txL=373+(290-373)*cov,txR=427+(510-427)*cov;
+    memL.setAttribute('transform','translate('+txL.toFixed(2)+' 0)');
+    mcL.setAttribute('transform','translate('+txL.toFixed(2)+' 0)');
+    memR.setAttribute('transform','translate('+txR.toFixed(2)+' 0)');
+    mcR.setAttribute('transform','translate('+txR.toFixed(2)+' 0)');
+    tintL.setAttribute('fill-opacity',(tint*.8).toFixed(3));
+    tintR.setAttribute('fill-opacity',(tint*.8).toFixed(3));
+    svg.style.setProperty('--heat',cur.heat.toFixed(3));
+    drop.setAttribute('transform','translate(375 414) scale('+(cur.drop*1.5).toFixed(3)+')');
+    drop.setAttribute('opacity',Math.min(1,cur.drop*1.4).toFixed(2));
+  }
+  function frame(now){
+    var k,moving=false,b=blinkVal(now);
+    var rates={cov:.08,tint:.08,heat:.05,drop:.03};
+    for(k in rates){
+      cur[k]+=(tgt[k]-cur[k])*rates[k];
+      if(Math.abs(tgt[k]-cur[k])>.002){moving=true}else{cur[k]=tgt[k]}
+    }
+    apply(Math.max(cur.cov,b),cur.tint);
+    if(moving||bl.t0!==null){requestAnimationFrame(frame)}else{running=false}
+  }
+  function kick(){if(!running){running=true;requestAnimationFrame(frame)}}
+  function blinkNow(){
+    if(reduce){
+      apply(1,Math.max(cur.tint,.2));
+      setTimeout(function(){apply(cur.cov,cur.tint)},600);
+      return;
+    }
+    bl.t0=performance.now();kick();
+  }
+
+  var modes={
+    station:{cov:0,tint:0,txt:'Лампы станции. Перепонка прозрачна и убрана во внутренний угол глаза.'},
+    mars:{cov:.42,tint:.9,txt:'Свет Марса. Перепонка потемнела до янтарного цвета и прикрыла глаз наполовину.'},
+    uv:{cov:0,tint:0,txt:'Ультрафиолет стерилизационных ламп. Светятся лимфатические пути, сетка имплантов и белковые метки в коже.'}
+  };
+  var status=$('status'),emoBusy=false;
+  function setMode(m){
+    svg.setAttribute('class','m-'+m);
+    tgt.cov=modes[m].cov;tgt.tint=modes[m].tint;
+    if(!emoBusy){status.textContent=modes[m].txt}
+    kick();
+  }
+  var radios=document.querySelectorAll('input[name="light"]');
+  Array.prototype.forEach.call(radios,function(rd){rd.addEventListener('change',function(){if(rd.checked){setMode(rd.value)}})});
+  $('btn-blink').addEventListener('click',blinkNow);
+
+  var emo=$('btn-emo');
+  emo.addEventListener('click',function(){
+    if(emoBusy){return}
+    emoBusy=true;emo.disabled=true;
+    status.textContent='Слёз у трансморфов нет. В углу глаза набухает капля густого масла, шея краснеет.';
+    tgt.heat=.95;tgt.drop=1;kick();
+    setTimeout(function(){
+      status.textContent='Перепонка стирает каплю. Лицо остаётся неподвижным, меняется только цвет шеи.';
+      blinkNow();
+      setTimeout(function(){cur.drop=0;tgt.drop=0;apply(Math.max(cur.cov,blinkVal(performance.now())),cur.tint);kick()},280);
+    },2300);
+    setTimeout(function(){
+      tgt.heat=.12;kick();
+      var m=document.querySelector('input[name="light"]:checked').value;
+      status.textContent=modes[m].txt;emoBusy=false;emo.disabled=false;
+    },5200);
+  });
+
+  /* idle blinking */
+  function schedule(){
+    setTimeout(function(){
+      if(!document.hidden&&!emoBusy){blinkNow()}
+      schedule();
+    },5200+Math.random()*4200);
+  }
+  if(!reduce){schedule()}
+
+  /* field-note rings */
+  var notes=document.querySelectorAll('.note');
+  function ring(k,on){
+    var rs=document.querySelectorAll('.ring[data-k="'+k+'"]');
+    Array.prototype.forEach.call(rs,function(g){g.classList.toggle('on',on)});
+  }
+  Array.prototype.forEach.call(notes,function(b){
+    var k=b.getAttribute('data-k');
+    b.addEventListener('mouseenter',function(){ring(k,true)});
+    b.addEventListener('mouseleave',function(){ring(k,b.getAttribute('aria-pressed')==='true')});
+    b.addEventListener('focus',function(){ring(k,true)});
+    b.addEventListener('blur',function(){ring(k,b.getAttribute('aria-pressed')==='true')});
+    b.addEventListener('click',function(){
+      var p=b.getAttribute('aria-pressed')==='true';
+      b.setAttribute('aria-pressed',p?'false':'true');ring(k,!p);
+    });
+  });
+  svg.setAttribute('class','m-station');
+  apply(0,0);
+})();
+</script>
+
+</body></html>
