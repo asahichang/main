@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Резонанс - Карточная игра</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        space: {
+                            900: '#060814',
+                            800: '#0b1021',
+                            700: '#151c38',
+                            600: '#1e2952',
+                        },
+                        res: {
+                            red: '#ff4757',
+                            yellow: '#ffa502',
+                            green: '#2ed573',
+                            gray: '#747d8c',
+                            purple: '#a55eea',
+                            cyan: '#00d2d3'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: radial-gradient(circle at center, #151c38 0%, #060814 100%);
+            color: #f1f2f6;
+            user-select: none;
+            overflow-x: hidden;
+        }
+        
+        .card-glow-0 { box-shadow: 0 0 12px rgba(255, 71, 87, 0.4); border-color: #ff4757; }
+        .card-glow-1 { box-shadow: 0 0 12px rgba(255, 165, 2, 0.4); border-color: #ffa502; }
+        .card-glow-2 { box-shadow: 0 0 12px rgba(46, 213, 115, 0.4); border-color: #2ed573; }
+        
+        .phase-arrow {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(11, 16, 33, 0.6);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(165, 94, 234, 0.4);
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(165, 94, 234, 0.8);
+        }
+
+        @keyframes pulse-subtle {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 0.9; }
+        }
+        .pulse-target {
+            animation: pulse-subtle 2s infinite ease-in-out;
+        }
+
+        .modal-blur {
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased text-slate-100">
+
+    <!-- TOP HEADER / NAVBAR -->
+    <header class="bg-space-900/80 border-b border-space-600/50 backdrop-blur px-4 py-2 flex items-center justify-between sticky top-0 z-30">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <i class="fa-solid font-orbitron font-bold text-lg text-white">R</i>
+            </div>
+            <div>
+                <h1 class="font-orbitron font-extrabold text-lg tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-300 to-indigo-300">
+                    РЕЗОНАНС
+                </h1>
+                <p class="text-[10px] text-slate-400 -mt-1 font-mono">НЕБЕСНАЯ МЕХАНИКА</p>
+            </div>
+        </div>
+
+        <!-- Dynamic Game Controls & Audio Toggle -->
+        <div class="flex items-center space-x-4">
+            <div id="round-indicator" class="hidden sm:flex items-center bg-space-800 px-3 py-1 rounded-full border border-space-600 text-xs space-x-2">
+                <span class="text-slate-400">Раунд:</span>
+                <span id="current-round" class="font-bold text-cyan-400 font-mono">1</span>
+                <span class="text-slate-600">|</span>
+                <span class="text-slate-400">Колода:</span>
+                <span id="deck-count" class="font-bold text-purple-400 font-mono">60</span>
+            </div>
+
+            <button id="intro-btn" onclick="startInteractiveIntro()" class="px-3 py-1.5 rounded-lg bg-cyan-900/40 hover:bg-cyan-800/60 border border-cyan-500/50 text-xs font-medium text-cyan-300 transition flex items-center gap-1.5" title="Посмотреть обучение">
+                <i class="fa-solid fa-play text-cyan-400"></i>
+                <span class="hidden md:inline">Интро-Демо</span>
+            </button>
+
+            <button id="hint-btn" onclick="showMoveHint()" class="px-3 py-1.5 rounded-lg bg-emerald-900/40 hover:bg-emerald-800/60 border border-emerald-600/50 text-xs font-medium text-emerald-300 transition flex items-center gap-1.5" title="Показать лучший ход">
+                <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                <span class="hidden md:inline">Подсказка</span>
+            </button>
+
+            <button id="audio-toggle-btn" onclick="toggleAudio()" class="w-9 h-9 rounded-lg bg-space-700 hover:bg-space-600 border border-space-600 flex items-center justify-center transition text-slate-300 hover:text-white" title="Включить/Выключить звук">
+                <i id="audio-icon" class="fa-solid fa-volume-xmark text-red-400"></i>
+            </button>
+
+            <button onclick="showRulesModal()" class="px-3 py-1.5 rounded-lg bg-space-700 hover:bg-space-600 border border-space-600 text-xs font-medium text-slate-200 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-question text-cyan-400"></i>
+                <span class="hidden md:inline">Правила</span>
+            </button>
+
+            <button onclick="restartGameModal()" class="px-3 py-1.5 rounded-lg bg-rose-900/40 hover:bg-rose-800/60 border border-rose-700/50 text-xs font-medium text-rose-200 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span class="hidden md:inline">Заново</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN GAME WORKSPACE -->
+    <main class="flex-1 flex flex-col p-2 sm:p-4 gap-4 max-w-7xl w-full mx-auto justify-between relative">
+        
+        <!-- TOP BAR: SCOREBOARD & KIRKWOOD ZONE -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-stretch">
+            
+            <!-- Scoreboard -->
+            <div class="md:col-span-8 bg-space-800/80 border border-space-600/60 rounded-2xl p-3 flex flex-col justify-between shadow-xl">
+                <div class="text-[11px] font-semibold text-slate-400 tracking-wider uppercase mb-2 flex justify-between items-center">
+                    <span><i class="fa-solid fa-users text-purple-400 mr-1.5"></i>Участники и Очки</span>
+                    <span id="turn-banner" class="text-xs font-orbitron font-bold text-cyan-400 animate-pulse">Ход: Игрок 1</span>
+                </div>
+                <div id="players-scoreboard" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Kirkwood Hatch Zone -->
+            <div class="md:col-span-4 bg-space-800/80 border border-space-600/60 rounded-2xl p-3 flex flex-col justify-between shadow-xl relative overflow-hidden">
+                <div class="flex items-center justify-between text-[11px] font-semibold text-slate-400 tracking-wider uppercase mb-1">
+                    <span class="flex items-center text-amber-400"><i class="fa-solid fa-radiation mr-1.5"></i>Зона Кирквуда (Макс. 2)</span>
+                    <span class="text-[10px] text-slate-500">Юпитер = T:12</span>
+                </div>
+                <div id="hatch-zone" class="grid grid-cols-2 gap-2 flex-1 min-h-[70px] items-center">
+                    <!-- Cards in Kirkwood Zone -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER AREA: SYSTEM ROW & RESONANCE CONNECTIONS -->
+        <div class="flex-1 bg-space-900/60 border border-space-700/50 rounded-2xl p-4 flex flex-col justify-center relative overflow-x-auto custom-scrollbar min-h-[300px]">
+            <div class="text-center text-xs font-orbitron text-slate-400 uppercase tracking-widest mb-3 flex justify-center items-center gap-2">
+                <span class="h-px bg-space-700 flex-1"></span>
+                <span><i class="fa-solid fa-circle-nodes text-cyan-400 mr-1"></i> Орбитальная Система Тел</span>
+                <span class="h-px bg-space-700 flex-1"></span>
+            </div>
+
+            <!-- Main System Cards & Links -->
+            <div id="system-container" class="flex items-center justify-start sm:justify-center gap-1 sm:gap-2 py-6 px-2 min-w-max mx-auto">
+                <!-- Populated dynamically: Left Edge Drop + Cards + Links + Right Edge Drop -->
+            </div>
+        </div>
+
+        <!-- ACTION STATUS BAR & LOG -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+            <div id="action-prompt" class="lg:col-span-8 bg-space-800/90 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm text-cyan-200 flex items-center justify-between shadow-lg">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-cyan-400 text-lg"></i>
+                    <span id="prompt-text">Выберите карту из вашей руки для хода.</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="apply-hint-btn" onclick="applyHintMove()" class="hidden px-2.5 py-1 text-xs bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold shadow">Сделать этот ход</button>
+                    <button id="cancel-selection-btn" onclick="cancelSelection()" class="hidden px-2.5 py-1 text-xs bg-space-700 hover:bg-space-600 rounded text-slate-300">Отмена</button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-4 bg-space-800/60 border border-space-700/60 rounded-xl px-3 py-2 flex items-center justify-between text-xs text-slate-400">
+                <div class="truncate flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-ul text-purple-400"></i>
+                    <span id="last-log-entry" class="italic truncate">Игра началась. Удачи!</span>
+                </div>
+                <button onclick="showLogModal()" class="text-[11px] text-cyan-400 hover:underline font-mono ml-2">Журнал</button>
+            </div>
+        </div>
+
+        <!-- PLAYER HAND & PHASE ROTATION CONTROLS -->
+        <div class="bg-space-800/90 border border-space-600/80 rounded-2xl p-3 sm:p-4 shadow-2xl relative">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2 mb-2">
+                <div class="flex items-center gap-2">
+                    <span class="font-orbitron font-bold text-sm text-slate-200" id="current-player-hand-title">Ваша рука</span>
+                    <span class="text-xs text-slate-400" id="hand-card-count">(4 карты)</span>
+                </div>
+
+                <!-- Phase Rotation Selector (when Body card is selected) -->
+                <div id="phase-selector-container" class="hidden flex items-center gap-2 bg-space-900/90 border border-purple-500/40 rounded-xl px-3 py-1.5 animate-bounce">
+                    <span class="text-xs text-purple-300 font-semibold">Фаза (Поворот):</span>
+                    <div class="flex gap-1">
+                        <button onclick="selectPhase(0)" id="phase-btn-0" class="w-8 h-8 rounded-lg bg-space-700 hover:bg-space-600 flex items-center justify-center border border-slate-600 text-xs font-mono font-bold text-white transition" title="0° (Вверх)">0°</button>
+                        <button onclick="selectPhase(1)" id="phase-btn-1" class="w-8 h-8 rounded-lg bg-space-700 hover:bg-space-600 flex items-center justify-center border border-slate-600 text-xs font-mono font-bold text-white transition" title="90° (Вправо)">90°</button>
+                        <button onclick="selectPhase(2)" id="phase-btn-2" class="w-8 h-8 rounded-lg bg-space-700 hover:bg-space-600 flex items-center justify-center border border-slate-600 text-xs font-mono font-bold text-white transition" title="180° (Вниз)">180°</button>
+                        <button onclick="selectPhase(3)" id="phase-btn-3" class="w-8 h-8 rounded-lg bg-space-700 hover:bg-space-600 flex items-center justify-center border border-slate-600 text-xs font-mono font-bold text-white transition" title="270° (Влево)">270°</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards Container -->
+            <div id="player-hand" class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 min-h-[140px] items-center">
+                <!-- Dynamic Player Hand Cards -->
+            </div>
+        </div>
+    </main>
+
+    <!-- NEW GAME / SETUP MODAL -->
+    <div id="setup-modal" class="fixed inset-0 bg-space-900/90 modal-blur z-50 flex items-center justify-center p-4">
+        <div class="bg-space-800 border border-space-600 rounded-3xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-5">
+            <div class="text-center">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-cyan-400 mx-auto flex items-center justify-center mb-3 shadow-lg shadow-purple-500/30">
+                    <i class="fa-solid fa-atom text-3xl text-white"></i>
+                </div>
+                <h2 class="font-orbitron font-extrabold text-2xl text-white">РЕЗОНАНС</h2>
+                <p class="text-xs text-slate-400 mt-1">Орбитальная карточная стратегия на законах физики</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-300 block mb-2">Режим игры:</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="mode-bot-btn" onclick="setSetupMode('bot')" class="py-2.5 px-3 rounded-xl border border-purple-500 bg-purple-500/20 text-white font-medium text-xs flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-robot text-cyan-400"></i> Против Бота
+                        </button>
+                        <button type="button" id="mode-hotseat-btn" onclick="setSetupMode('hotseat')" class="py-2.5 px-3 rounded-xl border border-space-600 bg-space-700 text-slate-300 font-medium text-xs flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-users text-amber-400"></i> Хотсит (2-4)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bot Difficulty Selector (Only in Bot Mode) -->
+                <div id="bot-config-section">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-300 block mb-2">Сложность Бота:</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="setBotDiff('easy')" id="diff-easy" class="py-2 rounded-lg border border-space-600 bg-space-700 text-xs text-slate-300">Лёгкий</button>
+                        <button type="button" onclick="setBotDiff('normal')" id="diff-normal" class="py-2 rounded-lg border border-cyan-500 bg-cyan-500/20 text-xs text-cyan-200 font-bold">Обычный</button>
+                        <button type="button" onclick="setBotDiff('hard')" id="diff-hard" class="py-2 rounded-lg border border-space-600 bg-space-700 text-xs text-slate-300">Сложный</button>
+                    </div>
+                </div>
+
+                <!-- Player Count Selector -->
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-300 block mb-2">Количество игроков:</label>
+                    <div class="grid grid-cols-3 gap-2" id="player-count-buttons">
+                        <button type="button" onclick="setPlayerCount(2)" id="pc-2" class="py-2 rounded-lg border border-purple-500 bg-purple-500/20 text-xs text-white font-bold">2 Игрока</button>
+                        <button type="button" onclick="setPlayerCount(3)" id="pc-3" class="py-2 rounded-lg border border-space-600 bg-space-700 text-xs text-slate-300">3 Игрока</button>
+                        <button type="button" onclick="setPlayerCount(4)" id="pc-4" class="py-2 rounded-lg border border-space-600 bg-space-700 text-xs text-slate-300">4 Игрока</button>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-orbitron font-bold text-sm shadow-lg shadow-purple-500/25 transition transform hover:-translate-y-0.5">
+                НАЧАТЬ ИГРУ
+            </button>
+
+            <button onclick="startInteractiveIntro()" class="w-full py-2.5 rounded-xl border border-cyan-500/50 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 font-orbitron font-semibold text-xs transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-cyan-400 text-sm"></i>
+                ОБУЧЕНИЕ И АВТО-ДЕМОНСТРАЦИЯ
+            </button>
+        </div>
+    </div>
+
+    <!-- INTERACTIVE INTRO / TUTORIAL MODAL OVERLAY -->
+    <div id="intro-modal" class="fixed inset-0 bg-space-900/95 modal-blur z-50 hidden flex flex-col justify-between p-4 sm:p-6 overflow-hidden">
+        <!-- Intro Header -->
+        <div class="flex items-center justify-between border-b border-space-700/80 pb-3 max-w-5xl w-full mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300">
+                    <i class="fa-solid fa-graduation-cap text-base"></i>
+                </div>
+                <div>
+                    <h2 class="font-orbitron font-bold text-base text-cyan-300">Интерактивное Обучение «Резонанс»</h2>
+                    <p id="intro-step-counter" class="text-[11px] text-slate-400 font-mono">Шаг 1 из 4</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="pauseResumeIntro()" id="intro-pause-btn" class="px-3 py-1.5 rounded-lg bg-space-800 hover:bg-space-700 border border-space-600 text-xs font-mono text-slate-300">
+                    <i class="fa-solid fa-pause text-amber-400 mr-1"></i>Пауза
+                </button>
+                <button onclick="stopIntro()" class="px-3 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900/80 border border-rose-700/60 text-xs font-semibold text-rose-300">
+                    Пропустить
+                </button>
+            </div>
+        </div>
+
+        <!-- Dynamic Demo Visual Stage -->
+        <div class="flex-1 max-w-5xl w-full mx-auto my-4 flex flex-col items-center justify-center relative bg-space-800/50 border border-space-700/80 rounded-3xl p-4 overflow-x-auto custom-scrollbar">
+            <div id="intro-demo-stage" class="flex items-center justify-center gap-3 py-6 px-4 min-w-max">
+                <!-- Dynamically updated by Intro Script -->
+            </div>
+        </div>
+
+        <!-- Intro Description Box & Controls -->
+        <div class="max-w-3xl w-full mx-auto bg-space-800 border border-cyan-500/40 rounded-2xl p-4 shadow-2xl flex flex-col gap-3">
+            <div class="flex items-start gap-3">
+                <div class="w-7 h-7 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center shrink-0 mt-0.5">
+                    <i id="intro-info-icon" class="fa-solid fa-atom text-cyan-400 text-xs"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 id="intro-step-title" class="font-orbitron font-bold text-sm text-cyan-300 mb-1">Загрузка курса...</h3>
+                    <p id="intro-step-desc" class="text-xs text-slate-300 leading-relaxed">Система генерирует интерактивную демонстрацию правил...</p>
+                </div>
+            </div>
+
+            <!-- Intro Step Controls -->
+            <div class="flex items-center justify-between border-t border-space-700 pt-2.5 mt-1">
+                <button onclick="prevIntroStep()" id="intro-prev-btn" class="px-3 py-1.5 rounded-lg bg-space-700 hover:bg-space-600 text-xs text-slate-300 disabled:opacity-40">
+                    <i class="fa-solid fa-chevron-left mr-1"></i> Назад
+                </button>
+
+                <!-- Progress Dots -->
+                <div id="intro-dots" class="flex gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-space-600"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-space-600"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-space-600"></span>
+                </div>
+
+                <button onclick="nextIntroStep()" id="intro-next-btn" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-bold text-xs shadow-md">
+                    Далее <i class="fa-solid fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RULES & GUIDE MODAL -->
+    <div id="rules-modal" class="fixed inset-0 bg-space-900/90 modal-blur z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-space-800 border border-space-600 rounded-3xl max-w-2xl w-full p-6 shadow-2xl flex flex-col gap-4 max-h-[85vh]">
+            <div class="flex items-center justify-between border-b border-space-600 pb-3">
+                <h3 class="font-orbitron font-bold text-lg text-cyan-300 flex items-center gap-2">
+                    <i class="fa-solid fa-book"></i> Правила Игры «Резонанс»
+                </h3>
+                <button onclick="hideRulesModal()" class="w-8 h-8 rounded-lg bg-space-700 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs sm:text-sm text-slate-300 overflow-y-auto custom-scrollbar pr-2 leading-relaxed">
+                <p><strong class="text-purple-400">Цель:</strong> Строить гармоничные резонансные связи между небесными телами и набирать очки за устойчивые орбитaльные цепочки.</p>
+                
+                <h4 class="font-bold text-white uppercase text-xs tracking-wider border-b border-space-700 pb-1 mt-2">1. Резонансы и Очки</h4>
+                <p>Соседние тела с отношением периодов образуют связь:</p>
+                <ul class="list-disc pl-5 space-y-1 text-slate-400">
+                    <li><b class="text-slate-200">1:1 (Унисон):</b> 1 базовое очко</li>
+                    <li><b class="text-slate-200">2:1 (Октава), 3:1 (Октава+Квинта):</b> 2 базовых очка</li>
+                    <li><b class="text-slate-200">3:2 (Квинта), 4:3 (Кварта):</b> 3 базовых очка</li>
+                    <li><b class="text-slate-200">Остальные (Диссонанс):</b> 0 очков</li>
+                </ul>
+
+                <h4 class="font-bold text-white uppercase text-xs tracking-wider border-b border-space-700 pb-1 mt-2">2. Влияние Разности Фаз ($\Delta$)</h4>
+                <p>Разность фаз $\Delta = (\text{Фаза A} - \text{Фаза B}) \bmod 4$ меняет свойства связи:</p>
+                <ul class="list-disc pl-5 space-y-1 text-slate-400">
+                    <li><b class="text-red-400">Δ = 0 (Сближение):</b> Очки ×2 сразу, но в конце раунда на связь кладётся жетон «Нагрузка». При 3 жетонах тело с большим периодом выбрасывается!</li>
+                    <li><b class="text-amber-400">Δ = 1 или 3 (Сдвиг):</b> Обычные очки связи.</li>
+                    <li><b class="text-green-400">Δ = 2 (Противофаза):</b> +1 очко и ЗАЩИТА (тело не выбрасывается Люками Кирквуда).</li>
+                </ul>
+
+                <h4 class="font-bold text-white uppercase text-xs tracking-wider border-b border-space-700 pb-1 mt-2">3. Правило и Цепочка Лапласа</h4>
+                <p>Три подряд тела образуют цепочку, если обе их связи резонансны. Бонус цепочки равен сумме очков двух её связей (сумма удваивается). <i>Условие Лапласа:</i> если фазы всех трех тел одинаковы, бонус аннулируется!</p>
+
+                <h4 class="font-bold text-white uppercase text-xs tracking-wider border-b border-space-700 pb-1 mt-2">4. Люки Кирквуда</h4>
+                <p>Карты Люков в Зоне Кирквуда выбросят тела с соответствующим периодом в момент выкладывания и в конце каждого раунда, если тело не находится в противофазе ($\Delta=2$) и не защищено «Гильдой».</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- EVENT LOG MODAL -->
+    <div id="log-modal" class="fixed inset-0 bg-space-900/90 modal-blur z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-space-800 border border-space-600 rounded-3xl max-w-lg w-full p-6 shadow-2xl flex flex-col gap-4 max-h-[80vh]">
+            <div class="flex items-center justify-between border-b border-space-600 pb-3">
+                <h3 class="font-orbitron font-bold text-lg text-purple-300 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Журнал Событий
+                </h3>
+                <button onclick="hideLogModal()" class="w-8 h-8 rounded-lg bg-space-700 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="full-log-list" class="space-y-2 text-xs font-mono text-slate-300 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
+                <!-- Dynamic Logs -->
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME OVER MODAL -->
+    <div id="gameover-modal" class="fixed inset-0 bg-space-900/95 modal-blur z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-space-800 border border-cyan-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl text-center flex flex-col gap-5">
+            <div>
+                <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-yellow-400 to-amber-600 mx-auto flex items-center justify-center mb-2 shadow-lg shadow-amber-500/30 animate-bounce">
+                    <i class="fa-solid fa-trophy text-4xl text-slate-900"></i>
+                </div>
+                <h2 class="font-orbitron font-black text-2xl text-white">ИГРА ЗАВЕРШЕНА!</h2>
+                <p id="winner-announcement" class="text-lg text-cyan-300 font-bold mt-1">Победитель: Игрок 1</p>
+            </div>
+
+            <div id="final-scores-list" class="bg-space-900/80 rounded-2xl p-4 border border-space-700 space-y-2">
+                <!-- Dynamic Final Scores -->
+            </div>
+
+            <button onclick="restartGameModal()" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-orbitron font-bold text-sm shadow-lg transition">
+                ИГРАТЬ СНОВА
+            </button>
+        </div>
+    </div>
+
+    <!-- GAME ENGINE & CONTROLLER SCRIPT -->
+    <script>
+        /* ==========================================================================
+           1. CARDS DATA & CONSTANTS
+           ========================================================================== */
+        const RAW_CARDS = [
+            // SPACE BODIES (28 Cards)
+            { id: 'b1', kind: 'body', name: 'Ио', period: 1, fact: 'Лапласов резонанс 1:2:4 с Европой и Ганимедом' },
+            { id: 'b2', kind: 'body', name: 'Европа', period: 2, fact: 'Делает один оборот, пока Ио делает два' },
+            { id: 'b3', kind: 'body', name: 'Ганимед', period: 4, fact: 'Крупнейший спутник, замыкает цепочку' },
+            { id: 'b4', kind: 'body', name: 'Янус', period: 1, fact: 'Делит орбиту с Эпиметеем, они меняются местами' },
+            { id: 'b5', kind: 'body', name: 'Эпиметей', period: 1, fact: 'Партнёр Януса по орбите' },
+            { id: 'b6', kind: 'body', name: 'Луна (вр)', period: 1, fact: 'Всегда повёрнута к Земле одной стороной' },
+            { id: 'b7', kind: 'body', name: 'Луна (обр)', period: 1, fact: 'Период равен периоду собственного вращения' },
+            { id: 'b8', kind: 'body', name: 'Меркурий (вр)', period: 2, fact: 'Три оборота вокруг оси за два оборота по орбите' },
+            { id: 'b9', kind: 'body', name: 'Меркурий (орб)', period: 3, fact: 'Резонанс 3:2 спин и орбита' },
+            { id: 'b10', kind: 'body', name: 'Нептун', period: 2, fact: 'Не даёт Плутону приблизиться' },
+            { id: 'b11', kind: 'body', name: 'Плутон', period: 3, fact: 'Орбиты пересекаются, но сближения не бывает' },
+            { id: 'b12', kind: 'body', name: 'Титан', period: 3, fact: 'Резонанс 4:3 с Гиперионом' },
+            { id: 'b13', kind: 'body', name: 'Гиперион', period: 4, fact: 'Кувыркается хаотично' },
+            { id: 'b14', kind: 'body', name: 'Мимас', period: 2, fact: 'Его толчки расчистили щель Кассини' },
+            { id: 'b15', kind: 'body', name: 'Сатурн (кольцо)', period: 1, fact: 'Сходится с Мимасом 2:1' },
+            { id: 'b16', kind: 'body', name: 'Юпитер', period: 12, fact: 'Эталон для карт Люк (гигант)' },
+            { id: 'b17', kind: 'body', name: 'Троян Юпитера', period: 12, fact: 'Живёт в точке Лагранжа, резонанс 1:1' },
+            { id: 'b18', kind: 'body', name: 'Гильда', period: 8, fact: 'Резонанс 3:2 с Юпитером, устойчивое скопление' },
+            { id: 'b19', kind: 'body', name: 'Астероид Туле', period: 9, fact: 'Резонанс 4:3 с Юпитером' },
+            { id: 'b20', kind: 'body', name: 'Астероид 3:1', period: 4, fact: 'Из щели Кирквуда' },
+            { id: 'b21', kind: 'body', name: 'Астероид 2:1', period: 6, fact: 'Из щели Гекубы' },
+            { id: 'b22', kind: 'body', name: 'Астероид 4:1', period: 3, fact: 'Из щели Кирквуда' },
+            { id: 'b23', kind: 'body', name: 'Земля', period: 8, fact: 'Против Венеры 13:8, почти резонанс' },
+            { id: 'b24', kind: 'body', name: 'Венера', period: 5, fact: 'Слабая связь с Землёй' },
+            { id: 'b25', kind: 'body', name: 'Kepler-223 b', period: 3, fact: 'Цепочка 3:4:6:8' },
+            { id: 'b26', kind: 'body', name: 'Kepler-223 c', period: 4, fact: 'Входит в цепочку 3:4:6:8' },
+            { id: 'b27', kind: 'body', name: 'Kepler-223 d', period: 6, fact: 'Входит в цепочку 3:4:6:8' },
+            { id: 'b28', kind: 'body', name: 'Kepler-223 e', period: 8, fact: 'Замыкает цепочку Kepler-223' },
+
+            // NON-SPACE BODIES (13 Cards)
+            { id: 'nb1', kind: 'body', name: 'Камертон A1', period: 1, fact: 'Второй камертон звучит сам' },
+            { id: 'nb2', kind: 'body', name: 'Камертон A2', period: 1, fact: 'Резонирует на той же частоте' },
+            { id: 'nb3', kind: 'body', name: 'Маятник', period: 2, fact: 'Часы Гюйгенса подстраивались друг под друга' },
+            { id: 'nb4', kind: 'body', name: 'Метроном', period: 3, fact: 'На общей доске метрономы синхронизируются' },
+            { id: 'nb5', kind: 'body', name: 'Струна (Основа)', period: 12, fact: 'Основной тон колебаний' },
+            { id: 'nb6', kind: 'body', name: 'Струна (2-я гарм)', period: 6, fact: 'Октава над основным тоном' },
+            { id: 'nb7', kind: 'body', name: 'Струна (3-я гарм)', period: 4, fact: 'Октава + квинта' },
+            { id: 'nb8', kind: 'body', name: 'Качели', period: 4, fact: 'Раскачка толчками в такт' },
+            { id: 'nb9', kind: 'body', name: 'Бокал', period: 5, fact: 'Лопается на собственной частоте' },
+            { id: 'nb10', kind: 'body', name: 'Голос', period: 5, fact: '1:1 с бокалом, опасное соседство' },
+            { id: 'nb11', kind: 'body', name: 'Мост', period: 7, fact: 'Миллениум в 2000 г. раскачали шаги' },
+            { id: 'nb12', kind: 'body', name: 'Шаг толпы', period: 7, fact: 'Синхронный шаг усиливает колебания' },
+            { id: 'nb13', kind: 'body', name: 'Акуст. мембрана', period: 10, fact: 'Резонирует на низких частотах' },
+
+            // PERTURBATIONS (11 Cards)
+            { id: 'p1', kind: 'perturb', effect: 'tide', name: 'Приливная сила A', fact: 'Период выбранного тела ±1 (1..12)' },
+            { id: 'p2', kind: 'perturb', effect: 'tide', name: 'Приливная сила B', fact: 'Период выбранного тела ±1 (1..12)' },
+            { id: 'p3', kind: 'perturb', effect: 'tide', name: 'Приливная сила C', fact: 'Период выбранного тела ±1 (1..12)' },
+            { id: 'p4', kind: 'perturb', effect: 'tide', name: 'Приливная сила D', fact: 'Период выбранного тела ±1 (1..12)' },
+            { id: 'p5', kind: 'perturb', effect: 'phaseShift', name: 'Сдвиг фазы A', fact: 'Поверните выбранное тело на ±90°' },
+            { id: 'p6', kind: 'perturb', effect: 'phaseShift', name: 'Сдвиг фазы B', fact: 'Поверните выбранное тело на ±90°' },
+            { id: 'p7', kind: 'perturb', effect: 'phaseShift', name: 'Сдвиг фазы C', fact: 'Поверните выбранное тело на ±90°' },
+            { id: 'p8', kind: 'perturb', effect: 'wind', name: 'Солнечный ветер A', fact: 'Уберите тело из системы, ряд смыкается' },
+            { id: 'p9', kind: 'perturb', effect: 'wind', name: 'Солнечный ветер B', fact: 'Уберите тело из системы, ряд смыкается' },
+            { id: 'p10', kind: 'perturb', effect: 'swap', name: 'Гравитолчок A', fact: 'Поменяйте местами два соседних тела' },
+            { id: 'p11', kind: 'perturb', effect: 'swap', name: 'Гравитолчок B', fact: 'Поменяйте местами два соседних тела' },
+
+            // HATCHES / KIRKWOOD (8 Cards)
+            { id: 'h1', kind: 'hatch', hatchType: 'kirkwood', hitPeriod: 6, name: 'Щель 2:12', fact: 'Выбрасывает тела с периодом 6' },
+            { id: 'h2', kind: 'hatch', hatchType: 'kirkwood', hitPeriod: 6, name: 'Щель 2:12', fact: 'Выбрасывает тела с периодом 6' },
+            { id: 'h3', kind: 'hatch', hatchType: 'kirkwood', hitPeriod: 4, name: 'Щель 3:12', fact: 'Выбрасывает тела с периодом 4' },
+            { id: 'h4', kind: 'hatch', hatchType: 'kirkwood', hitPeriod: 4, name: 'Щель 3:12', fact: 'Выбрасывает тела с периодом 4' },
+            { id: 'h5', kind: 'hatch', hatchType: 'kirkwood', hitPeriod: 3, name: 'Щель 4:12', fact: 'Выбрасывает тела с периодом 3' },
+            { id: 'h6', kind: 'hatch', hatchType: 'kirkwood', hitPeriod: 3, name: 'Щель 4:12', fact: 'Выбрасывает тела с периодом 3' },
+            { id: 'h7', kind: 'hatch', hatchType: 'hilda', hitPeriod: 8, name: 'Гильды 3:2 (А)', fact: 'Защищает период 8, дает +1 очко при выкладывании' },
+            { id: 'h8', kind: 'hatch', hatchType: 'hilda', hitPeriod: 8, name: 'Гильды 3:2 (Б)', fact: 'Защищает период 8, дает +1 очко при выкладывании' },
+        ];
+
+        /* ==========================================================================
+           2. AUDIO SYNTHESIZER (WEB AUDIO API)
+           ========================================================================== */
+        let audioCtx = null;
+        let audioEnabled = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleAudio() {
+            initAudio();
+            audioEnabled = !audioEnabled;
+            const icon = document.getElementById('audio-icon');
+            if (audioEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-cyan-400';
+                playNoteForPeriod(12, 0.2); // test sound
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-red-400';
+            }
+        }
+
+        function playNoteForPeriod(period, duration = 0.5, delay = 0) {
+            if (!audioEnabled || !audioCtx) return;
+            try {
+                const freq = 55 * (12 / Math.max(1, Math.min(12, period)));
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+
+                gain.gain.setValueAtTime(0.01, audioCtx.currentTime + delay);
+                gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + delay + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(audioCtx.currentTime + delay);
+                osc.stop(audioCtx.currentTime + delay + duration + 0.05);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function playIntervalChord(p1, p2, isDissonance = false) {
+            if (!audioEnabled || !audioCtx) return;
+            playNoteForPeriod(p1, 0.6, 0);
+            if (isDissonance) {
+                // Play slightly detuned note to create acoustic beats
+                const freq2 = (55 * 12 / p2) * 1.04;
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq2, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.6);
+                } catch(e){}
+            } else {
+                playNoteForPeriod(p2, 0.6, 0.05);
+            }
+        }
+
+        /* ==========================================================================
+           3. CORE PHYSICS ENGINE & RULES
+           ========================================================================== */
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        function getRatio(p1, p2) {
+            const g = gcd(p1, p2);
+            const a = p1 / g;
+            const b = p2 / g;
+            return a >= b ? [a, b] : [b, a];
+        }
+
+        function getBaseScore(pa, pb) {
+            const [a, b] = getRatio(pa, pb);
+            if (a === 1 && b === 1) return { score: 1, name: 'Унисон (1:1)' };
+            if (a === 2 && b === 1) return { score: 2, name: 'Октава (2:1)' };
+            if (a === 3 && b === 1) return { score: 2, name: 'Окт.+Квинта (3:1)' };
+            if (a === 3 && b === 2) return { score: 3, name: 'Квинта (3:2)' };
+            if (a === 4 && b === 3) return { score: 3, name: 'Кварта (4:3)' };
+            return { score: 0, name: 'Диссонанс' };
+        }
+
+        function getPhaseDelta(phaseA, phaseB) {
+            return (phaseA - phaseB + 4) % 4;
+        }
+
+        function getLinkScore(bodyA, bodyB) {
+            const effA = Math.max(1, Math.min(12, bodyA.card.period + (bodyA.periodMod || 0)));
+            const effB = Math.max(1, Math.min(12, bodyB.card.period + (bodyB.periodMod || 0)));
+            const base = getBaseScore(effA, effB);
+
+            if (base.score === 0) {
+                return { score: 0, baseScore: 0, delta: getPhaseDelta(bodyA.phase, bodyB.phase), ratioName: base.name };
+            }
+
+            const delta = getPhaseDelta(bodyA.phase, bodyB.phase);
+            let finalScore = base.score;
+            if (delta === 0) finalScore = base.score * 2;
+            else if (delta === 2) finalScore = base.score + 1;
+
+            return { score: finalScore, baseScore: base.score, delta, ratioName: base.name };
+        }
+
+        function getChainBonus(bodyA, bodyB, bodyC) {
+            const link1 = getLinkScore(bodyA, bodyB);
+            const link2 = getLinkScore(bodyB, bodyC);
+
+            if (link1.baseScore > 0 && link2.baseScore > 0) {
+                // Laplace condition check: not all 3 phases equal
+                if (bodyA.phase === bodyB.phase && bodyB.phase === bodyC.phase) {
+                    return { bonus: 0, laplaceFailed: true };
+                }
+                return { bonus: link1.score + link2.score, laplaceFailed: false };
+            }
+            return { bonus: 0, laplaceFailed: false };
+        }
+
+        /* Calculate total system points */
+        function calculateSystemTotalPoints(system) {
+            let total = 0;
+            if (system.length < 2) return 0;
+
+            // Links
+            for (let i = 0; i < system.length - 1; i++) {
+                total += getLinkScore(system[i], system[i+1]).score;
+            }
+            // Chains
+            for (let i = 0; i < system.length - 2; i++) {
+                total += getChainBonus(system[i], system[i+1], system[i+2]).bonus;
+            }
+            return total;
+        }
+
+        /* ==========================================================================
+           4. GAME STATE MANAGEMENT
+           ========================================================================== */
+        let state = {
+            mode: 'bot', // 'bot' | 'hotseat'
+            botDifficulty: 'normal', // 'easy'|'normal'|'hard'
+            playerCount: 2,
+            deck: [],
+            discard: [],
+            players: [],
+            system: [], // BodyInSystem[]
+            loads: [],  // load tokens on link i..i+1
+            hatchZone: [], // max 2
+            turn: 0,
+            round: 1,
+            selectedCardIndex: null,
+            selectedPhase: 0,
+            perturbTarget: null, // target index for perturbation cards
+            activeHint: null, // holds computed best move hint
+            gameLogs: []
+        };
+
+        function setSetupMode(mode) {
+            state.mode = mode;
+            document.getElementById('mode-bot-btn').className = mode === 'bot' 
+                ? 'py-2.5 px-3 rounded-xl border border-purple-500 bg-purple-500/20 text-white font-medium text-xs flex items-center justify-center gap-2'
+                : 'py-2.5 px-3 rounded-xl border border-space-600 bg-space-700 text-slate-300 font-medium text-xs flex items-center justify-center gap-2';
+            
+            document.getElementById('mode-hotseat-btn').className = mode === 'hotseat' 
+                ? 'py-2.5 px-3 rounded-xl border border-amber-500 bg-amber-500/20 text-white font-medium text-xs flex items-center justify-center gap-2'
+                : 'py-2.5 px-3 rounded-xl border border-space-600 bg-space-700 text-slate-300 font-medium text-xs flex items-center justify-center gap-2';
+
+            document.getElementById('bot-config-section').style.display = mode === 'bot' ? 'block' : 'none';
+        }
+
+        function setBotDiff(diff) {
+            state.botDifficulty = diff;
+            ['easy', 'normal', 'hard'].forEach(d => {
+                const btn = document.getElementById(`diff-${d}`);
+                if (d === diff) {
+                    btn.className = 'py-2 rounded-lg border border-cyan-500 bg-cyan-500/20 text-xs text-cyan-200 font-bold';
+                } else {
+                    btn.className = 'py-2 rounded-lg border border-space-600 bg-space-700 text-xs text-slate-300';
+                }
+            });
+        }
+
+        function setPlayerCount(count) {
+            state.playerCount = count;
+            [2, 3, 4].forEach(c => {
+                const btn = document.getElementById(`pc-${c}`);
+                if (c === count) {
+                    btn.className = 'py-2 rounded-lg border border-purple-500 bg-purple-500/20 text-xs text-white font-bold';
+                } else {
+                    btn.className = 'py-2 rounded-lg border border-space-600 bg-space-700 text-xs text-slate-300';
+                }
+            });
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function logEvent(msg) {
+            state.gameLogs.unshift(`[Р${state.round}] ${msg}`);
+            document.getElementById('last-log-entry').textContent = msg;
+            
+            const logList = document.getElementById('full-log-list');
+            if (logList) {
+                logList.innerHTML = state.gameLogs.map(l => `<div class="p-1.5 rounded bg-space-900/50 border border-space-700/50">${l}</div>`).join('');
+            }
+        }
+
+        function startGame() {
+            initAudio();
+            document.getElementById('setup-modal').classList.add('hidden');
+
+            // Build fresh deck
+            let deck = JSON.parse(JSON.stringify(RAW_CARDS));
+            deck = shuffle(deck);
+
+            // Extract first body for central system start
+            let initialBodyIndex = deck.findIndex(c => c.kind === 'body');
+            let initialBody = deck.splice(initialBodyIndex, 1)[0];
+
+            state.deck = deck;
+            state.discard = [];
+            state.system = [{ card: initialBody, owner: -1, phase: 0, periodMod: 0 }];
+            state.loads = [];
+            state.hatchZone = [];
+            state.turn = 0;
+            state.round = 1;
+            state.selectedCardIndex = null;
+            state.gameLogs = [];
+
+            // Initialize Players
+            state.players = [];
+            state.players.push({ id: 0, name: 'Игрок 1', isBot: false, hand: [], score: 0 });
+
+            if (state.mode === 'bot') {
+                for (let i = 1; i < state.playerCount; i++) {
+                    state.players.push({
+                        id: i,
+                        name: `Бот ${i} (${state.botDifficulty})`,
+                        isBot: true,
+                        hand: [],
+                        score: 0
+                    });
+                }
+            } else {
+                for (let i = 1; i < state.playerCount; i++) {
+                    state.players.push({
+                        id: i,
+                        name: `Игрок ${i + 1}`,
+                        isBot: false,
+                        hand: [],
+                        score: 0
+                    });
+                }
+            }
+
+            // Deal 4 cards to each player
+            for (let i = 0; i < 4; i++) {
+                state.players.forEach(p => {
+                    if (state.deck.length > 0) {
+                        p.hand.push(state.deck.shift());
+                    }
+                });
+            }
+
+            logEvent('Игра началась! Выложена начальная карта: ' + initialBody.name);
+            render();
+            checkBotTurn();
+        }
+
+        function selectCard(idx) {
+            const player = state.players[state.turn];
+            if (player.isBot) return;
+
+            if (state.selectedCardIndex === idx) {
+                cancelSelection();
+                return;
+            }
+
+            state.selectedCardIndex = idx;
+            const card = player.hand[idx];
+
+            if (card.kind === 'body') {
+                document.getElementById('phase-selector-container').classList.remove('hidden');
+                document.getElementById('phase-selector-container').classList.add('flex');
+                document.getElementById('prompt-text').textContent = `Выберите край системы или измените угол (фазу) для выкладывания "${card.name}".`;
+            } else if (card.kind === 'perturb') {
+                document.getElementById('phase-selector-container').classList.add('hidden');
+                document.getElementById('prompt-text').textContent = `Кликните на тело в системе, к которому вы хотите применить "${card.name}".`;
+            } else if (card.kind === 'hatch') {
+                document.getElementById('phase-selector-container').classList.add('hidden');
+                playHatchCard(idx);
+                return;
+            }
+
+            document.getElementById('cancel-selection-btn').classList.remove('hidden');
+            render();
+        }
+
+        function selectPhase(phase) {
+            state.selectedPhase = phase;
+            for (let p = 0; p < 4; p++) {
+                const btn = document.getElementById(`phase-btn-${p}`);
+                if (btn) {
+                    if (p === phase) {
+                        btn.className = 'w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center border border-purple-300 text-xs font-mono font-bold text-white transition scale-110';
+                    } else {
+                        btn.className = 'w-8 h-8 rounded-lg bg-space-700 hover:bg-space-600 flex items-center justify-center border border-slate-600 text-xs font-mono font-bold text-white transition';
+                    }
+                }
+            }
+            render();
+        }
+
+        function calculateBestMove(player) {
+            let bestMove = null;
+            let bestScore = -999;
+
+            player.hand.forEach((card, handIdx) => {
+                if (card.kind === 'body') {
+                    ['left', 'right'].forEach(pos => {
+                        for (let phase = 0; phase < 4; phase++) {
+                            let simSys = JSON.parse(JSON.stringify(state.system));
+                            let newBody = { card, owner: player.id, phase, periodMod: 0 };
+                            if (pos === 'left') simSys.unshift(newBody);
+                            else simSys.push(newBody);
+
+                            let idx = (pos === 'left') ? 0 : simSys.length - 1;
+                            let pts = calculateScoreForPlacement(simSys, idx);
+
+                            if (pts > bestScore) {
+                                bestScore = pts;
+                                bestMove = { kind: 'body', handIdx, pos, phase, cardName: card.name, points: pts };
+                            }
+                        }
+                    });
+                } else if (card.kind === 'hatch') {
+                    let pts = 1;
+                    if (pts > bestScore) {
+                        bestScore = pts;
+                        bestMove = { kind: 'hatch', handIdx, cardName: card.name, points: pts };
+                    }
+                }
+            });
+
+            return bestMove;
+        }
+
+        function showMoveHint() {
+            const player = state.players[state.turn];
+            if (player.isBot) return;
+
+            const hint = calculateBestMove(player);
+            if (!hint) {
+                document.getElementById('prompt-text').textContent = 'Нет доступных эффективных ходов.';
+                return;
+            }
+
+            state.activeHint = hint;
+            state.selectedCardIndex = hint.handIdx;
+
+            if (hint.kind === 'body') {
+                state.selectedPhase = hint.phase;
+                selectPhase(hint.phase);
+                document.getElementById('phase-selector-container').classList.remove('hidden');
+                document.getElementById('phase-selector-container').classList.add('flex');
+                document.getElementById('prompt-text').innerHTML = `<span class="text-amber-300 font-bold"><i class="fa-solid fa-lightbulb"></i> Подсказка:</span> Выложите <b>${hint.cardName}</b> на <b>${hint.pos === 'left' ? 'левый' : 'правый'}</b> край (Фаза ${hint.phase * 90}°) для получения <b class="text-green-400">+${hint.points} очков</b>!`;
+            } else if (hint.kind === 'hatch') {
+                document.getElementById('prompt-text').innerHTML = `<span class="text-amber-300 font-bold"><i class="fa-solid fa-lightbulb"></i> Подсказка:</span> Сыграйте Люк <b>${hint.cardName}</b> для контроля системы.`;
+            }
+
+            document.getElementById('apply-hint-btn').classList.remove('hidden');
+            document.getElementById('cancel-selection-btn').classList.remove('hidden');
+            render();
+        }
+
+        function applyHintMove() {
+            if (!state.activeHint) return;
+            const hint = state.activeHint;
+            state.activeHint = null;
+            document.getElementById('apply-hint-btn').classList.add('hidden');
+
+            if (hint.kind === 'body') {
+                playBodyCard(hint.pos);
+            } else if (hint.kind === 'hatch') {
+                playHatchCard(hint.handIdx);
+            }
+        }
+
+        function cancelSelection() {
+            state.selectedCardIndex = null;
+            state.perturbTarget = null;
+            state.activeHint = null;
+            document.getElementById('apply-hint-btn').classList.add('hidden');
+            document.getElementById('phase-selector-container').classList.add('hidden');
+            document.getElementById('cancel-selection-btn').classList.add('hidden');
+            document.getElementById('prompt-text').textContent = 'Выберите карту из вашей руки для хода.';
+            render();
+        }
+
+        /* Place Body at Left (pos = 'left') or Right (pos = 'right') */
+        function playBodyCard(position) {
+            const player = state.players[state.turn];
+            if (state.selectedCardIndex === null) return;
+            const card = player.hand[state.selectedCardIndex];
+            if (card.kind !== 'body') return;
+
+            const newBody = { card: card, owner: player.id, phase: state.selectedPhase, periodMod: 0 };
+
+            if (position === 'left') {
+                state.system.unshift(newBody);
+                state.loads.unshift(0);
+            } else {
+                state.system.push(newBody);
+                state.loads.push(0);
+            }
+
+            // Calculate gained points immediately
+            const idx = (position === 'left') ? 0 : state.system.length - 1;
+            const pts = calculateScoreForPlacement(state.system, idx);
+            player.score += pts;
+
+            logEvent(`${player.name} выложил карту ${card.name} (Т:${card.period}, Фаза ${state.selectedPhase*90}°) на ${position === 'left' ? 'левый' : 'правый'} край (+${pts} очков).`);
+
+            // Play acoustic sound
+            const effP = Math.max(1, Math.min(12, card.period));
+            playNoteForPeriod(effP, 0.5);
+
+            finishTurn();
+        }
+
+        function calculateScoreForPlacement(system, index) {
+            let pts = 0;
+            // Check neighbor link
+            if (index === 0 && system.length > 1) {
+                pts += getLinkScore(system[0], system[1]).score;
+                if (system.length > 2) {
+                    pts += getChainBonus(system[0], system[1], system[2]).bonus;
+                }
+            } else if (index === system.length - 1 && system.length > 1) {
+                const last = system.length - 1;
+                pts += getLinkScore(system[last - 1], system[last]).score;
+                if (system.length > 2) {
+                    pts += getChainBonus(system[last - 2], system[last - 1], system[last]).bonus;
+                }
+            }
+            return pts;
+        }
+
+        /* Play Hatch Card */
+        function playHatchCard(handIndex) {
+            const player = state.players[state.turn];
+            const card = player.hand[handIndex];
+            if (card.kind !== 'hatch') return;
+
+            // Remove card from hand
+            player.hand.splice(handIndex, 1);
+
+            // Add to Kirkwood Zone (Max 2)
+            if (state.hatchZone.length >= 2) {
+                const removed = state.hatchZone.shift();
+                state.discard.push(removed);
+            }
+            state.hatchZone.push(card);
+
+            logEvent(`${player.name} сыграл Люк "${card.name}" в Зону Кирквуда.`);
+
+            // Hilda instant bonus
+            if (card.hatchType === 'hilda') {
+                player.score += 1;
+                logEvent(`Гильды дают +1 очко ${player.name}.`);
+            }
+
+            // Apply hatch effect immediately
+            applyHatches();
+
+            // Refill hand
+            if (state.deck.length > 0) {
+                player.hand.push(state.deck.shift());
+            }
+
+            cancelSelection();
+            finishTurn(true); // already processed hand
+        }
+
+        /* Apply Perturbation card on target index */
+        function applyPerturbation(targetIdx, tideOption = 1) {
+            const player = state.players[state.turn];
+            if (state.selectedCardIndex === null) return;
+            const card = player.hand[state.selectedCardIndex];
+            if (card.kind !== 'perturb') return;
+
+            const oldScoreSum = calculateSystemTotalPoints(state.system);
+
+            if (card.effect === 'tide') {
+                // tideOption = +1 or -1
+                const body = state.system[targetIdx];
+                body.periodMod = (body.periodMod || 0) + tideOption;
+                logEvent(`${player.name} применил "${card.name}" на ${body.card.name}: новый период = ${Math.max(1, Math.min(12, body.card.period + body.periodMod))}.`);
+            } else if (card.effect === 'phaseShift') {
+                const body = state.system[targetIdx];
+                body.phase = (body.phase + 1) % 4; // shift 90 deg
+                logEvent(`${player.name} применил "${card.name}" на ${body.card.name}: фаза повернена на 90°.`);
+            } else if (card.effect === 'wind') {
+                const removed = state.system.splice(targetIdx, 1)[0];
+                if (state.loads.length > 0) state.loads.pop();
+                logEvent(`${player.name} применил "${card.name}": тело ${removed.card.name} удалено из системы.`);
+            } else if (card.effect === 'swap') {
+                if (targetIdx < state.system.length - 1) {
+                    const temp = state.system[targetIdx];
+                    state.system[targetIdx] = state.system[targetIdx + 1];
+                    state.system[targetIdx + 1] = temp;
+                    logEvent(`${player.name} поменял местами ${state.system[targetIdx].card.name} и ${state.system[targetIdx+1].card.name}.`);
+                }
+            }
+
+            const newScoreSum = calculateSystemTotalPoints(state.system);
+            const deltaScore = newScoreSum - oldScoreSum;
+            if (deltaScore > 0) {
+                player.score += deltaScore;
+                logEvent(`${player.name} получил +${deltaScore} очков за возмущение.`);
+            }
+
+            finishTurn();
+        }
+
+        /* Complete player turn & advance round */
+        function finishTurn(handAlreadyHandled = false) {
+            const player = state.players[state.turn];
+
+            if (!handAlreadyHandled && state.selectedCardIndex !== null) {
+                player.hand.splice(state.selectedCardIndex, 1);
+                if (state.deck.length > 0) {
+                    player.hand.push(state.deck.shift());
+                }
+            }
+
+            cancelSelection();
+
+            // Next turn
+            state.turn = (state.turn + 1) % state.playerCount;
+
+            // Check if round ended
+            if (state.turn === 0) {
+                endRoundProcess();
+            } else {
+                render();
+                checkBotTurn();
+            }
+        }
+
+        /* End of Round Logic: Hatches -> Loads -> Ejections */
+        function endRoundProcess() {
+            logEvent(`--- Конец раунда ${state.round} ---`);
+
+            // 1. Apply Hatches
+            applyHatches();
+
+            // 2. Add load tokens for Delta = 0, reset others
+            for (let i = 0; i < state.system.length - 1; i++) {
+                const link = getLinkScore(state.system[i], state.system[i+1]);
+                if (link.baseScore > 0 && link.delta === 0) {
+                    state.loads[i] = (state.loads[i] || 0) + 1;
+                    logEvent(`На связь ${state.system[i].card.name} - ${state.system[i+1].card.name} добавлен жетон Нагрузки (${state.loads[i]}/3).`);
+                } else {
+                    state.loads[i] = 0;
+                }
+            }
+
+            // 3. Eject bodies with 3 loads
+            for (let i = 0; i < state.system.length - 1; i++) {
+                if (state.loads[i] >= 3) {
+                    const bA = state.system[i];
+                    const bB = state.system[i+1];
+                    const effA = Math.max(1, Math.min(12, bA.card.period + (bA.periodMod || 0)));
+                    const effB = Math.max(1, Math.min(12, bB.card.period + (bB.periodMod || 0)));
+
+                    let ejectIdx = (effA >= effB) ? i : i + 1;
+                    logEvent(`НАГРУЗКА 3! Напряжение раскачало орбиту: ${state.system[ejectIdx].card.name} выброшен из системы!`);
+                    
+                    state.system.splice(ejectIdx, 1);
+                    state.loads = new Array(Math.max(0, state.system.length - 1)).fill(0);
+                    break;
+                }
+            }
+
+            state.round++;
+
+            // Check game end conditions
+            if (state.deck.length === 0 && playerHandsEmpty()) {
+                endGame();
+                return;
+            }
+
+            render();
+            checkBotTurn();
+        }
+
+        function playerHandsEmpty() {
+            return state.players.every(p => p.hand.length === 0);
+        }
+
+        /* Apply Kirkwood Hatch Ejections */
+        function applyHatches() {
+            if (state.hatchZone.length === 0 || state.system.length === 0) return;
+
+            const isHildaActive = state.hatchZone.some(h => h.hatchType === 'hilda');
+
+            for (let h of state.hatchZone) {
+                if (h.hatchType !== 'kirkwood') continue;
+
+                for (let i = state.system.length - 1; i >= 0; i--) {
+                    const body = state.system[i];
+                    const effP = Math.max(1, Math.min(12, body.card.period + (body.periodMod || 0)));
+
+                    if (effP === h.hitPeriod) {
+                        // Check protection: Phase = 2 OR Hilda active on period 8
+                        if (body.phase === 2) {
+                            logEvent(`${body.card.name} в противофазе (Δ=2) — защищён от Люка ${h.name}!`);
+                            continue;
+                        }
+                        if (effP === 8 && isHildaActive) {
+                            logEvent(`${body.card.name} защищён группой Гильды!`);
+                            continue;
+                        }
+
+                        // Eject
+                        logEvent(`ЛЮК ${h.name} выбрасывает ${body.card.name} (Т:${effP}) из системы!`);
+                        state.system.splice(i, 1);
+                        state.loads = new Array(Math.max(0, state.system.length - 1)).fill(0);
+                    }
+                }
+            }
+        }
+
+        function endGame() {
+            let winners = [...state.players].sort((a, b) => b.score - a.score);
+            const winnerText = winners[0].score === winners[1]?.score 
+                ? `Ничья между ${winners[0].name} и ${winners[1].name}!`
+                : `Победитель: ${winners[0].name} (${winners[0].score} очков)`;
+
+            document.getElementById('winner-announcement').textContent = winnerText;
+            
+            const scoresList = document.getElementById('final-scores-list');
+            scoresList.innerHTML = winners.map((p, rank) => `
+                <div class="flex items-center justify-between text-sm py-1 border-b border-space-700/50">
+                    <span class="font-bold text-slate-200">#${rank+1} ${p.name}</span>
+                    <span class="font-mono text-cyan-400 font-bold">${p.score} очков</span>
+                </div>
+            `).join('');
+
+            document.getElementById('gameover-modal').classList.remove('hidden');
+        }
+
+        /* ==========================================================================
+           6. AI BOT ENGINE
+           ========================================================================== */
+        function checkBotTurn() {
+            const player = state.players[state.turn];
+            if (!player || !player.isBot) return;
+
+            document.getElementById('turn-banner').textContent = `Ход: ${player.name} (Думает...)`;
+
+            setTimeout(() => {
+                makeBotMove(player);
+            }, 800);
+        }
+
+        function makeBotMove(bot) {
+            let bestMove = null;
+            let bestScore = -999;
+
+            // Generate legal moves
+            bot.hand.forEach((card, handIdx) => {
+                if (card.kind === 'body') {
+                    for (let pos of ['left', 'right']) {
+                        for (let phase = 0; phase < 4; phase++) {
+                            // Simulate
+                            let simSystem = JSON.parse(JSON.stringify(state.system));
+                            let newBody = { card: card, owner: bot.id, phase: phase, periodMod: 0 };
+                            if (pos === 'left') simSystem.unshift(newBody);
+                            else simSystem.push(newBody);
+
+                            let idx = (pos === 'left') ? 0 : simSystem.length - 1;
+                            let pts = calculateScoreForPlacement(simSystem, idx);
+
+                            // Evaluate risk
+                            let risk = 0;
+                            if (idx > 0) {
+                                let link = getLinkScore(simSystem[idx], simSystem[idx-1]);
+                                if (link.delta === 0) risk += 1.5;
+                            }
+                            let score = pts - risk;
+
+                            if (score > bestScore) {
+                                bestScore = score;
+                                bestMove = { kind: 'body', handIdx, pos, phase };
+                            }
+                        }
+                    }
+                } else if (card.kind === 'hatch') {
+                    let score = 1.0; // moderate baseline
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = { kind: 'hatch', handIdx };
+                    }
+                } else if (card.kind === 'perturb') {
+                    if (state.system.length > 0) {
+                        let score = 0.5;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMove = { kind: 'perturb', handIdx, targetIdx: 0, tideOpt: 1 };
+                        }
+                    }
+                }
+            });
+
+            // Execute best move
+            if (bestMove) {
+                state.selectedCardIndex = bestMove.handIdx;
+                if (bestMove.kind === 'body') {
+                    state.selectedPhase = bestMove.phase;
+                    playBodyCard(bestMove.pos);
+                } else if (bestMove.kind === 'hatch') {
+                    playHatchCard(bestMove.handIdx);
+                } else if (bestMove.kind === 'perturb') {
+                    applyPerturbation(bestMove.targetIdx, bestMove.tideOpt || 1);
+                }
+            } else {
+                // Fallback: dump first card
+                state.selectedCardIndex = 0;
+                if (bot.hand[0].kind === 'body') playBodyCard('right');
+                else finishTurn();
+            }
+        }
+
+        /* ==========================================================================
+           7. RENDER ENGINE & UI UPDATES
+           ========================================================================== */
+        function render() {
+            renderHeaderAndScores();
+            renderHatchZone();
+            renderSystem();
+            renderPlayerHand();
+        }
+
+        function renderHeaderAndScores() {
+            // Round & Deck count
+            document.getElementById('current-round').textContent = state.round;
+            document.getElementById('deck-count').textContent = state.deck.length;
+
+            const currentPlayer = state.players[state.turn];
+            const turnBanner = document.getElementById('turn-banner');
+            if (turnBanner) {
+                turnBanner.textContent = `Ход: ${currentPlayer.name}`;
+            }
+
+            // Scoreboard
+            const sbContainer = document.getElementById('players-scoreboard');
+            if (sbContainer) {
+                sbContainer.innerHTML = state.players.map((p, idx) => {
+                    const isActive = idx === state.turn;
+                    return `
+                        <div class="p-2 rounded-xl border ${isActive ? 'bg-purple-950/60 border-purple-500 shadow-md shadow-purple-500/20' : 'bg-space-900/60 border-space-700'} flex flex-col justify-between">
+                            <div class="flex items-center justify-between text-[11px] truncate">
+                                <span class="font-bold text-slate-200 truncate">${p.name}</span>
+                                ${p.isBot ? '<i class="fa-solid fa-robot text-cyan-400 text-[10px]"></i>' : ''}
+                            </div>
+                            <div class="mt-1 flex items-baseline justify-between">
+                                <span class="text-[10px] text-slate-400">Очки:</span>
+                                <span class="font-orbitron font-extrabold text-sm text-cyan-400">${p.score}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function renderHatchZone() {
+            const hatchContainer = document.getElementById('hatch-zone');
+            if (!hatchContainer) return;
+
+            if (state.hatchZone.length === 0) {
+                hatchContainer.innerHTML = `<div class="col-span-2 text-center text-slate-500 text-xs italic py-2">Зона свободна</div>`;
+                return;
+            }
+
+            hatchContainer.innerHTML = state.hatchZone.map(h => `
+                <div class="bg-amber-950/40 border border-amber-500/60 rounded-xl p-2 text-xs flex flex-col justify-between h-full shadow">
+                    <div class="flex items-center justify-between font-bold text-amber-300">
+                        <span class="truncate">${h.name}</span>
+                        <span class="text-[10px] bg-amber-900/80 px-1.5 py-0.5 rounded border border-amber-600">T:${h.hitPeriod}</span>
+                    </div>
+                    <div class="text-[10px] text-slate-300 mt-1 line-clamp-2">${h.fact}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderSystem() {
+            const container = document.getElementById('system-container');
+            if (!container) return;
+
+            const player = state.players[state.turn];
+            const selectedCard = (state.selectedCardIndex !== null) ? player.hand[state.selectedCardIndex] : null;
+
+            let html = '';
+
+            // Left drop zone indicator (if body card selected and not bot)
+            if (selectedCard && selectedCard.kind === 'body' && !player.isBot) {
+                html += `
+                    <button onclick="playBodyCard('left')" class="group p-3 border-2 border-dashed border-cyan-400 hover:border-cyan-300 bg-cyan-950/30 hover:bg-cyan-900/50 rounded-2xl flex flex-col items-center justify-center text-cyan-300 transition pulse-target cursor-pointer min-w-[90px] h-36">
+                        <i class="fa-solid fa-circle-plus text-2xl group-hover:scale-125 transition transform"></i>
+                        <span class="text-[10px] font-bold mt-2 uppercase tracking-wider">Сюда (Лево)</span>
+                    </button>
+                `;
+            }
+
+            // System cards
+            state.system.forEach((body, idx) => {
+                const effPeriod = Math.max(1, Math.min(12, body.card.period + (body.periodMod || 0)));
+                const angle = body.phase * 90;
+                const ownerName = state.players[body.owner]?.name || 'Нейтральный';
+
+                const isTargetable = selectedCard && selectedCard.kind === 'perturb' && !player.isBot;
+
+                html += `
+                    <div onclick="${isTargetable ? `applyPerturbation(${idx})` : ''}" class="w-32 h-44 bg-space-800 border-2 ${isTargetable ? 'border-amber-400 hover:border-amber-300 cursor-pointer pulse-target bg-amber-950/20' : 'border-space-600'} rounded-2xl p-2.5 flex flex-col justify-between shadow-xl relative transition transform hover:-translate-y-1 shrink-0">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-orbitron font-extrabold px-2 py-0.5 rounded-md ${body.periodMod ? 'bg-amber-950 text-amber-300 border border-amber-500' : 'bg-purple-950 text-purple-300 border border-purple-700/50'}">
+                                T:${effPeriod}
+                            </span>
+                            <div class="w-6 h-6 rounded-full bg-space-900 border border-cyan-500/40 flex items-center justify-center">
+                                <i class="fa-solid fa-arrow-up text-cyan-400 text-xs phase-arrow" style="transform: rotate(${angle}deg);"></i>
+                            </div>
+                        </div>
+
+                        <div class="my-auto text-center flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white shadow-md mb-1">
+                                <i class="fa-solid fa-globe text-lg"></i>
+                            </div>
+                            <div class="text-xs font-bold text-slate-100 truncate w-full">${body.card.name}</div>
+                            <div class="text-[9px] text-slate-400 truncate w-full mt-0.5">${ownerName}</div>
+                        </div>
+
+                        <div class="text-[9px] text-center text-slate-400">
+                            Фаза ${angle}°
+                        </div>
+                    </div>
+                `;
+
+                // Link badge between body[i] and body[i+1]
+                if (idx < state.system.length - 1) {
+                    const link = getLinkScore(state.system[idx], state.system[idx + 1]);
+                    const loads = state.loads[idx] || 0;
+
+                    let badgeBg = 'bg-slate-800 text-slate-400 border-slate-700';
+                    if (link.baseScore > 0) {
+                        if (link.delta === 0) badgeBg = 'bg-red-950/90 text-red-300 border-red-600 card-glow-0';
+                        else if (link.delta === 2) badgeBg = 'bg-emerald-950/90 text-emerald-300 border-emerald-500 card-glow-2';
+                        else badgeBg = 'bg-amber-950/90 text-amber-300 border-amber-500 card-glow-1';
+                    }
+
+                    html += `
+                        <div class="flex flex-col items-center justify-center mx-1 shrink-0">
+                            <div class="px-2 py-1 rounded-xl border text-[10px] font-mono font-bold flex flex-col items-center shadow-lg ${badgeBg}">
+                                <span>${link.ratioName}</span>
+                                <span class="text-xs font-orbitron">+${link.score} очк</span>
+                            </div>
+                            ${loads > 0 ? `
+                                <div class="flex gap-1 mt-1" title="Нагрузка ${loads}/3">
+                                    ${Array(loads).fill('<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>').join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+            });
+
+            // Right drop zone indicator
+            if (selectedCard && selectedCard.kind === 'body' && !player.isBot) {
+                html += `
+                    <button onclick="playBodyCard('right')" class="group p-3 border-2 border-dashed border-cyan-400 hover:border-cyan-300 bg-cyan-950/30 hover:bg-cyan-900/50 rounded-2xl flex flex-col items-center justify-center text-cyan-300 transition pulse-target cursor-pointer min-w-[90px] h-36">
+                        <i class="fa-solid fa-circle-plus text-2xl group-hover:scale-125 transition transform"></i>
+                        <span class="text-[10px] font-bold mt-2 uppercase tracking-wider">Сюда (Право)</span>
+                    </button>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderPlayerHand() {
+            const handContainer = document.getElementById('player-hand');
+            if (!handContainer) return;
+
+            const player = state.players[state.turn];
+            document.getElementById('current-player-hand-title').textContent = `Рука: ${player.name}`;
+            document.getElementById('hand-card-count').textContent = `(${player.hand.length} карт)`;
+
+            if (player.isBot) {
+                handContainer.innerHTML = `<div class="col-span-4 text-center text-slate-400 italic py-6">Бот обдумывает свой ход...</div>`;
+                return;
+            }
+
+            handContainer.innerHTML = player.hand.map((card, idx) => {
+                const isSelected = state.selectedCardIndex === idx;
+
+                let borderClass = 'border-space-600 hover:border-space-500';
+                let typeBadge = '';
+
+                if (card.kind === 'body') {
+                    typeBadge = `<span class="bg-purple-900/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded border border-purple-600">Тело T:${card.period}</span>`;
+                } else if (card.kind === 'perturb') {
+                    typeBadge = `<span class="bg-amber-900/80 text-amber-200 text-[10px] px-1.5 py-0.5 rounded border border-amber-600">Возмущение</span>`;
+                } else if (card.kind === 'hatch') {
+                    typeBadge = `<span class="bg-rose-900/80 text-rose-200 text-[10px] px-1.5 py-0.5 rounded border border-rose-600">Люк T:${card.hitPeriod}</span>`;
+                }
+
+                if (isSelected) {
+                    borderClass = 'border-cyan-400 bg-space-700 shadow-lg shadow-cyan-500/20 scale-105';
+                }
+
+                return `
+                    <div onclick="selectCard(${idx})" class="bg-space-900 border-2 ${borderClass} rounded-2xl p-3 flex flex-col justify-between cursor-pointer transition transform hover:-translate-y-1 h-32 select-none">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-100 truncate">${card.name}</span>
+                            ${typeBadge}
+                        </div>
+                        <p class="text-[10px] text-slate-400 line-clamp-2 my-auto">${card.fact || ''}</p>
+                        <div class="text-[10px] text-cyan-400 font-semibold text-right">
+                            ${isSelected ? 'Выбрана' : 'Нажмите для выбора'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* ==========================================================================
+           8. INTERACTIVE TUTORIAL / INTRO DEMO SYSTEM
+           ========================================================================== */
+        let introTimer = null;
+        let introStep = 0;
+        let introPaused = false;
+
+        const INTRO_STEPS = [
+            {
+                title: "1. Периоды и Гармонические Резонансы",
+                desc: "Тела в системе имеют орбитальный период T. Когда соседние периоды образуют кратные отношения (1:1 Унисон, 2:1 Октава, 3:2 Квинта, 4:3 Кварта), между ними возникает **резонансная связь**, приносящая очки!",
+                icon: "fa-music",
+                stage: [
+                    { name: 'Ио', period: 1, phase: 0 },
+                    { link: { ratio: '2:1 (Октава)', score: 3, delta: 1 } },
+                    { name: 'Европа', period: 2, phase: 1 },
+                    { link: { ratio: '3:2 (Квинта)', score: 3, delta: 1 } },
+                    { name: 'Меркурий', period: 3, phase: 2 }
+                ]
+            },
+            {
+                title: "2. Фазы Вращения и Эффекты Сближения (Δ)",
+                desc: "Каждая карта имеет направление фазы (0°, 90°, 180°, 270°). При одинаковых фазах (Δ = 0) очки **удваиваются**, но связь нагревается и получает жетон **Нагрузки**! При Δ = 2 (противофаза) тело получает **Защиту**.",
+                icon: "fa-compass",
+                stage: [
+                    { name: 'Янус', period: 1, phase: 0 },
+                    { link: { ratio: '1:1 (Унисон)', score: 2, delta: 0, load: 2 } },
+                    { name: 'Эпиметей', period: 1, phase: 0 },
+                    { link: { ratio: '2:1 (Октава)', score: 3, delta: 2 } },
+                    { name: 'Европа', period: 2, phase: 2 }
+                ]
+            },
+            {
+                title: "3. Цепочка и Ограничение Лапласа",
+                desc: "Три тела с резонансами подряд формируют **Цепочку Лапласа** и приносят крупный бонус! Однако, если фазы всех трех тел абсолютно одинаковы, бонус аннулируется из-за нестабильности.",
+                icon: "fa-link",
+                stage: [
+                    { name: 'Ио (T:1)', period: 1, phase: 0 },
+                    { link: { ratio: '2:1 (Октава)', score: 2, delta: 1 } },
+                    { name: 'Европа (T:2)', period: 2, phase: 1 },
+                    { link: { ratio: '2:1 (Октава)', score: 2, delta: 1 } },
+                    { name: 'Ганимед (T:4)', period: 4, phase: 2 }
+                ]
+            },
+            {
+                title: "4. Зона Кирквуда и Карты Возмущений",
+                desc: "Люки Кирквуда выбивают из системы тела с соответствующими периодами в конце каждого раунда. Применяйте карты Возмущений (приливы, сдвиг фазы, гравитолчок) для создания лучших связей!",
+                icon: "fa-radiation",
+                stage: [
+                    { name: 'Астероид 2:1', period: 6, phase: 0, isEjected: true },
+                    { link: { ratio: 'Диссонанс', score: 0, delta: 3 } },
+                    { name: 'Юпитер', period: 12, phase: 0 }
+                ]
+            }
+        ];
+
+        function startInteractiveIntro() {
+            document.getElementById('setup-modal').classList.add('hidden');
+            document.getElementById('intro-modal').classList.remove('hidden');
+            introStep = 0;
+            introPaused = false;
+            updateIntroUI();
+            startIntroAutoPlay();
+        }
+
+        function stopIntro() {
+            if (introTimer) clearInterval(introTimer);
+            document.getElementById('intro-modal').classList.add('hidden');
+            document.getElementById('setup-modal').classList.remove('hidden');
+        }
+
+        function pauseResumeIntro() {
+            introPaused = !introPaused;
+            const btn = document.getElementById('intro-pause-btn');
+            if (introPaused) {
+                btn.innerHTML = `<i class="fa-solid fa-play text-emerald-400 mr-1"></i>Старт`;
+                if (introTimer) clearInterval(introTimer);
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-pause text-amber-400 mr-1"></i>Пауза`;
+                startIntroAutoPlay();
+            }
+        }
+
+        function startIntroAutoPlay() {
+            if (introTimer) clearInterval(introTimer);
+            introTimer = setInterval(() => {
+                if (!introPaused) {
+                    if (introStep < INTRO_STEPS.length - 1) {
+                        introStep++;
+                        updateIntroUI();
+                    } else {
+                        introStep = 0; // loop demo
+                        updateIntroUI();
+                    }
+                }
+            }, 6000);
+        }
+
+        function nextIntroStep() {
+            if (introStep < INTRO_STEPS.length - 1) {
+                introStep++;
+                updateIntroUI();
+            } else {
+                stopIntro();
+            }
+        }
+
+        function prevIntroStep() {
+            if (introStep > 0) {
+                introStep--;
+                updateIntroUI();
+            }
+        }
+
+        function updateIntroUI() {
+            const current = INTRO_STEPS[introStep];
+
+            // Header & Counter
+            document.getElementById('intro-step-counter').textContent = `Шаг ${introStep + 1} из ${INTRO_STEPS.length}`;
+            document.getElementById('intro-step-title').textContent = current.title;
+            document.getElementById('intro-step-desc').innerHTML = current.desc.replace(/\*\*(.*?)\*\*/g, '<b class="text-cyan-300">$1</b>');
+            document.getElementById('intro-info-icon').className = `fa-solid ${current.icon} text-cyan-400 text-xs`;
+
+            // Buttons State
+            document.getElementById('intro-prev-btn').disabled = (introStep === 0);
+            document.getElementById('intro-next-btn').innerHTML = (introStep === INTRO_STEPS.length - 1) 
+                ? `Понятно, Играть! <i class="fa-solid fa-check ml-1"></i>` 
+                : `Далее <i class="fa-solid fa-chevron-right ml-1"></i>`;
+
+            // Dots
+            const dotsContainer = document.getElementById('intro-dots');
+            dotsContainer.innerHTML = INTRO_STEPS.map((_, i) => `
+                <span class="w-2.5 h-2.5 rounded-full transition-all ${i === introStep ? 'bg-cyan-400 scale-125' : 'bg-space-600'}"></span>
+            `).join('');
+
+            // Render Animated Demo Stage
+            const stageContainer = document.getElementById('intro-demo-stage');
+            stageContainer.innerHTML = '';
+
+            current.stage.forEach(item => {
+                if (item.name) {
+                    // Body Card Render
+                    const angle = item.phase * 90;
+                    const card = document.createElement('div');
+                    card.className = `w-28 h-40 bg-space-800 border-2 ${item.isEjected ? 'border-red-500/80 bg-red-950/20 animate-pulse' : 'border-space-600'} rounded-2xl p-2.5 flex flex-col justify-between shadow-xl relative transition transform hover:-translate-y-1`;
+                    
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-orbitron font-extrabold px-2 py-0.5 rounded-md bg-purple-950 text-purple-300 border border-purple-700/50">T:${item.period}</span>
+                            <div class="w-6 h-6 rounded-full bg-space-900 border border-cyan-500/40 flex items-center justify-center">
+                                <i class="fa-solid fa-arrow-up text-cyan-400 text-xs phase-arrow" style="transform: rotate(${angle}deg);"></i>
+                            </div>
+                        </div>
+
+                        <div class="my-auto text-center flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr ${item.isEjected ? 'from-red-600 to-amber-600' : 'from-cyan-500 to-indigo-600'} flex items-center justify-center text-white shadow-md mb-1">
+                                <i class="fa-solid ${item.isEjected ? 'fa-triangle-exclamation' : 'fa-globe'} text-lg"></i>
+                            </div>
+                            <div class="text-xs font-bold text-slate-100 truncate w-full">${item.name}</div>
+                        </div>
+
+                        <div class="text-[9px] text-center ${item.isEjected ? 'text-red-400 font-bold' : 'text-slate-400'}">
+                            ${item.isEjected ? 'ВЫБРАСЫВАЕТСЯ!' : `Фаза ${angle}°`}
+                        </div>
+                    `;
+                    stageContainer.appendChild(card);
+                } else if (item.link) {
+                    // Link Badge Render
+                    const link = item.link;
+                    let badgeBg = 'bg-slate-800 text-slate-400 border-slate-700';
+                    if (link.delta === 0) badgeBg = 'bg-red-950/90 text-red-300 border-red-600 card-glow-0';
+                    else if (link.delta === 2) badgeBg = 'bg-emerald-950/90 text-emerald-300 border-emerald-500 card-glow-2';
+                    else badgeBg = 'bg-amber-950/90 text-amber-300 border-amber-500 card-glow-1';
+
+                    const linkEl = document.createElement('div');
+                    linkEl.className = 'flex flex-col items-center justify-center mx-1';
+                    linkEl.innerHTML = `
+                        <div class="px-2.5 py-1 rounded-xl border text-[10px] font-mono font-bold flex flex-col items-center shadow-lg ${badgeBg}">
+                            <span>${link.ratio}</span>
+                            <span class="text-xs font-orbitron">+${link.score} очк</span>
+                        </div>
+                        ${link.load ? `
+                            <div class="flex gap-1 mt-1" title="Нагрузка">
+                                ${Array(link.load).fill('<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>').join('')}
+                            </div>
+                        ` : ''}
+                    `;
+                    stageContainer.appendChild(linkEl);
+                }
+            });
+
+            // Audio Cue for Tutorial
+            if (audioEnabled) {
+                playNoteForPeriod(4, 0.3);
+            }
+        }
+
+        /* Modal Controllers */
+        function showRulesModal() { document.getElementById('rules-modal').classList.remove('hidden'); }
+        function hideRulesModal() { document.getElementById('rules-modal').classList.add('hidden'); }
+        function showLogModal() { document.getElementById('log-modal').classList.remove('hidden'); }
+        function hideLogModal() { document.getElementById('log-modal').classList.add('hidden'); }
+        function restartGameModal() {
+            document.getElementById('gameover-modal').classList.add('hidden');
+            document.getElementById('setup-modal').classList.remove('hidden');
+        }
+
+        // Initialize setup screen
+        window.onload = () => {
+            setSetupMode('bot');
+            setBotDiff('normal');
+            setPlayerCount(2);
+        };
+    </script>
+</body>
+</html>
