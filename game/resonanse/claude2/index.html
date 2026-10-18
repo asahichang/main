@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0a0c24">
+<title>Резонанс — карточная игра</title>
+<style>
+:root{--bg:#0a0c24;--panel:#13174a;--panel2:#1d2268;--gold:#e0b858;--ink:#eef0ff;--mut:#a3a9ff;--red:#ff6b5e;--green:#5fd18a;--yel:#f3c24a;--grey:#8a8fb5;--line:#ffffff26}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+button:disabled{opacity:.4;cursor:default}
+#app{height:100vh;height:100dvh;display:flex;flex-direction:column;background:radial-gradient(900px 480px at 10% -10%,#2a3190aa,transparent),radial-gradient(700px 420px at 100% 0,#0f4a5a77,transparent),var(--bg)}
+
+/* верхняя панель */
+#top{flex:none;padding:calc(6px + env(safe-area-inset-top)) 8px 5px;display:flex;flex-direction:column;gap:5px;background:#0a0c24ee;border-bottom:1px solid var(--line);z-index:6}
+.tb1{display:flex;align-items:center;gap:6px}
+.ib{width:38px;height:38px;flex:none;border-radius:12px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;position:relative}
+.ib svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ib.pulse::after{content:'';position:absolute;right:4px;top:4px;width:9px;height:9px;border-radius:50%;background:var(--yel);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+.tb-title{flex:1;text-align:center;font-size:13px;color:var(--mut);letter-spacing:.4px;line-height:1.25}
+.tb-title b{color:var(--gold);letter-spacing:2px;font-size:15px;display:block}
+#chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+#chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:center;gap:6px;background:var(--panel);border:2px solid transparent;border-radius:12px;padding:3px 10px;font-size:13px;white-space:nowrap}
+.chip.act{border-color:var(--gold);box-shadow:0 0 12px #e0b85866}
+.chip i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.chip b{font-size:16px;min-width:20px;text-align:right}
+.chip small{color:var(--mut);font-size:11px}
+@media(max-width:600px){.chip{gap:4px;padding:3px 7px;font-size:12px}.chip b{font-size:15px;min-width:16px}.chip small{font-size:10px}.chip span{max-width:72px;overflow:hidden;text-overflow:ellipsis}}
+.lk.pc .bd{box-shadow:0 0 0 3px #ffd34d,0 0 14px 2px #ffd34d;background:#4a3a00}
+.lk.lap:not(.pc) .bd{box-shadow:0 0 0 2px #7be0ff,0 0 10px #7be0ff}
+
+/* поле */
+#fieldWrap{position:relative;flex:1;min-height:0}
+#field{position:absolute;inset:0;overflow:hidden;touch-action:none;cursor:grab;background:radial-gradient(#ffffff2a 1px,transparent 1.6px) 0 0/34px 34px,radial-gradient(#ffffff18 1px,transparent 1.6px) 17px 17px/34px 34px}
+#field:active{cursor:grabbing}
+#world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+#wBodies,#floaters{position:absolute;left:0;top:0}
+#floaters{pointer-events:none;z-index:20}
+#zoom{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px;z-index:5}
+.fab{width:42px;height:42px;border-radius:12px;background:#141a5acc;border:1px solid var(--line);display:grid;place-items:center;font-size:22px;font-weight:600;backdrop-filter:blur(4px);color:var(--ink)}
+.fab svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#shiftFab{position:absolute;left:8px;bottom:8px;z-index:5;height:42px;padding:0 14px;border-radius:21px;background:#2a1f6ecc;border:1px solid #c79bf2;display:none;align-items:center;gap:8px;font-size:14px;font-weight:600;backdrop-filter:blur(4px)}
+#shiftFab.on{display:flex}
+#shiftFab.act{background:var(--gold);color:#241a05;border-color:var(--gold)}
+#shiftFab b{background:#0006;border-radius:10px;padding:1px 8px}
+#turn{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:5;background:#141a5acc;border:1px solid var(--line);border-radius:16px;padding:5px 14px;font-size:13px;color:var(--mut);white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+#turn.me{color:#241a05;background:var(--gold);border-color:var(--gold);font-weight:700}
+
+/* связи */
+.lk{position:absolute;display:grid;place-items:center;z-index:2}
+.lk .ln{position:absolute;background:#ffffff40;border-radius:2px}
+.lk.hz .ln{left:0;right:0;top:50%;height:3px;margin-top:-1.5px}
+.lk.vt .ln{top:0;bottom:0;left:50%;width:3px;margin-left:-1.5px}
+.lk .bd{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#1b2175;border:2px solid #fff6;line-height:1.05;cursor:pointer;box-shadow:0 2px 6px #0007}
+.lk .bd em{font-style:normal;font-size:9px;font-weight:700}
+.lk .bd strong{font-size:10px}
+.lk.d0 .bd{border-color:var(--red);background:#4a1a2c}.lk.d0 .ln{background:var(--red)}
+.lk.d2 .bd{border-color:var(--green);background:#134232}.lk.d2 .ln{background:var(--green)}
+.lk.dn .bd{border-color:var(--yel)}.lk.dn .ln{background:var(--yel);opacity:.7}
+.lk.dis .bd{width:22px;height:22px;opacity:.75;background:#262a62}.lk.dis .bd em{font-size:11px;color:var(--grey)}
+.lk.chain .ln{background:var(--yel);opacity:1;box-shadow:0 0 10px var(--yel)}
+.lk.lap .ln{background:#7be0ff;opacity:1;box-shadow:0 0 12px #7be0ff}
+.lk.pc .ln{background:#ffd34d;opacity:1;box-shadow:0 0 16px 2px #ffd34d}
+.lk.hz.lap .ln,.lk.hz.pc .ln{height:6px;margin-top:-3px}.lk.vt.lap .ln,.lk.vt.pc .ln{width:6px;margin-left:-3px}
+.lk.hz.chain .ln{height:6px;margin-top:-3px}.lk.vt.chain .ln{width:6px;margin-left:-3px}
+.lk .ld{position:absolute;font-size:8px;letter-spacing:1px;color:#ff8a7e;white-space:nowrap}
+.lk.hz .ld{left:50%;top:calc(50% + 19px);transform:translateX(-50%)}
+.lk.vt .ld{left:calc(50% + 21px);top:50%;transform:translateY(-50%)}
+
+/* тела на поле */
+.fb{position:absolute;z-index:3}
+.fb .cd{position:absolute;left:0;top:0}
+.fb.threat .cd{animation:thr 1s infinite}
+@keyframes thr{50%{box-shadow:0 0 1.3em #ff6b5e,inset 0 0 0 .13em #ff6b5e,inset 0 0 0 .26em #0006}}
+.fb.tg{cursor:pointer}
+.fb.tg .cd{outline:.2em dashed #fff;outline-offset:.25em}
+.fb.pick .cd{outline:.22em solid var(--gold);outline-offset:.25em;box-shadow:0 0 1.5em var(--gold)}
+.fb.pv{opacity:.95}.fb.pv .cd{outline:.2em dashed var(--gold);outline-offset:.25em;animation:pv 1.1s infinite}
+@keyframes pv{50%{box-shadow:0 0 1.4em var(--gold)}}
+.fb.pop .cd{animation:pop .5s}
+@keyframes pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+.fb.hnt .cd{outline:.2em solid var(--yel);outline-offset:.25em;animation:pv 1.1s infinite}
+.fb .chn{position:absolute;right:-6px;top:-6px;z-index:4;background:var(--yel);color:#241a05;border-radius:10px;padding:0 6px;font-size:11px;font-weight:800;box-shadow:0 2px 6px #0008}
+.fb.out{pointer-events:none;z-index:15}
+.fb.out .cd{animation:out .9s forwards}
+@keyframes out{0%{transform:none;opacity:1}100%{transform:translateY(-60px) scale(.6) rotate(12deg);opacity:0;filter:grayscale(1) brightness(1.6)}}
+.gh{position:absolute;border:2px dashed #ffffff66;border-radius:12px;display:grid;place-items:center;color:#fff;background:#ffffff0c;cursor:pointer;z-index:1}
+.gh span{font-size:22px;font-weight:700;opacity:.9}
+.gh small{font-size:11px;display:block;font-weight:600;color:var(--yel);text-align:center}
+.gh.sel{border-color:var(--gold);border-style:solid;background:#e0b85822;box-shadow:0 0 16px #e0b85866}
+.gh.hnt{border-color:var(--yel);animation:pv 1.1s infinite}
+.fl{position:absolute;transform:translate(-50%,-50%);font-size:30px;font-weight:900;color:#ffe58a;text-shadow:0 2px 6px #000,0 0 14px #e0b858;animation:fl 1.4s forwards;white-space:nowrap}
+.fl.neg{color:#ff8a7e;text-shadow:0 2px 6px #000,0 0 14px #ff6b5e}
+@keyframes fl{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}15%{opacity:1;transform:translate(-50%,-60%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-190%) scale(1)}}
+
+/* карта */
+.cd{position:relative;width:7.5em;height:10.5em;border-radius:.8em;overflow:hidden;color:#fff;user-select:none;-webkit-user-select:none;flex:none;box-shadow:0 .3em .8em #000a,inset 0 0 0 .13em var(--ac,#d9b45a),inset 0 0 0 .26em #0006}
+.cd.space{--ac:#d9b45a;background:linear-gradient(#1b2064,#0a0d33)}
+.cd.earth{--ac:#e8c378;background:linear-gradient(#17707a,#0a3038)}
+.cd.pert{--ac:#c79bf2;background:linear-gradient(#52247c,#1f0d3c)}
+.cd.hat{--ac:#ff9a8a;background:linear-gradient(#7a2230,#2d0a12)}
+.cd-bg{position:absolute;inset:0;pointer-events:none}
+.space .cd-bg{background:radial-gradient(circle at 25% 15%,#4a55d0aa,transparent 55%),radial-gradient(circle at 85% 95%,#8a45c877,transparent 50%),radial-gradient(#fff 0.05em,transparent .09em) 0 0/2.3em 2.9em,radial-gradient(#ffffffaa .04em,transparent .08em) .9em 1.4em/3.7em 3.1em}
+.earth .cd-bg{background:radial-gradient(circle at 30% 18%,#5fe0d055,transparent 55%),linear-gradient(#ffffff14 .05em,transparent .05em) 0 0/1em 1em,linear-gradient(90deg,#ffffff14 .05em,transparent .05em) 0 0/1em 1em}
+.pert .cd-bg{background:radial-gradient(circle at 50% 30%,#b06bff66,transparent 60%),repeating-linear-gradient(135deg,#ffffff0d 0 .4em,transparent .4em .8em)}
+.hat .cd-bg{background:radial-gradient(circle at 50% 40%,#ff6b5e44,transparent 60%),repeating-linear-gradient(45deg,#00000033 0 .5em,transparent .5em 1em)}
+.cd-per{position:absolute;left:.45em;top:.45em;width:2.2em;height:2.2em;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 25%,#fff3b8,#e0b858 55%,#9c7424);color:#241a05;box-shadow:0 0 0 .12em #0007,0 .15em .4em #000a;z-index:2}
+.cd-per b{font-size:1.3em;font-weight:900;line-height:1}
+.cd-per.mod{outline:.16em solid var(--red);outline-offset:.05em}
+.cd-dial{position:absolute;right:.4em;top:.4em;width:2.1em;height:2.1em;color:var(--ac);z-index:2}
+.cd-dial svg{width:100%;height:100%;display:block}
+.cd-art{position:absolute;left:.5em;right:.5em;top:2.1em;bottom:3.8em}
+.cd-art svg{width:100%;height:100%;overflow:visible;display:block}
+.cd-art.big{top:1.7em}
+.cd-name{position:absolute;left:.375em;right:.375em;bottom:2.25em;height:2.4em;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:.8em;line-height:1.08;text-shadow:0 .1em .25em #000}
+.cd-note{position:absolute;left:50%;transform:translateX(-50%);bottom:.57em;height:1.7em;display:flex;align-items:center;font-size:.7em;white-space:nowrap;padding:0 1em;border-radius:1em;background:#0007;color:var(--ac);font-weight:600}
+.cd-kind{position:absolute;top:.55em;left:0;right:0;text-align:center;font-size:.55em;letter-spacing:.25em;opacity:.85;color:var(--ac);font-weight:700}
+.cd-own{position:absolute;left:0;right:0;bottom:0;height:.4em;background:var(--oc,transparent)}
+.cd-sh{position:absolute;left:.35em;top:2.75em;width:1.5em;height:1.5em;z-index:3}
+.cd-sh svg{width:100%;height:100%;display:block}
+
+/* лист действий */
+#sheet{flex:none;background:linear-gradient(#1a1f66,#10144a);border-top:2px solid var(--gold);padding:8px 10px 8px;display:none;max-height:46vh;overflow:auto;z-index:6}
+#sheet.on{display:block;animation:up .18s}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+.sh-h{display:flex;align-items:center;gap:8px}
+.sh-h b{font-size:15px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sh-h .sx{width:34px;height:34px;border-radius:10px;background:#ffffff14;display:grid;place-items:center;font-size:16px;flex:none}
+.sh-t{font-size:13px;color:#d4d8ff;line-height:1.4;margin:6px 0 2px}
+.sh-t b{color:#fff}
+.ph-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 6px}
+.opt-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 6px}
+.ph,.opt{border:2px solid var(--line);border-radius:12px;background:var(--panel2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative}
+.ph{padding:5px 2px;min-height:72px}
+.opt{padding:8px 14px;min-height:56px;flex:1;min-width:90px}
+.ph svg,.opt svg{width:26px;height:26px;color:var(--gold)}
+.ph b,.opt b{font-size:16px}
+.ph small,.opt small{font-size:10.5px;color:var(--mut);text-align:center;line-height:1.1}
+.ph.d0,.opt.d0{border-color:var(--red)}.ph.d0 small{color:#ffb0a8}
+.ph.d2{border-color:var(--green)}.ph.d2 small{color:#a8f0c4}
+.ph.dn,.opt.dn{border-color:var(--yel)}
+.ph.on{background:#3b43b0;box-shadow:0 0 0 2px var(--gold)}
+.rec::after{content:'★ совет';position:absolute;top:-9px;right:4px;background:var(--yel);color:#241a05;font-size:10px;font-weight:800;border-radius:8px;padding:0 6px}
+.sh-f{display:flex;gap:8px;margin-top:6px}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:14px;min-height:42px}
+.btn:hover{border-color:var(--gold)}
+.btn.pri{background:linear-gradient(#ecc96f,#c9a044);color:#241a05;font-weight:800;border:0;flex:1}
+.btn.sm{padding:6px 10px;min-height:34px;font-size:13px}
+
+/* рука */
+#handBar{flex:none;padding:7px 6px calc(7px + env(safe-area-inset-bottom));background:#0a0c24ee;border-top:1px solid var(--line);display:flex;gap:5px;justify-content:center;align-items:flex-end;z-index:6;min-height:50px}
+.hc{position:relative;flex:none;transition:transform .15s;cursor:pointer}
+.hc.sel{transform:translateY(-12px);filter:drop-shadow(0 0 .6em var(--gold))}
+.hc.sel .cd{box-shadow:0 .3em .8em #000a,inset 0 0 0 .2em var(--gold)}
+.hc.hnt .cd{animation:pv 1.1s infinite;outline:.15em solid var(--yel)}
+#handBar.off .hc{opacity:.65;cursor:default}
+.hand-empty{color:var(--mut);font-size:13px;padding:14px}
+
+/* окна */
+#modal{position:fixed;inset:0;z-index:50;background:#05061ccc;display:none;align-items:flex-end;justify-content:center}
+#modal.on{display:flex}
+.mbox{position:relative;width:100%;max-width:640px;max-height:90vh;max-height:90dvh;overflow:auto;background:linear-gradient(#1a1f66,#0e1140);border:2px solid var(--gold);border-bottom:0;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));animation:up .22s}
+@media(min-width:700px){#modal{align-items:center}.mbox{border-radius:20px;border-bottom:2px solid var(--gold)}}
+.mbox h2{margin:0 36px 8px 0;color:var(--gold);letter-spacing:1.5px;font-size:19px}
+.mbox p,.mbox li{font-size:14.5px;line-height:1.5;color:#dfe2ff}
+.mbox ul{padding-left:20px;margin:6px 0}
+.mx{position:absolute;right:10px;top:10px;width:36px;height:36px;border-radius:10px;background:#ffffff18;font-size:17px;display:grid;place-items:center}
+.mut{color:var(--mut);font-size:13px}
+.seg{display:flex;gap:6px;margin:6px 0 12px}
+.seg button{flex:1;background:var(--panel2);border:1.5px solid var(--line);border-radius:10px;padding:10px 6px;font-size:14px}
+.seg button.on{border-color:var(--gold);background:#3a3f9a}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.row.c{justify-content:center}
+.menu{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.menu .btn{text-align:left;font-size:15px;padding:13px 14px}
+.note{margin:10px 0;padding:10px 12px;background:#ffffff10;border-left:3px solid var(--gold);border-radius:8px;font-size:14px;line-height:1.5;color:#e8eaff}
+.note.red{border-color:var(--red)}.note.green{border-color:var(--green)}
+.dots{display:flex;gap:6px;justify-content:center;margin:2px 0 6px}
+.dots i{width:8px;height:8px;border-radius:50%;background:#ffffff33}.dots i.on{background:var(--gold)}
+.stage{position:relative;margin:8px auto;max-width:100%}
+.sw{position:absolute;left:0;top:0;transform-origin:0 0}
+.big-card{display:flex;justify-content:center;margin:6px 0 10px}
+table.res{width:100%;border-collapse:collapse;margin:8px 0;font-size:14px}
+table.res td{padding:7px 4px;border-bottom:1px solid var(--line)}
+table.res tr.win td{color:var(--gold);font-weight:700}
+.logl{display:flex;flex-direction:column;gap:2px;font-size:13px}
+.logl div{padding:6px 2px;border-bottom:1px solid #fff1;color:#d0d4ff;line-height:1.35}
+.logl .rd{color:var(--yel)}.logl .ej{color:#ffb0a8}
+.nb{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:10px;background:#ffffff0d;margin:5px 0;font-size:13.5px;line-height:1.35}
+.nb .pill{flex:none;border-radius:10px;padding:2px 8px;font-weight:800;font-size:13px;border:2px solid var(--yel);background:#1b2175}
+.nb .pill.d0{border-color:var(--red)}.nb .pill.d2{border-color:var(--green)}.nb .pill.dis{border-color:#fff3;color:var(--grey);font-weight:500}
+#toasts{position:fixed;left:0;right:0;top:calc(150px + env(safe-area-inset-top));display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;z-index:40}
+.toast{background:#14194ff0;border:1px solid var(--line);border-radius:12px;padding:7px 12px;font-size:13px;max-width:92vw;animation:ti .25s;box-shadow:0 4px 14px #0008}
+.toast.bad{border-color:var(--red)}
+@keyframes ti{from{transform:translateY(-8px);opacity:0}}
+@media(min-width:700px){.chip{padding:5px 14px}}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <div class="tb1">
+      <button class="ib" id="bMenu" data-act="menu" aria-label="Меню"></button>
+      <div class="tb-title" id="tTitle"></div>
+      <button class="ib" id="bHint" data-act="hint" aria-label="Подсказка" style="display:none"></button>
+      <button class="ib" id="bLog" data-act="log" aria-label="Журнал"></button>
+      <button class="ib" id="bSound" data-act="sound" aria-label="Звук"></button>
+    </div>
+    <div id="chips"></div>
+  </header>
+  <main id="fieldWrap">
+    <div id="field"><div id="world"><div id="wBodies"></div><div id="floaters"></div></div></div>
+    <div id="turn"></div>
+    <div id="zoom">
+      <button class="fab" data-act="zin" aria-label="Приблизить">+</button>
+      <button class="fab" data-act="zout" aria-label="Отдалить">−</button>
+      <button class="fab" id="bFit" data-act="zfit" aria-label="Показать всё поле"></button>
+    </div>
+    <button id="shiftFab" data-act="shiftfab"></button>
+  </main>
+  <section id="sheet"></section>
+  <footer id="handBar" class="off"></footer>
+</div>
+<div id="toasts"></div>
+<div id="modal"></div>
+<div id="defs"></div>
+<script>
+'use strict';
+/* ====== ДВИЖОК «РЕЗОНАНС»: свободное поле ====== */
+function clamp(v){return Math.max(1,Math.min(12,v));}
+function gcd(a,b){return b?gcd(b,a%b):a;}
+const BASE={'1:1':1,'2:1':2,'3:1':2,'3:2':3,'4:3':3};
+const NOTE_NAMES=['до','до♯','ре','ре♯','ми','фа','фа♯','соль','соль♯','ля','ля♯','си'];
+const PENALTY=2;       // штраф владельцу за вылет тела
+const FREE_SHIFTS=3;
+const QUANTA_SHIFT=3;  // цена дополнительного бесплатного сдвига фазы в квантах
+const LAPLACE_BONUS=10; // бонус за резонанс Лапласа 1:2:4 (по прямой или с изгибом)
+const CHAIN_BONUS=3;   // бонус цепочки из трёх тел по прямой   // бесплатных сдвигов фазы на игрока
+
+const BODIES=[
+ // космос
+ {n:'Ио',p:1,k:'space',s:'round',c:'#f0b43c',f:'Разогрета приливами Юпитера. Резонанс 1:2:4 с Европой и Ганимедом'},
+ {n:'Европа',p:2,k:'space',s:'round',c:'#e8dccb',f:'Делает один оборот, пока Ио делает два'},
+ {n:'Ганимед',p:4,k:'space',s:'round',c:'#9b8a7a',f:'Крупнейший спутник Солнечной системы, замыкает цепочку 1:2:4'},
+ {n:'Янус',p:1,k:'space',s:'rock',c:'#b7a89a',f:'Делит орбиту с Эпиметеем, они меняются местами'},
+ {n:'Эпиметей',p:1,k:'space',s:'rock',c:'#a89a8d',f:'Партнёр Януса по общей орбите'},
+ {n:'Луна (вращение)',p:1,k:'space',s:'round',c:'#cfcfcf',f:'Всегда повёрнута к Земле одной стороной'},
+ {n:'Луна (обращение)',p:1,k:'space',s:'round',c:'#bdbdbd',f:'Период обращения равен периоду собственного вращения'},
+ {n:'Меркурий (вращение)',p:2,k:'space',s:'round',c:'#9a9189',f:'Три оборота вокруг оси за два оборота по орбите'},
+ {n:'Меркурий (орбита)',p:3,k:'space',s:'round',c:'#8a8279',f:'Резонанс 3:2 между вращением и орбитой'},
+ {n:'Нептун',p:2,k:'space',s:'round',c:'#3f6fe0',f:'Не даёт Плутону приблизиться'},
+ {n:'Плутон',p:3,k:'space',s:'round',c:'#d8b79a',f:'Орбиты пересекаются, но сближения не бывает: резонанс 3:2'},
+ {n:'Титан',p:3,k:'space',s:'round',c:'#e3a244',f:'Резонанс 4:3 с Гиперионом'},
+ {n:'Гиперион',p:4,k:'space',s:'rock',c:'#8c7b6b',f:'Кувыркается хаотично'},
+ {n:'Мимас',p:2,k:'space',s:'round',c:'#cfd6e0',f:'Его толчки расчистили щель Кассини в кольцах Сатурна'},
+ {n:'Частица кольца Сатурна',p:1,k:'space',s:'ring',c:'#e8d9b5',f:'Сходится с Мимасом 2:1 и покидает щель Кассини'},
+ {n:'Юпитер',p:12,k:'space',s:'bands',c:'#d4a373',f:'Эталон для карт Люк'},
+ {n:'Троян Юпитера',p:12,k:'space',s:'rock',c:'#7a6a5e',f:'Живёт в точке Лагранжа, резонанс 1:1'},
+ {n:'Гильда',p:8,k:'space',s:'rock',c:'#8a7a6e',f:'Резонанс 3:2 с Юпитером, устойчивое скопление'},
+ {n:'Астероид Туле',p:9,k:'space',s:'rock',c:'#8d8078',f:'Резонанс 4:3 с Юпитером'},
+ {n:'Астероид 3:1',p:4,k:'space',s:'rock',c:'#9e8f84',f:'Из щели Кирквуда'},
+ {n:'Астероид 2:1',p:6,k:'space',s:'rock',c:'#9a8b80',f:'Из щели Гекубы'},
+ {n:'Астероид 4:1',p:3,k:'space',s:'rock',c:'#a5958a',f:'Из щели Кирквуда'},
+ {n:'Земля',p:8,k:'space',s:'round',c:'#3f8fe0',f:'Против Венеры 13:8: почти, но не точно'},
+ {n:'Венера',p:5,k:'space',s:'round',c:'#e8c36a',f:'Слабая связь с Землёй: диссонанс'},
+ {n:'Kepler-223 b',p:3,k:'space',s:'star',c:'#7fb4ff',f:'Первая планета цепочки 3:4:6:8'},
+ {n:'Kepler-223 c',p:4,k:'space',s:'star',c:'#8fd0b0',f:'Вторая планета цепочки 3:4:6:8'},
+ {n:'Kepler-223 d',p:6,k:'space',s:'star',c:'#d09fe8',f:'Третья планета цепочки 3:4:6:8'},
+ {n:'Kepler-223 e',p:8,k:'space',s:'star',c:'#ff9f7a',f:'Замыкает цепочку 3:4:6:8'},
+ // не космос
+ {n:'Камертон A',p:1,k:'earth',s:'fork',c:'#fff',f:'Ударили один камертон, второй зазвучал сам'},
+ {n:'Камертон A',p:1,k:'earth',s:'fork',c:'#fff',f:'Ударили один камертон, второй зазвучал сам'},
+ {n:'Маятник',p:2,k:'earth',s:'pendulum',c:'#fff',f:'Часы Гюйгенса на одной стене подстраивались друг под друга'},
+ {n:'Метроном',p:3,k:'earth',s:'metronome',c:'#fff',f:'На общей подвижной доске метрономы синхронизируются'},
+ {n:'Струна: основной тон',p:12,k:'earth',s:'string1',c:'#fff',f:'Колеблется целиком одной дугой'},
+ {n:'Струна: 2-я гармоника',p:6,k:'earth',s:'string2',c:'#fff',f:'Октава над основным тоном'},
+ {n:'Струна: 3-я гармоника',p:4,k:'earth',s:'string3',c:'#fff',f:'Октава плюс квинта над основным тоном'},
+ {n:'Струна: 4-я гармоника',p:3,k:'earth',s:'string4',c:'#fff',f:'Две октавы над основным тоном'},
+ {n:'Качели',p:4,k:'earth',s:'swing',c:'#fff',f:'Раскачка слабыми толчками в такт'},
+ {n:'Бокал',p:5,k:'earth',s:'glass',c:'#fff',f:'Лопается на собственной частоте'},
+ {n:'Голос',p:5,k:'earth',s:'voice',c:'#fff',f:'1:1 с бокалом: опасное соседство'},
+ {n:'Мост',p:7,k:'earth',s:'bridge',c:'#fff',f:'Мост Миллениум в 2000 г. раскачали шаги пешеходов'},
+ {n:'Шаг толпы',p:7,k:'earth',s:'steps',c:'#fff',f:'Синхронный шаг усиливает колебания моста'}
+];
+const PERTURBS=[
+ {fx:'tide',n:'Приливная сила',t:'Период тела ±1',c:4},
+ {fx:'shift',n:'Сдвиг фазы',t:'Поворот фазы тела на ±90°',c:3},
+ {fx:'wind',n:'Солнечный ветер',t:'Выбрасывает тело: владелец −2 очка',c:2},
+ {fx:'swap',n:'Гравитационный толчок',t:'Меняет два соседних тела местами',c:2}
+];
+const HATCHES=[
+ {hx:'kirkwood',hit:6,n:'Щель 2:1',c:2},
+ {hx:'kirkwood',hit:4,n:'Щель 3:1',c:2},
+ {hx:'kirkwood',hit:3,n:'Щель 4:1',c:2},
+ {hx:'hilda',hit:8,n:'Гильды 3:2',c:2}
+];
+
+function freqOf(p){return 660/p;}
+function noteOf(p){
+  const f=freqOf(p),m=69+12*Math.log2(f/440),r=Math.round(m),cents=Math.round((m-r)*100);
+  return {f,name:NOTE_NAMES[((r%12)+12)%12],oct:Math.floor(r/12)-1,cents,approx:Math.abs(cents)>12};
+}
+function noteText(p){const n=noteOf(p);return (n.approx?'≈ ':'')+n.name+n.oct+' · '+Math.round(n.f)+' Гц';}
+
+function buildDeck(){
+  let id=0;const d=[];
+  BODIES.forEach(b=>d.push({id:'c'+(id++),kind:'body',name:b.n,period:b.p,theme:b.k,shape:b.s,color:b.c,fact:b.f}));
+  PERTURBS.forEach(x=>{for(let i=0;i<x.c;i++)d.push({id:'c'+(id++),kind:'perturb',fx:x.fx,name:x.n,text:x.t});});
+  HATCHES.forEach(x=>{for(let i=0;i<x.c;i++)d.push({id:'c'+(id++),kind:'hatch',hx:x.hx,hit:x.hit,name:x.n,
+    text:x.hx==='hilda'?'Тела с периодом 8 защищены от Люков и дают +1 очко при выкладывании':'Выбрасывает тела с периодом '+x.hit+' (кроме тел в фазе 2)'});});
+  return d;
+}
+function shuffle(a,rng){for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ---------- геометрия поля ---------- */
+const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
+function effP(b){return clamp(b.card.period+b.mod);}
+function cellMap(bodies){const m=new Map();for(const b of bodies)m.set(b.x+','+b.y,b);return m;}
+function pairsOf(bodies,m){
+  m=m||cellMap(bodies);const ps=[];
+  for(const a of bodies){
+    const r=m.get((a.x+1)+','+a.y);if(r)ps.push([a,r]);
+    const d=m.get(a.x+','+(a.y+1));if(d)ps.push([a,d]);
+  }
+  return ps;
+}
+function triplesOf(bodies,m){
+  m=m||cellMap(bodies);const ts=[];
+  for(const b of bodies){
+    const l=m.get((b.x-1)+','+b.y),r=m.get((b.x+1)+','+b.y);if(l&&r)ts.push([l,b,r]);
+    const u=m.get(b.x+','+(b.y-1)),d=m.get(b.x+','+(b.y+1));if(u&&d)ts.push([u,b,d]);
+  }
+  return ts;
+}
+function freeCells(st){
+  if(!st.bodies.length)return [{x:0,y:0}];
+  const m=cellMap(st.bodies),seen=new Set(),out=[];
+  for(const b of st.bodies)for(const d of DIRS){
+    const x=b.x+d[0],y=b.y+d[1],k=x+','+y;
+    if(!m.has(k)&&!seen.has(k)){seen.add(k);out.push({x,y});}
+  }
+  return out;
+}
+function bodyByUid(st,uid){return st.bodies.find(b=>b.uid===uid)||null;}
+
+/* ---------- очки ---------- */
+function baseScore(pa,pb){const g=gcd(pa,pb),hi=Math.max(pa,pb)/g,lo=Math.min(pa,pb)/g;return BASE[hi+':'+lo]||0;}
+function ratioText(pa,pb){const g=gcd(pa,pb);return (Math.max(pa,pb)/g)+':'+(Math.min(pa,pb)/g);}
+function phaseDelta(x,y){return (((x.phase-y.phase)%4)+4)%4;}
+function linkInfo(x,y){
+  const base=baseScore(effP(x),effP(y)),d=phaseDelta(x,y);
+  const score=!base?0:d===0?base*2:d===2?base+1:base;
+  return {base,d,score,ratio:ratioText(effP(x),effP(y))};
+}
+function linkScore(x,y){return linkInfo(x,y).score;}
+function chainBonus(x,y,z){
+  const a=linkScore(x,y),b=linkScore(y,z);
+  if(!a||!b)return 0;
+  if(x.phase===y.phase&&y.phase===z.phase)return 0;
+  return CHAIN_BONUS;
+}
+/* соседи тела по четырём направлениям */
+function neighborsIn(b,m){
+  const out=[];
+  for(const d of DIRS){const n=m.get((b.x+d[0])+','+(b.y+d[1]));if(n)out.push(n);}
+  return out;
+}
+/* резонанс Лапласа: три тела подряд (по прямой или с изгибом), периоды a : 2a : 4a, фазы не все одинаковые */
+function laplaceTriples(bodies,m){
+  m=m||cellMap(bodies);const out=[];
+  for(const y of bodies){
+    const ns=neighborsIn(y,m);
+    for(let i=0;i<ns.length;i++)for(let j=i+1;j<ns.length;j++){
+      const x=ns[i],z=ns[j],px=effP(x),py=effP(y),pz=effP(z);
+      const ok=(px*2===py&&py*2===pz)||(pz*2===py&&py*2===px);
+      if(ok&&!(x.phase===y.phase&&y.phase===z.phase))out.push([x,y,z]);
+    }
+  }
+  return out;
+}
+/* планетная цепочка 1:2:4:8: четыре тела ОДНОГО игрока подряд (прямая или изгиб), периоды 1-2-4-8, у соседних тел фазы разные (все связи стабильны, без сближения) */
+function findChain(bodies,m){
+  m=m||cellMap(bodies);
+  for(const a of bodies){
+    if(effP(a)!==1)continue;
+    for(const b of neighborsIn(a,m)){
+      if(effP(b)!==2)continue;
+      for(const c of neighborsIn(b,m)){
+        if(c===a||effP(c)!==4)continue;
+        for(const d of neighborsIn(c,m)){
+          if(d===b||effP(d)!==8)continue;
+          if(a.owner!==null&&a.owner===b.owner&&b.owner===c.owner&&c.owner===d.owner&&a.phase!==b.phase&&b.phase!==c.phase&&c.phase!==d.phase)return [a,b,c,d];
+        }
+      }
+    }
+  }
+  return null;
+}
+function totalScore(bodies){
+  const m=cellMap(bodies);let t=0;
+  for(const p of pairsOf(bodies,m))t+=linkScore(p[0],p[1]);
+  for(const q of triplesOf(bodies,m))t+=chainBonus(q[0],q[1],q[2]);
+  t+=LAPLACE_BONUS*laplaceTriples(bodies,m).length;
+  return t;
+}
+/* следим за цепочкой: она побеждает, если простояла до конца СЛЕДУЮЩЕГО раунда */
+function updateChain(st,ev,by){
+  const c=findChain(st.bodies);
+  if(c){
+    const owner=c[0].owner;
+    if(!st.chain||st.chain.by!==owner){
+      st.chain={by:owner,round:st.round};
+      ev.push({kind:'chain',text:'Планетная цепочка 1-2-4-8 у игрока '+pname(st,owner)+'! Он победит, если цепочка простоит до конца раунда '+(st.round+1)+'.'});
+    }
+  }else if(st.chain){
+    ev.push({kind:'chainbreak',text:'Планетная цепочка разрушена'});
+    st.chain=null;
+  }
+}
+function loadKey(a,b){return a.uid<b.uid?a.uid+'|'+b.uid:b.uid+'|'+a.uid;}
+function hasHilda(st){return st.zone.some(c=>c.hx==='hilda');}
+function isProtected(st,b){return b.phase===2||(effP(b)===8&&hasHilda(st));}
+function hatchHits(st,b){return !isProtected(st,b)&&st.zone.some(c=>c.hx==='kirkwood'&&c.hit===effP(b));}
+function pruneLoads(st){
+  const nl={};
+  for(const [a,b] of pairsOf(st.bodies)){
+    const k=loadKey(a,b),inf=linkInfo(a,b);
+    if(inf.base&&inf.d===0&&st.loads[k]>0)nl[k]=st.loads[k];
+  }
+  st.loads=nl;
+}
+function pname(st,id){const p=st.players[id];return p?p.name:'Система';}
+
+/* оценка выкладывания без изменения состояния */
+function evalPlacement(st,card,x,y,phase,owner){
+  const before=totalScore(st.bodies);
+  const nb={uid:'tmp',card,owner,phase,mod:0,x,y};
+  st.bodies.push(nb);
+  let gained=totalScore(st.bodies)-before;
+  if(effP(nb)===8&&hasHilda(st))gained+=1;
+  const makesChain=!st.chain&&!!findChain(st.bodies);
+  const m=cellMap(st.bodies),links=[];
+  for(const d of DIRS){
+    const n=m.get((x+d[0])+','+(y+d[1]));
+    if(n&&n!==nb)links.push({other:n,dx:d[0],dy:d[1],inf:linkInfo(nb,n)});
+  }
+  st.bodies.pop();
+  return {gained,links,threat:hatchHits(st,nb),makesChain};
+}
+
+/* ---------- выброс: штраф и возврат в колоду ---------- */
+function returnToDeck(st,card){st.deck.splice(Math.floor(Math.random()*(st.deck.length+1)),0,card);}
+function ejectBody(st,uid,reason,ev){
+  const i=st.bodies.findIndex(b=>b.uid===uid);
+  if(i<0)return;
+  const b=st.bodies.splice(i,1)[0];
+  returnToDeck(st,b.card);
+  const nm='«'+b.card.name+'» (период '+effP(b)+')';
+  let text=reason==='hatch'?'Щель Кирквуда выбрасывает '+nm
+    :reason==='load'?'Орбита раскачана: '+nm+' выбрасывается из системы'
+    :'Солнечный ветер уносит '+nm;
+  if(b.owner!==null){
+    st.players[b.owner].score-=PENALTY;
+    text+='. '+pname(st,b.owner)+': −'+PENALTY+' очка, карта вернулась в колоду';
+  }else text+='. Карта вернулась в колоду';
+  ev.push({kind:'eject',reason,owner:b.owner,uid:b.uid,text,body:{x:b.x,y:b.y,card:b.card,phase:b.phase,mod:b.mod,owner:b.owner}});
+  pruneLoads(st);
+}
+function applyHatches(st,ev){
+  for(;;){
+    const b=st.bodies.find(x=>hatchHits(st,x));
+    if(!b)break;
+    ejectBody(st,b.uid,'hatch',ev);
+  }
+}
+function endRound(st,ev){
+  ev.push({kind:'round',text:'Конец раунда '+st.round});
+  applyHatches(st,ev);
+  const nl={};
+  for(const [a,b] of pairsOf(st.bodies)){
+    const k=loadKey(a,b),inf=linkInfo(a,b);
+    if(inf.base&&inf.d===0)nl[k]=(st.loads[k]||0)+1;
+  }
+  st.loads=nl;
+  for(;;){
+    const hit=pairsOf(st.bodies).find(p=>(st.loads[loadKey(p[0],p[1])]||0)>=3);
+    if(!hit)break;
+    const [a,b]=hit;
+    ejectBody(st,effP(a)>effP(b)?a.uid:b.uid,'load',ev);
+  }
+  updateChain(st,ev,st.cur);
+  if(st.chain&&st.round>st.chain.round){
+    st.over=true;st.winner=st.chain.by;
+    ev.push({kind:'chainwin',text:'Планетная цепочка простояла весь раунд: '+pname(st,st.chain.by)+' побеждает!'});
+  }
+  /* кванты: +1 за раунд каждому игроку, у которого есть стабильный резонанс (связь без сближения) */
+  const gain={};
+  for(const [a,b] of pairsOf(st.bodies)){
+    const inf=linkInfo(a,b);
+    if(!inf.base||inf.d===0)continue;
+    [a.owner,b.owner].forEach(o=>{if(o!==null)gain[o]=1;});
+  }
+  const parts=[];
+  for(const id in gain){st.players[id].quanta+=gain[id];parts.push(st.players[id].name+' +'+gain[id]);}
+  if(parts.length)ev.push({kind:'quanta',gain,text:'Кванты за стабильные резонансы: '+parts.join(', ')});
+}
+
+/* ---------- игра ---------- */
+function newGame(opts){
+  opts=opts||{};
+  const rng=opts.rng||Math.random;
+  const nb=Math.max(1,Math.min(3,opts.bots||1));
+  const deck=shuffle(buildDeck(),rng);
+  const names=['Бот Европа','Бот Ганимед','Бот Каллисто'],cols=['#6ec6ff','#ff8a7a','#9be58f'];
+  const players=[{id:0,name:'Вы',isBot:false,color:'#f3bd3c',hand:[],score:0,shifts:FREE_SHIFTS,quanta:0}];
+  for(let i=0;i<nb;i++)players.push({id:i+1,name:names[i],isBot:true,color:cols[i],hand:[],score:0,shifts:FREE_SHIFTS,quanta:0});
+  const st={deck,discard:[],players,bodies:[],loads:{},zone:[],cur:0,round:1,turnsInRound:0,endLeft:null,over:false,winner:null,chain:null,uidN:0,diff:opts.diff||'normal',maxRounds:Math.round(36/players.length)};
+  const si=st.deck.findIndex(c=>c.kind==='body');
+  const seed=st.deck.splice(si,1)[0];
+  st.bodies.push({uid:'u'+(st.uidN++),card:seed,owner:null,phase:0,mod:0,x:0,y:0});
+  for(const p of players)for(let i=0;i<4;i++)p.hand.push(st.deck.pop());
+  return st;
+}
+
+function fail(msg){return {ok:false,msg,events:[],gained:0};}
+function applyAction(st,a){
+  const p=st.players[st.cur],ci=p.hand.findIndex(c=>c.id===a.cardId);
+  if(ci<0)return fail('Нет такой карты');
+  const card=p.hand[ci],ev=[],bs=st.bodies,before=totalScore(bs);
+  let gained=0;
+  if(a.type==='discard'){
+    p.hand.splice(ci,1);st.discard.push(card);
+    ev.push({kind:'discard',text:p.name+' сбрасывает «'+card.name+'» и пропускает ход'});
+    return {ok:true,events:ev,gained:0};
+  }
+  if(a.type==='body'){
+    if(card.kind!=='body')return fail('Это не тело');
+    if(!freeCells(st).some(c=>c.x===a.x&&c.y===a.y))return fail('Сюда класть нельзя');
+    p.hand.splice(ci,1);
+    const b={uid:'u'+(st.uidN++),card,owner:p.id,phase:((a.phase%4)+4)%4,mod:0,x:a.x,y:a.y};
+    bs.push(b);
+    gained=totalScore(bs)-before;
+    let extra='';
+    if(effP(b)===8&&hasHilda(st)){gained+=1;extra=' (+1 за Гильды)';}
+    ev.push({kind:'place',uid:b.uid,gained,text:p.name+' кладёт «'+card.name+'» (период '+effP(b)+', фаза '+b.phase+'): +'+gained+extra});
+  }else if(a.type==='tide'||a.type==='shift'||a.type==='wind'||a.type==='swap'){
+    if(card.kind!=='perturb'||card.fx!==a.type)return fail('Карта не подходит');
+    if(a.type==='swap'){
+      const x=bodyByUid(st,a.a),y=bodyByUid(st,a.b);
+      if(!x||!y||Math.abs(x.x-y.x)+Math.abs(x.y-y.y)!==1)return fail('Нужны два соседних тела');
+      p.hand.splice(ci,1);st.discard.push(card);
+      const tx=x.x,ty=x.y;x.x=y.x;x.y=y.y;y.x=tx;y.y=ty;
+      gained=Math.max(0,totalScore(bs)-before);
+      ev.push({kind:'perturb',uid:x.uid,gained,text:p.name+' меняет местами «'+x.card.name+'» и «'+y.card.name+'»: +'+gained});
+    }else{
+      const b=bodyByUid(st,a.uid);
+      if(!b)return fail('Нет цели');
+      if(a.type==='tide'){
+        const e=effP(b),ne=clamp(e+a.dir);
+        if(ne===e)return fail('Период на границе');
+        p.hand.splice(ci,1);st.discard.push(card);
+        b.mod=ne-b.card.period;
+        gained=Math.max(0,totalScore(bs)-before);
+        ev.push({kind:'perturb',uid:b.uid,gained,text:p.name+': «'+b.card.name+'» период '+e+' → '+ne+': +'+gained});
+      }else if(a.type==='shift'){
+        p.hand.splice(ci,1);st.discard.push(card);
+        const o=b.phase;b.phase=(((o+a.dir)%4)+4)%4;
+        gained=Math.max(0,totalScore(bs)-before);
+        ev.push({kind:'perturb',uid:b.uid,gained,text:p.name+': «'+b.card.name+'» фаза '+o+' → '+b.phase+': +'+gained});
+      }else{
+        if(bs.length<2)return fail('Нельзя убрать единственное тело');
+        p.hand.splice(ci,1);st.discard.push(card);
+        ejectBody(st,b.uid,'wind',ev);
+      }
+    }
+  }else if(a.type==='hatch'){
+    if(card.kind!=='hatch')return fail('Это не Люк');
+    p.hand.splice(ci,1);
+    st.zone.push(card);
+    if(st.zone.length>2)st.discard.push(st.zone.shift());
+    ev.push({kind:'hatch',text:p.name+' кладёт в зону Кирквуда «'+card.name+'»'});
+    applyHatches(st,ev);
+  }else return fail('Неизвестное действие');
+  pruneLoads(st);
+  updateChain(st,ev,p.id);
+  p.score+=gained;
+  return {ok:true,events:ev,gained};
+}
+/* бесплатный сдвиг фазы (3 за игру), ход не заканчивается */
+function applyFreeShift(st,a){
+  const p=st.players[st.cur];
+  if(p.shifts<=0&&p.quanta<QUANTA_SHIFT)return fail('Нет сдвигов и не хватает квантов');
+  const b=bodyByUid(st,a.uid);
+  if(!b)return fail('Нет цели');
+  const before=totalScore(st.bodies),o=b.phase;
+  b.phase=(((o+a.dir)%4)+4)%4;
+  const gained=Math.max(0,totalScore(st.bodies)-before);
+  let how;
+  if(p.shifts>0){p.shifts--;how='бесплатный сдвиг, осталось '+p.shifts;}
+  else{p.quanta-=QUANTA_SHIFT;how='за '+QUANTA_SHIFT+' кванта';}
+  p.score+=gained;pruneLoads(st);
+  const ev=[{kind:'perturb',free:true,uid:b.uid,gained,text:p.name+' ('+how+'): «'+b.card.name+'» фаза '+o+' → '+b.phase+': +'+gained}];
+  updateChain(st,ev,p.id);
+  return {ok:true,gained,events:ev};
+}
+function finishTurn(st){
+  const ev=[],p=st.players[st.cur];
+  while(p.hand.length<4&&st.deck.length)p.hand.push(st.deck.pop());
+  pruneLoads(st);
+  if(st.endLeft!==null)st.endLeft--;
+  else if(!st.deck.length)st.endLeft=st.players.length;
+  st.turnsInRound++;
+  st.cur=(st.cur+1)%st.players.length;
+  if(st.turnsInRound>=st.players.length){endRound(st,ev);st.round++;st.turnsInRound=0;}
+  if(st.endLeft!==null&&st.endLeft<=0)st.over=true;
+  if(st.round>st.maxRounds)st.over=true;
+  if(st.players.every(q=>!q.hand.length))st.over=true;
+  return ev;
+}
+function cloneState(st){return JSON.parse(JSON.stringify(st));}
+
+/* ---------- ходы, бот ---------- */
+function legalActions(st){
+  const p=st.players[st.cur],acts=[],seen=new Set(),bs=st.bodies,cells=freeCells(st);
+  for(const c of p.hand){
+    const key=c.kind+c.name;
+    if(seen.has(key))continue;seen.add(key);
+    if(c.kind==='body'){
+      for(const cl of cells)for(let ph=0;ph<4;ph++)acts.push({type:'body',cardId:c.id,x:cl.x,y:cl.y,phase:ph});
+    }else if(c.kind==='perturb'){
+      if(c.fx==='tide'){for(const b of bs)for(const dir of [-1,1]){const e=effP(b);if(clamp(e+dir)!==e)acts.push({type:'tide',cardId:c.id,uid:b.uid,dir});}}
+      else if(c.fx==='shift'){for(const b of bs)for(const dir of [-1,1])acts.push({type:'shift',cardId:c.id,uid:b.uid,dir});}
+      else if(c.fx==='wind'){if(bs.length>=2)for(const b of bs)acts.push({type:'wind',cardId:c.id,uid:b.uid});}
+      else if(c.fx==='swap'){for(const [x,y] of pairsOf(bs))acts.push({type:'swap',cardId:c.id,a:x.uid,b:y.uid});}
+    }else acts.push({type:'hatch',cardId:c.id});
+  }
+  return acts;
+}
+function riskOf(st,me){
+  let r=0;
+  for(const [a,b] of pairsOf(st.bodies)){
+    const inf=linkInfo(a,b);
+    if(inf.base&&inf.d===0)r+=1.6+1.6*(st.loads[loadKey(a,b)]||0);
+  }
+  for(const b of st.bodies)if(b.owner===me&&hatchHits(st,b))r+=2;
+  return r;
+}
+function botChoose(st,rng){
+  rng=rng||Math.random;
+  const me=st.cur,p=st.players[me],noise=st.diff==='easy'?3:0.25;
+  const baseRisk=riskOf(st,me),cells=freeCells(st),seen=new Set(),scored=[];
+  for(const c of p.hand){
+    const key=c.kind+c.name;
+    if(seen.has(key))continue;seen.add(key);
+    if(c.kind==='body'){
+      for(const cl of cells)for(let ph=0;ph<4;ph++){
+        const r=evalPlacement(st,c,cl.x,cl.y,ph,me);
+        let risk=baseRisk;
+        for(const l of r.links)if(l.inf.base&&l.inf.d===0)risk+=1.6;
+        if(r.threat)risk+=2;
+        scored.push({a:{type:'body',cardId:c.id,x:cl.x,y:cl.y,phase:ph},v:r.gained-(risk-baseRisk)+(r.makesChain?60:0)+rng()*noise});
+      }
+    }
+  }
+  for(const a of legalActions(st)){
+    if(a.type==='body')continue;
+    const sim=cloneState(st),r=applyAction(sim,a);
+    if(!r.ok)continue;
+    let v=r.gained-(riskOf(sim,me)-baseRisk);
+    if(!st.chain&&sim.chain&&sim.chain.by===me)v+=60;
+    if(st.chain&&st.chain.by!==me&&!sim.chain)v+=40;
+    for(const e of r.events)if(e.kind==='eject'&&e.owner!==null)v+=e.owner===me?-2.5:2;
+    scored.push({a,v:v+rng()*noise});
+  }
+  scored.sort((x,y)=>y.v-x.v);
+  return scored.length?scored[0].a:{type:'discard',cardId:p.hand[0].id};
+}
+/* бесплатный сдвиг у бота: только если выгода заметна */
+function botFreeShift(st){
+  const p=st.players[st.cur];
+  if((p.shifts<=0&&p.quanta<QUANTA_SHIFT)||st.bodies.length<2)return null;
+  const me=st.cur,before=totalScore(st.bodies),rb=riskOf(st,me);
+  let best=null,bv=0;
+  const hadChain=!!st.chain;
+  for(const b of st.bodies)for(const dir of [-1,1]){
+    const o=b.phase;b.phase=(((o+dir)%4)+4)%4;
+    let v=(totalScore(st.bodies)-before)+(rb-riskOf(st,me));
+    if(!hadChain&&findChain(st.bodies))v+=60;
+    b.phase=o;
+    if(v>bv){bv=v;best={uid:b.uid,dir};}
+  }
+  return bv>=3?best:null;
+}
+if(typeof module!=='undefined')module.exports={clamp,gcd,baseScore,ratioText,linkInfo,linkScore,chainBonus,totalScore,cellMap,pairsOf,triplesOf,freeCells,evalPlacement,
+  newGame,applyAction,applyFreeShift,finishTurn,endRound,legalActions,botChoose,botFreeShift,cloneState,effP,hatchHits,isProtected,hasHilda,buildDeck,noteText,noteOf,loadKey,pruneLoads,applyHatches,ejectBody,BODIES,PENALTY,FREE_SHIFTS,CHAIN_BONUS,QUANTA_SHIFT,LAPLACE_BONUS,laplaceTriples,findChain,updateChain};
+
+/* ====== ИЛЛЮСТРАЦИИ КАРТ (SVG, viewBox 0 0 100 100) ====== */
+function hash(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
+function rng(seed){let a=seed;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function hex2rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function mix(h,t,k){const a=hex2rgb(h),b=hex2rgb(t);return '#'+a.map((v,i)=>Math.round(v+(b[i]-v)*k).toString(16).padStart(2,'0')).join('');}
+function gid(c){return 'g'+c.replace('#','');}
+const f1=v=>(+v).toFixed(1);
+
+function defsSVG(){
+  const cols=[...new Set(BODIES.filter(b=>b.k==='space').map(b=>b.c))];
+  let d='';
+  for(const c of cols)d+=`<radialGradient id="${gid(c)}" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="${mix(c,'#ffffff',.55)}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${mix(c,'#000000',.55)}"/></radialGradient>`;
+  d+='<radialGradient id="gShade" cx=".35" cy=".3" r=".85"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#05061f" stop-opacity=".55"/></radialGradient>';
+  d+='<radialGradient id="gStar"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#ffe9a0"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient>';
+  d+='<linearGradient id="gGlass" x1="0" x2="1"><stop offset="0" stop-color="#9fd4e4" stop-opacity=".85"/><stop offset=".5" stop-color="#eefaff" stop-opacity=".65"/><stop offset="1" stop-color="#7fb7cb" stop-opacity=".9"/></linearGradient>';
+  d+='<radialGradient id="gSun" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#fff6c0"/><stop offset=".6" stop-color="#ffc94a"/><stop offset="1" stop-color="#e8861a"/></radialGradient>';
+  d+='<clipPath id="clipSph"><circle cx="50" cy="50" r="34"/></clipPath>';
+  return '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'+d+'</defs></svg>';
+}
+
+function craters(seed,n,tone,rmax,cx,cy,R){
+  const r=rng(hash(seed));let s='';
+  for(let i=0;i<n;i++){
+    const a=r()*6.283,d=Math.sqrt(r())*R,x=cx+Math.cos(a)*d,y=cy+Math.sin(a)*d,rr=1.8+r()*rmax;
+    s+=`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(rr)}" fill="${tone}" opacity=".4"/>`+
+       `<path d="M${f1(x-rr)} ${f1(y)} A${f1(rr)} ${f1(rr)} 0 0 1 ${f1(x+rr)} ${f1(y)}" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width=".9" transform="rotate(-35 ${f1(x)} ${f1(y)})"/>`;
+  }
+  return s;
+}
+const SPIN='<path d="M14 30 A40 40 0 0 1 64 12" fill="none" stroke="#ffd27a" stroke-width="2.6" stroke-linecap="round"/><path d="M68 13 l-9 -4 l2 9z" fill="#ffd27a"/>';
+
+function artSpace(c){
+  const col=c.color,n=c.name,G_=`url(#${gid(col)})`;
+  const sph=(cx,cy,r)=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${G_}"/>`;
+  const shade=(cx,cy,r)=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#gShade)"/>`;
+  const hl='<ellipse cx="39" cy="34" rx="10" ry="5.5" fill="#fff" opacity=".28" transform="rotate(-32 39 34)"/>';
+  switch(c.shape){
+    case 'round':{
+      let t='',after='';
+      if(n==='Ио'){
+        t='<circle cx="40" cy="58" r="6" fill="#5a2d12" opacity=".8"/><circle cx="40" cy="58" r="2.6" fill="#1d0d05"/><circle cx="62" cy="42" r="5" fill="#8a4a1a" opacity=".75"/><ellipse cx="58" cy="66" rx="8" ry="4" fill="#fff4b8" opacity=".7"/><ellipse cx="38" cy="38" rx="5" ry="3" fill="#fff4b8" opacity=".75"/><circle cx="68" cy="60" r="3" fill="#b3541d" opacity=".8"/>';
+        after='<g fill="none" stroke="#cfe6ff" stroke-linecap="round"><path d="M64 20 V6" stroke-width="2.4"/><path d="M64 8 Q56 3 52 12" stroke-width="2" opacity=".75"/><path d="M64 8 Q72 3 76 12" stroke-width="2" opacity=".75"/></g><circle cx="58" cy="6" r="1.4" fill="#cfe6ff"/><circle cx="71" cy="5" r="1.2" fill="#cfe6ff"/>';
+      }else if(n==='Европа'){
+        t='<g fill="none" stroke="#a8643a" stroke-width="1.3" opacity=".75"><path d="M22 42 Q38 48 52 40 T80 48"/><path d="M26 64 Q46 56 68 68"/><path d="M46 18 Q52 40 44 58 T52 84"/><path d="M20 54 Q40 54 54 50"/><path d="M62 24 Q60 40 72 56"/></g>';
+      }else if(n==='Ганимед'){
+        t='<ellipse cx="38" cy="46" rx="11" ry="8" fill="#4a3b30" opacity=".4"/><ellipse cx="64" cy="62" rx="9" ry="6" fill="#4a3b30" opacity=".35"/><ellipse cx="60" cy="34" rx="8" ry="5" fill="#e8dccb" opacity=".3"/>'+craters(n,6,'#3b2e25',4,50,50,24);
+      }else if(n.startsWith('Луна')){
+        t='<ellipse cx="42" cy="44" rx="13" ry="9" fill="#7d7d7d" opacity=".45"/><ellipse cx="62" cy="58" rx="9" ry="7" fill="#7d7d7d" opacity=".4"/>'+craters(n+'x',7,'#666',4,50,50,24);
+        after=n.includes('вращ')?SPIN:'<circle cx="84" cy="80" r="8" fill="url(#gSun)" opacity="0"/><circle cx="84" cy="80" r="8" fill="#3f8fe0"/><circle cx="82" cy="77" r="2.5" fill="#fff" opacity=".5"/><path d="M16 74 Q30 94 56 92" fill="none" stroke="#fff" stroke-opacity=".4" stroke-dasharray="2 3"/>';
+      }else if(n.startsWith('Меркурий')){
+        t=craters(n,9,'#4f4943',4.5,50,50,25);
+        after=n.includes('вращ')?SPIN:'<circle cx="86" cy="16" r="9" fill="url(#gSun)"/><path d="M20 78 Q34 94 62 88" fill="none" stroke="#fff" stroke-opacity=".4" stroke-dasharray="2 3"/>';
+      }else if(n==='Нептун'){
+        t='<ellipse cx="40" cy="56" rx="9" ry="5" fill="#16328a" opacity=".75"/><path d="M24 36 Q50 28 76 38" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.6"/><path d="M22 66 Q50 74 80 62" fill="none" stroke="#9fc0ff" stroke-opacity=".45" stroke-width="2"/>';
+      }else if(n==='Плутон'){
+        t='<ellipse cx="36" cy="54" rx="9" ry="12" fill="#8a6a55" opacity=".5"/><path d="M60 72 C42 58 46 44 55 49 C57 44 65 44 65 50 C75 44 79 58 60 72Z" fill="#f6e8d8" opacity=".85"/>';
+      }else if(n==='Титан'){
+        t='<path d="M18 40 Q50 30 82 42" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="3"/><path d="M18 62 Q50 72 82 60" fill="none" stroke="#7a3a08" stroke-opacity=".3" stroke-width="3"/>';
+        after='<circle cx="50" cy="50" r="38" fill="none" stroke="#ffb860" stroke-opacity=".55" stroke-width="3"/>';
+      }else if(n==='Мимас'){
+        t='<circle cx="60" cy="40" r="12" fill="#6f7886" opacity=".5"/><circle cx="60" cy="40" r="12" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><circle cx="60" cy="40" r="2.4" fill="#e6edf5"/>'+craters(n,6,'#5d6674',3.5,46,58,22);
+      }else if(n==='Земля'){
+        t='<path d="M30 36 C40 28 52 32 50 42 C48 52 36 50 32 58 C26 52 24 42 30 36Z" fill="#3fa65a"/><path d="M58 54 C68 46 78 52 74 64 C70 74 60 72 58 64Z" fill="#3fa65a"/><path d="M52 24 C58 20 66 24 62 30Z" fill="#e8f4ff" opacity=".8"/><ellipse cx="44" cy="68" rx="12" ry="3.5" fill="#fff" opacity=".55"/><ellipse cx="64" cy="38" rx="10" ry="3" fill="#fff" opacity=".5"/>';
+      }else if(n==='Венера'){
+        t='<path d="M18 42 Q34 32 50 42 T82 40" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="3"/><path d="M18 58 Q34 68 50 58 T82 60" fill="none" stroke="#b9822a" stroke-opacity=".45" stroke-width="3"/><path d="M26 50 Q40 44 54 52 T78 50" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>';
+      }
+      return sph(50,50,34)+t+shade(50,50,34)+hl+after;
+    }
+    case 'rock':{
+      const r=rng(hash(n)),N=11;let pts='';
+      for(let i=0;i<N;i++){const a=i/N*6.283,rad=24+r()*11;pts+=f1(50+Math.cos(a)*rad*1.08)+','+f1(50+Math.sin(a)*rad*.92)+' ';}
+      return `<polygon points="${pts}" fill="${G_}" stroke="${mix(col,'#000000',.5)}" stroke-width="1.2" stroke-linejoin="round"/>`+
+        craters(n,4,mix(col,'#000000',.55),5,50,50,15)+`<polygon points="${pts}" fill="url(#gShade)"/>`+
+        '<ellipse cx="38" cy="38" rx="7" ry="3.5" fill="#fff" opacity=".2" transform="rotate(-30 38 38)"/>';
+    }
+    case 'ring':{
+      return '<g fill="none" stroke="#e8d9b5" transform="rotate(-18 50 52)"><ellipse cx="50" cy="52" rx="46" ry="15" stroke-width="5" opacity=".35"/><ellipse cx="50" cy="52" rx="38" ry="11.5" stroke-width="4" opacity=".55"/><ellipse cx="50" cy="52" rx="31" ry="8.5" stroke-width="2" opacity=".35"/></g>'+
+        '<polygon points="38,44 52,36 64,44 62,58 48,64 36,56" fill="url(#'+gid(col)+')" stroke="#a89878" stroke-width="1.4" stroke-linejoin="round"/><polygon points="38,44 52,36 64,44 48,48" fill="#fff" opacity=".4"/><circle cx="14" cy="30" r="1.8" fill="#fff" opacity=".7"/><circle cx="86" cy="72" r="1.6" fill="#fff" opacity=".6"/><circle cx="78" cy="30" r="1.2" fill="#fff" opacity=".6"/>';
+    }
+    case 'bands':{
+      return sph(50,50,34)+'<g clip-path="url(#clipSph)"><rect x="10" y="24" width="80" height="5" fill="#8a4f2e" opacity=".5"/><rect x="10" y="32" width="80" height="7" fill="#f6e2c8" opacity=".5"/><rect x="10" y="43" width="80" height="7" fill="#8a4f2e" opacity=".55"/><rect x="10" y="54" width="80" height="6" fill="#f6e6d0" opacity=".45"/><rect x="10" y="63" width="80" height="6" fill="#8a4f2e" opacity=".5"/><rect x="10" y="72" width="80" height="4" fill="#f3dcc0" opacity=".4"/><ellipse cx="62" cy="57" rx="8" ry="4.5" fill="#c4452d" opacity=".9"/></g>'+shade(50,50,34)+hl;
+    }
+    case 'star':{
+      return '<circle cx="20" cy="22" r="17" fill="url(#gStar)"/><circle cx="20" cy="22" r="4.2" fill="#fff"/><path d="M14 82 Q52 104 90 54" fill="none" stroke="#fff" stroke-opacity=".3" stroke-dasharray="2 4"/>'+
+        sph(60,60,24)+'<ellipse cx="60" cy="60" rx="24" ry="24" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="3"/>'+shade(60,60,24)+'<ellipse cx="52" cy="52" rx="7" ry="3.6" fill="#fff" opacity=".3" transform="rotate(-32 52 52)"/>';
+    }
+  }
+  return sph(50,50,34)+shade(50,50,34)+hl;
+}
+
+function stringArt(n){
+  const x0=12,x1=88,seg=(x1-x0)/n;let d='M'+x0+' 50',g='M'+x0+' 50',dots='';
+  for(let i=0;i<n;i++){
+    const xa=x0+seg*i,xb=xa+seg,xm=(xa+xb)/2,sg=i%2?1:-1;
+    d+=` Q${f1(xm)} ${50+sg*44} ${f1(xb)} 50`;g+=` Q${f1(xm)} ${50-sg*44} ${f1(xb)} 50`;
+  }
+  for(let i=0;i<=n;i++)dots+=`<circle cx="${f1(x0+seg*i)}" cy="50" r="3.2" fill="#fff"/>`;
+  return '<rect x="5" y="36" width="8" height="28" rx="2.5" fill="#b98b57"/><rect x="87" y="36" width="8" height="28" rx="2.5" fill="#b98b57"/>'+
+    `<path d="${g}" fill="none" stroke="#ffd27a" stroke-opacity=".35" stroke-width="2.4"/><path d="${d}" fill="none" stroke="#ffd27a" stroke-width="3.4" stroke-linecap="round"/>`+dots;
+}
+function foot(x,y,rot){
+  return `<g transform="translate(${x} ${y}) rotate(${rot})" fill="#e9fbf6"><ellipse cx="0" cy="8" rx="8" ry="12"/><ellipse cx="0" cy="-8" rx="6.5" ry="8"/><circle cx="-6" cy="-19" r="2.6"/><circle cx="-2" cy="-22" r="2.6"/><circle cx="2.6" cy="-22.5" r="2.6"/><circle cx="6.6" cy="-20" r="2.4"/></g>`;
+}
+function artEarth(c){
+  const A='#ffd27a',K='#e9fbf6';
+  switch(c.shape){
+    case 'fork':return `<g fill="none" stroke="#dfe7f0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M38 10 V42 Q38 56 50 56 Q62 56 62 42 V10"/><path d="M50 56 V86" stroke-width="7"/></g><circle cx="50" cy="89" r="4.5" fill="#cfd8e3"/><path d="M41 12 V40" stroke="#fff" stroke-width="1.6" opacity=".6" stroke-linecap="round"/><g fill="none" stroke="${A}" stroke-width="2.6" stroke-linecap="round"><path d="M26 18 Q20 28 26 38"/><path d="M17 12 Q8 28 17 44" opacity=".6"/><path d="M74 18 Q80 28 74 38"/><path d="M83 12 Q92 28 83 44" opacity=".6"/></g>`;
+    case 'pendulum':{
+      const rod='<line x1="50" y1="46" x2="50" y2="76" stroke="#e8c378" stroke-width="2"/><circle cx="50" cy="78" r="7" fill="#ffd27a" stroke="#a97b2a" stroke-width="1.5"/>';
+      return '<rect x="24" y="6" width="52" height="88" rx="9" fill="#0b3b44" stroke="#e8c378" stroke-width="2.5"/><circle cx="50" cy="26" r="14" fill="#f6efe0" stroke="#e8c378" stroke-width="2"/><path d="M50 26 V17 M50 26 L57 30" stroke="#1d2b33" stroke-width="2.2" stroke-linecap="round"/><circle cx="50" cy="26" r="1.6" fill="#1d2b33"/>'+
+        `<g opacity=".28" transform="rotate(20 50 46)">${rod}</g><g opacity=".28" transform="rotate(-20 50 46)">${rod}</g>${rod}`;
+    }
+    case 'metronome':return '<rect x="24" y="88" width="52" height="7" rx="2.5" fill="#8a5a2a"/><path d="M30 90 L42 12 H58 L70 90 Z" fill="#c98a4a" stroke="#f3d9a8" stroke-width="2.4" stroke-linejoin="round"/><path d="M38 90 L44 20 H56 L62 90Z" fill="#000" opacity=".15"/><circle cx="50" cy="66" r="3" fill="#f3d9a8"/>'+
+      '<g opacity=".3" transform="rotate(-18 50 80)"><line x1="50" y1="80" x2="50" y2="12" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><rect x="44.5" y="28" width="11" height="10" rx="2" fill="#ffd27a"/></g>'+
+      '<g transform="rotate(18 50 80)"><line x1="50" y1="80" x2="50" y2="12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><rect x="44.5" y="28" width="11" height="10" rx="2" fill="#ffd27a" stroke="#a97b2a"/></g>';
+    case 'string1':return stringArt(1);
+    case 'string2':return stringArt(2);
+    case 'string3':return stringArt(3);
+    case 'string4':return stringArt(4);
+    case 'swing':{
+      const sw=`<line x1="42" y1="10" x2="42" y2="64" stroke="${K}" stroke-width="2"/><line x1="58" y1="10" x2="58" y2="64" stroke="${K}" stroke-width="2"/><rect x="37" y="63" width="26" height="5" rx="2" fill="${A}"/><circle cx="50" cy="42" r="5.5" fill="#f6c9a0"/><path d="M50 48 V63" stroke="#ff8a7e" stroke-width="5" stroke-linecap="round"/>`;
+      return `<path d="M14 92 L38 10 M86 92 L62 10" fill="none" stroke="#b98b57" stroke-width="4" stroke-linecap="round"/><line x1="36" y1="10" x2="64" y2="10" stroke="#b98b57" stroke-width="5" stroke-linecap="round"/><g opacity=".28" transform="rotate(-22 50 10)">${sw}</g><g transform="rotate(22 50 10)">${sw}</g>`;
+    }
+    case 'glass':return '<path d="M30 20 C28 52 40 64 50 66 C60 64 72 52 70 20 Z" fill="url(#gGlass)" stroke="#d5eef7" stroke-width="2"/><path d="M36 28 C36 46 42 56 48 60" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/><ellipse cx="50" cy="20" rx="20" ry="4.5" fill="#eefaff" fill-opacity=".6" stroke="#d5eef7" stroke-width="2"/><path d="M48 66 V86 H52 V66" fill="url(#gGlass)" stroke="#d5eef7" stroke-width="1.6"/><ellipse cx="50" cy="88" rx="17" ry="4" fill="url(#gGlass)" stroke="#d5eef7" stroke-width="2"/><path d="M62 22 L58 34 L66 42 L60 52 L64 60" fill="none" stroke="#ff6b5e" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><g fill="none" stroke="#ff8a7e" stroke-width="2.4" stroke-linecap="round"><path d="M22 14 q-6 6 0 12"/><path d="M15 10 q-9 10 0 20"/><path d="M78 14 q6 6 0 12"/><path d="M85 10 q9 10 0 20"/></g>';
+    case 'voice':return '<rect x="39" y="12" width="22" height="38" rx="11" fill="#cdd6e2" stroke="#fff" stroke-width="2"/><path d="M39 24 H61 M39 31 H61 M39 38 H61" stroke="#7d8aa0" stroke-width="1.4"/><path d="M31 40 Q31 62 50 62 Q69 62 69 40" fill="none" stroke="'+K+'" stroke-width="3" stroke-linecap="round"/><path d="M50 62 V82 M38 85 H62" stroke="'+K+'" stroke-width="3.5" stroke-linecap="round"/><g fill="none" stroke="#ff8a7e" stroke-width="2.6" stroke-linecap="round"><path d="M76 24 Q84 36 76 48"/><path d="M85 16 Q97 36 85 56" opacity=".6"/><path d="M24 24 Q16 36 24 48"/><path d="M15 16 Q3 36 15 56" opacity=".6"/></g>';
+    case 'bridge':{
+      let hang='';
+      for(const t of [.14,.28,.42,.58,.72,.86]){const x=29+42*t,y=24+84*t*(1-t);hang+=`<line x1="${f1(x)}" y1="${f1(y)}" x2="${f1(x)}" y2="60" stroke="#fff" stroke-width="1.2" opacity=".8"/>`;}
+      return '<path d="M0 84 Q12 78 25 84 T50 84 T75 84 T100 84 V100 H0Z" fill="#2aa6b8" opacity=".55"/><line x1="6" y1="66" x2="94" y2="54" stroke="#e8c378" stroke-width="4" opacity=".3" stroke-linecap="round"/><line x1="6" y1="60" x2="94" y2="60" stroke="#e8c378" stroke-width="5" stroke-linecap="round"/><rect x="26" y="20" width="6" height="42" fill="#f6efe0"/><rect x="68" y="20" width="6" height="42" fill="#f6efe0"/><path d="M6 56 Q16 22 29 22 Q50 66 71 22 Q84 22 94 56" fill="none" stroke="#fff" stroke-width="2.4"/>'+hang;
+    }
+    case 'steps':return foot(36,62,-10)+foot(64,36,10)+'<g fill="none" stroke="'+A+'" stroke-width="2.4" stroke-linecap="round"><path d="M12 30 Q16 20 24 16" opacity=".6"/><path d="M88 74 Q84 84 76 88" opacity=".6"/></g>';
+  }
+  return '';
+}
+function artBody(c){return c.theme==='earth'?artEarth(c):artSpace(c);}
+
+/* значки возмущений и люков */
+function artPert(c){
+  if(c.kind==='perturb'){
+    switch(c.fx){
+      case 'tide':return '<circle cx="72" cy="24" r="13" fill="#f2e6ff"/><circle cx="78" cy="19" r="11" fill="#4a2273"/><g fill="none" stroke="#8fe3ff" stroke-width="4.2" stroke-linecap="round"><path d="M8 52 Q20 40 32 52 T56 52 T80 52 T96 52"/><path d="M8 66 Q20 54 32 66 T56 66 T80 66 T96 66" opacity=".7"/><path d="M8 80 Q20 68 32 80 T56 80 T80 80 T96 80" opacity=".45"/></g>';
+      case 'shift':return '<circle cx="50" cy="52" r="26" fill="#2a1250" stroke="#e8c9ff" stroke-width="3"/><path d="M50 22 L45 31 H55Z" fill="#e8c9ff"/><circle cx="50" cy="52" r="3" fill="#ffd27a"/><circle cx="73" cy="52" r="5" fill="#fff"/><path d="M18 34 A38 38 0 0 1 82 30" fill="none" stroke="#ffd27a" stroke-width="3.6" stroke-linecap="round"/><path d="M84 31 l-10 -1 l5 -9z" fill="#ffd27a"/>';
+      case 'wind':{
+        let r='';for(let i=0;i<8;i++){const a=i*Math.PI/4;r+=`<line x1="${f1(50+Math.cos(a)*22)}" y1="${f1(46+Math.sin(a)*22)}" x2="${f1(50+Math.cos(a)*32)}" y2="${f1(46+Math.sin(a)*32)}" stroke="#ffd27a" stroke-width="4" stroke-linecap="round"/>`;}
+        return r+'<circle cx="50" cy="46" r="16" fill="url(#gSun)"/><g fill="none" stroke="#e8c9ff" stroke-width="3" stroke-linecap="round" opacity=".8"><path d="M20 86 H64 Q74 86 74 78"/><path d="M30 94 H80"/></g>';
+      }
+      case 'swap':return '<g fill="none" stroke="#e8c9ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 36 H80 M66 22 L82 36 L66 50"/><path d="M82 66 H20 M34 52 L18 66 L34 80" stroke="#ffd27a"/></g>';
+    }
+  }
+  if(c.hx==='hilda')return '<path d="M50 8 L82 22 V50 Q82 76 50 92 Q18 76 18 50 V22 Z" fill="#17624a" stroke="#8ff0c0" stroke-width="3.5" stroke-linejoin="round"/><path d="M50 14 L76 25 V50 Q76 71 50 85" fill="#fff" opacity=".12"/><text x="50" y="62" text-anchor="middle" font-size="34" font-weight="800" fill="#e8fff4">8</text>';
+  return '<ellipse cx="50" cy="62" rx="38" ry="18" fill="#12040a" stroke="#ff9a8a" stroke-width="3.5"/><ellipse cx="50" cy="62" rx="24" ry="9.5" fill="#000"/><text x="50" y="42" text-anchor="middle" font-size="32" font-weight="800" fill="#ffd27a" stroke="#000" stroke-width=".8">'+c.hit+'</text><g fill="#fff" opacity=".7"><circle cx="12" cy="30" r="1.4"/><circle cx="88" cy="24" r="1.2"/><circle cx="82" cy="86" r="1.4"/></g>';
+}
+const SHORT={tide:'период ±1',shift:'фаза ±90°',wind:'убрать тело',swap:'поменять'};
+function shortOf(c){return c.kind==='perturb'?SHORT[c.fx]:(c.hx==='hilda'?'щит: период 8':'бьёт период '+c.hit);}
+function noteShort(p){const n=noteOf(p);return (n.approx?'≈':'')+n.name+n.oct;}
+
+function dialSVG(ph){
+  const a=ph*Math.PI/2,x=15+9.5*Math.sin(a),y=15-9.5*Math.cos(a);
+  return `<svg viewBox="0 0 30 30"><circle cx="15" cy="15" r="12.5" fill="#0b0e36" stroke="currentColor" stroke-width="1.4"/><circle cx="15" cy="15" r="9.5" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-dasharray="1 2.2"/><path d="M15 .6 l-2.8 3.8 h5.6z" fill="currentColor"/><line x1="15" y1="15" x2="${f1(x)}" y2="${f1(y)}" stroke="#fff" stroke-opacity=".5" stroke-width="1"/><circle cx="15" cy="15" r="2" fill="#f3c24a"/><circle cx="${f1(x)}" cy="${f1(y)}" r="3" fill="#fff"/></svg>`;
+}
+const SHIELD='<svg viewBox="0 0 24 24"><path d="M12 2 L21 5.5 V12 Q21 19 12 22 Q3 19 3 12 V5.5Z" fill="#17624a" stroke="#8ff0c0" stroke-width="1.6"/><path d="M8 12 L11 15 L16 9" fill="none" stroke="#e8fff4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* карта целиком */
+function cardEl(c,o){
+  o=o||{};const b=o.body,pl=o.players||[];
+  const kind=c.kind,theme=kind==='body'?(c.theme==='earth'?'earth':'space'):(kind==='perturb'?'pert':'hat');
+  const oc=b&&b.owner!=null&&pl[b.owner]?';--oc:'+pl[b.owner].color:'';
+  let h=`<div class="cd ${theme}${o.cls?' '+o.cls:''}" style="font-size:${o.fs||13}px${oc}"${o.attrs?' '+o.attrs:''}><i class="cd-bg"></i>`;
+  if(kind==='body'){
+    const p=b?effP(b):c.period;
+    h+=`<span class="cd-per${b&&b.mod?' mod':''}"><b>${p}</b></span>`;
+    if(b)h+=`<span class="cd-dial">${dialSVG(b.phase)}</span>`;
+    h+=`<div class="cd-art"><svg viewBox="0 0 100 100">${artBody(c)}</svg></div><div class="cd-name">${c.name}</div><div class="cd-note">♪ ${noteShort(p)}</div>`;
+    if(b&&b.owner!=null)h+='<i class="cd-own"></i>';
+    if(b&&o.state&&isProtected(o.state,b))h+=`<span class="cd-sh">${SHIELD}</span>`;
+  }else{
+    h+=`<span class="cd-kind">${kind==='perturb'?'ВОЗМУЩЕНИЕ':'ЛЮК'}</span><div class="cd-art big"><svg viewBox="0 0 100 100">${artPert(c)}</svg></div><div class="cd-name">${c.name}</div><div class="cd-note">${shortOf(c)}</div>`;
+  }
+  return h+'</div>';
+}
+
+/* ====== ИНТЕРФЕЙС ====== */
+const $=s=>document.querySelector(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const CW=97.5,CH=136.5,GAP=30,SX=CW+GAP,SY=CH+GAP,FS=13;
+let G=null;
+const ui={sel:null,mode:null,cell:null,phase:0,tgt:null,busy:true,sound:true,bots:1,diff:'normal',hints:true,gid:0,acts:[],log:[],last:null,hintShow:null,userView:false,tipN:0};
+const V={tx:0,ty:0,s:.85};
+const DIRN=[['справа','→'],['слева','←'],['снизу','↓'],['сверху','↑']];
+const ICON={
+  menu:'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  bulb:'<svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg>',
+  log:'<svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>',
+  snd:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+  mute:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>',
+  fit:'<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+  shift:'<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M20 12a8 8 0 1 1-2.5-5.8"/><path d="M20 4v5h-5"/></svg>'
+};
+
+/* ---------- звук ---------- */
+let AC=null;
+function ac(){
+  if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+  if(AC&&AC.state==='suspended')AC.resume();
+  return AC;
+}
+function tone(f,t,d,vol,type){
+  if(!ui.sound)return;const c=ac();if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(),t0=c.currentTime+(t||0);
+  o.type=type||'sine';o.frequency.value=f;
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(vol||0.12,t0+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+(d||0.7));
+  o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+(d||0.7)+0.05);
+}
+function soundPlace(b){
+  tone(freqOf(effP(b))*2,0,0.8,0.14);
+  const m=cellMap(G.bodies);
+  for(const d of DIRS){
+    const n=m.get((b.x+d[0])+','+(b.y+d[1]));
+    if(n){const f2=freqOf(effP(n))*2,ok=baseScore(effP(b),effP(n))>0;tone(ok?f2:f2*1.04,0,0.8,0.09);break;}
+  }
+}
+function soundEject(){tone(90,0,0.5,0.2,'triangle');tone(65,0.08,0.5,0.15,'triangle');}
+
+/* ---------- состояние ---------- */
+function me(){return G.players[0];}
+function canShift(p){return p.shifts>0||p.quanta>=QUANTA_SHIFT;}
+function humanTurn(){return !!G&&!G.over&&!ui.busy&&!G.players[G.cur].isBot&&G.players[G.cur].hand.length>0;}
+function resetSel(){ui.sel=null;ui.mode=null;ui.cell=null;ui.tgt=null;ui.hintShow=null;ui.phase=0;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+/* ---------- масштаб и перемещение поля ---------- */
+function applyView(){$('#world').style.transform='translate('+V.tx+'px,'+V.ty+'px) scale('+V.s+')';}
+function fieldSize(){const f=$('#field');return {w:f.clientWidth,h:f.clientHeight};}
+function zoomAt(cx,cy,k){
+  const ns=Math.max(.28,Math.min(2.4,V.s*k)),r=ns/V.s;
+  V.tx=cx-(cx-V.tx)*r;V.ty=cy-(cy-V.ty)*r;V.s=ns;applyView();ui.userView=true;
+}
+function fitView(){
+  const {w,h}=fieldSize();if(!w||!h||!G)return;
+  const cells=G.bodies.length?G.bodies:[{x:0,y:0}];
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const c of cells){x0=Math.min(x0,c.x*SX);y0=Math.min(y0,c.y*SY);x1=Math.max(x1,c.x*SX+CW);y1=Math.max(y1,c.y*SY+CH);}
+  const pad=26,bw=x1-x0,bh=y1-y0;
+  const s=Math.max(.28,Math.min((w-pad*2)/bw,(h-pad*2)/bh,1.05));
+  V.s=s;V.tx=(w-bw*s)/2-x0*s;V.ty=(h-bh*s)/2-y0*s;applyView();ui.userView=false;
+}
+function ensureVisible(wx,wy,ww,wh){
+  const {w,h}=fieldSize();if(!w||!h)return;
+  const m=12,sx0=V.tx+wx*V.s,sy0=V.ty+wy*V.s,sx1=sx0+ww*V.s,sy1=sy0+wh*V.s;
+  let dx=0,dy=0;
+  if(sx1-sx0>w-2*m)dx=(w-(sx0+sx1))/2;else if(sx0<m)dx=m-sx0;else if(sx1>w-m)dx=w-m-sx1;
+  if(sy1-sy0>h-2*m)dy=(h-(sy0+sy1))/2;else if(sy0<m)dy=m-sy0;else if(sy1>h-m)dy=h-m-sy1;
+  if(dx||dy){V.tx+=dx;V.ty+=dy;applyView();}
+}
+function showBody(b){ensureVisible(b.x*SX,b.y*SY,CW,CH);}
+function showCell(c){ensureVisible(c.x*SX,c.y*SY,CW,CH);}
+function setupField(){
+  const f=$('#field'),pts=new Map();
+  let drag=null,pinch=null,moved=false;
+  const two=()=>{const a=[...pts.values()];return {d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1,cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2};};
+  f.addEventListener('pointerdown',e=>{
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===1){moved=false;drag={x:e.clientX,y:e.clientY,tx:V.tx,ty:V.ty};}
+    else if(pts.size===2){moved=true;drag=null;const t=two();pinch={d:t.d};}
+  });
+  f.addEventListener('pointermove',e=>{
+    if(!pts.has(e.pointerId))return;
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size>=2&&pinch){
+      const t=two(),r=f.getBoundingClientRect();
+      zoomAt(t.cx-r.left,t.cy-r.top,t.d/pinch.d);pinch.d=t.d;
+    }else if(drag&&pts.size===1){
+      const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+      if(!moved&&Math.hypot(dx,dy)>7)moved=true;
+      if(moved){V.tx=drag.tx+dx;V.ty=drag.ty+dy;applyView();ui.userView=true;}
+    }
+  });
+  const up=e=>{
+    pts.delete(e.pointerId);
+    if(pts.size<2)pinch=null;
+    if(pts.size===1){const p=[...pts.values()][0];drag={x:p.x,y:p.y,tx:V.tx,ty:V.ty};}
+    else if(pts.size===0)drag=null;
+  };
+  f.addEventListener('pointerup',up);f.addEventListener('pointercancel',up);
+  f.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);
+  f.addEventListener('wheel',e=>{
+    e.preventDefault();const r=f.getBoundingClientRect();
+    zoomAt(e.clientX-r.left,e.clientY-r.top,Math.exp(-e.deltaY*0.0016));
+  },{passive:false});
+}
+
+/* ---------- отрисовка поля ---------- */
+function lkKey(a,b){return a.uid<b.uid?a.uid+'|'+b.uid:b.uid+'|'+a.uid;}
+function worldHTML(st,o){
+  o=o||{};
+  const players=o.players||st.players;
+  const bodies=st.bodies.slice();
+  if(o.extra)bodies.push(o.extra);
+  const m=cellMap(bodies),chain=new Set(),mids=new Set();
+  for(const [a,b,c] of triplesOf(bodies,m))if(chainBonus(a,b,c)>0){chain.add(lkKey(a,b));chain.add(lkKey(b,c));mids.add(b.uid);}
+  const lap=new Set(),pc=new Set();
+  for(const [a,b,c] of laplaceTriples(bodies,m)){lap.add(lkKey(a,b));lap.add(lkKey(b,c));}
+  const pch=findChain(bodies,m);if(pch)for(let i=0;i<3;i++)pc.add(lkKey(pch[i],pch[i+1]));
+  let h='';
+  if(o.ghosts)for(const g of o.ghosts){
+    const sel=o.cell&&o.cell.x===g.x&&o.cell.y===g.y;
+    h+=`<div class="gh${sel?' sel':''}${o.hintCell&&o.hintCell.x===g.x&&o.hintCell.y===g.y?' hnt':''}" data-x="${g.x}" data-y="${g.y}" style="left:${g.x*SX}px;top:${g.y*SY}px;width:${CW}px;height:${CH}px"><div><span>+</span>${g.label?'<small>'+g.label+'</small>':''}</div></div>`;
+  }
+  for(const [a,b] of pairsOf(bodies,m)){
+    const inf=linkInfo(a,b),hz=a.y===b.y,ld=st.loads[loadKey(a,b)]||0;
+    const cls=!inf.base?'dis':inf.d===0?'d0':inf.d===2?'d2':'dn';
+    const left=a.x*SX+(hz?CW:0),top=a.y*SY+(hz?0:CH);
+    h+=`<div class="lk ${cls} ${hz?'hz':'vt'}${chain.has(lkKey(a,b))?' chain':''}${lap.has(lkKey(a,b))?' lap':''}${pc.has(lkKey(a,b))?' pc':''}" data-la="${a.uid}" data-lb="${b.uid}" style="left:${left}px;top:${top}px;width:${hz?GAP:CW}px;height:${hz?CH:GAP}px"><i class="ln"></i><span class="bd"><em>${inf.base?inf.ratio:'×'}</em>${inf.base?'<strong>+'+inf.score+'</strong>':''}</span>${inf.base&&inf.d===0?'<span class="ld">'+'●'.repeat(ld)+'○'.repeat(Math.max(0,3-ld))+'</span>':''}</div>`;
+  }
+  for(const b of bodies){
+    const thr=b.uid!=='preview'&&hatchHits(st,b);
+    const cls=['fb'];
+    if(thr)cls.push('threat');
+    if(b.uid==='preview')cls.push('pv');
+    if(o.targets&&b.uid!=='preview')cls.push('tg');
+    if(o.tgt===b.uid)cls.push('pick');
+    if(o.hintUid===b.uid)cls.push('hnt');
+    if(o.last===b.uid)cls.push('pop');
+    h+=`<div class="${cls.join(' ')}" data-uid="${b.uid}" style="left:${b.x*SX}px;top:${b.y*SY}px;width:${CW}px;height:${CH}px">${cardEl(b.card,{fs:FS,body:b,players,state:st})}${mids.has(b.uid)?'<span class="chn">⛓ +'+CHAIN_BONUS+'</span>':''}</div>`;
+  }
+  return h;
+}
+function bestAt(card,cell){
+  let best=-99;
+  for(let ph=0;ph<4;ph++)best=Math.max(best,evalPlacement(G,card,cell.x,cell.y,ph,0).gained);
+  return best;
+}
+function renderWorld(){
+  const o={players:G.players,last:ui.last};
+  const ht=ui.hintShow;
+  if(humanTurn()&&ui.mode==='place'&&ui.sel){
+    o.ghosts=freeCells(G).map(c=>({x:c.x,y:c.y,label:ui.diff==='easy'?'+'+bestAt(ui.sel,c):''}));
+    o.cell=ui.cell;
+    if(ui.cell)o.extra={uid:'preview',card:ui.sel,owner:0,phase:ui.phase,mod:0,x:ui.cell.x,y:ui.cell.y};
+    if(ht&&ht.a.type==='body')o.hintCell={x:ht.a.x,y:ht.a.y};
+  }
+  if(humanTurn()&&(ui.mode==='perturb'||ui.mode==='shift')){o.targets=true;o.tgt=ui.tgt;if(ht&&ht.a.uid)o.hintUid=ht.a.uid;}
+  $('#wBodies').innerHTML=worldHTML(G,o);
+  ui.last=null;
+}
+function addFloater(x,y,text,neg){
+  const el=document.createElement('div');
+  el.className='fl'+(neg?' neg':'');el.textContent=text;
+  el.style.left=(x*SX+CW/2)+'px';el.style.top=(y*SY+CH/2)+'px';
+  $('#floaters').appendChild(el);setTimeout(()=>el.remove(),1500);
+}
+function addFading(body){
+  const el=document.createElement('div');
+  el.className='fb out';
+  el.style.cssText='left:'+body.x*SX+'px;top:'+body.y*SY+'px;width:'+CW+'px;height:'+CH+'px';
+  el.innerHTML=cardEl(body.card,{fs:FS,body,players:G.players,state:G});
+  $('#floaters').appendChild(el);setTimeout(()=>el.remove(),1000);
+}
+
+/* ---------- верхняя панель, руки, кнопки ---------- */
+function renderTop(){
+  $('#tTitle').innerHTML='<b>РЕЗОНАНС</b>Раунд '+Math.min(G.round,G.maxRounds)+' из '+G.maxRounds+' · колода '+G.deck.length+(G.chain?' · ⛓ '+G.players[G.chain.by].name+' до конца раунда '+(G.chain.round+1):'');
+  $('#chips').innerHTML=G.players.map((p,i)=>`<div class="chip${i===G.cur&&!G.over?' act':''}" style="--c:${p.color}"><i></i><span>${p.name}</span><b>${p.score}</b><small>↻${p.shifts} · ◈${p.quanta} · 🂠${p.hand.length}</small></div>`).join('');
+  $('#bSound').innerHTML=ui.sound?ICON.snd:ICON.mute;
+  const bh=$('#bHint');bh.style.display=ui.diff==='easy'?'':'none';
+  bh.className='ib'+(ui.diff==='easy'&&humanTurn()&&ui.hints?' pulse':'');
+  const t=$('#turn');
+  if(G.over){t.className='';t.textContent='Игра окончена';}
+  else if(humanTurn()){t.className='me';t.textContent='Ваш ход';}
+  else{t.className='';t.textContent=G.players[G.cur].isBot?'Ходит '+G.players[G.cur].name+'…':'Ваш ход';}
+}
+function renderFabs(){
+  const f=$('#shiftFab'),on=humanTurn()&&canShift(me())&&!$('#sheet').classList.contains('on');
+  f.className=(on?'on':'')+(ui.mode==='shift'?' act':'');
+  f.innerHTML=ICON.shift+(me().shifts>0?'Сдвиг фазы <b>'+me().shifts+'</b>':'Сдвиг за <b>◈'+QUANTA_SHIFT+'</b>');
+}
+function renderHand(){
+  const H=$('#handBar'),on=humanTurn();
+  H.className=on?'':'off';
+  const ht=ui.hintShow;
+  H.innerHTML=me().hand.map(c=>`<div class="hc${ui.sel&&ui.sel.id===c.id?' sel':''}${ht&&ht.a.cardId===c.id?' hnt':''}" data-cid="${c.id}">${cardEl(c,{fs:11})}</div>`).join('')||'<div class="hand-empty">Карт в руке нет</div>';
+}
+function render(){
+  if(!G)return;
+  renderTop();renderWorld();renderSheet();renderHand();renderFabs();
+}
+
+/* ---------- лист действий ---------- */
+function actBtn(a){ui.acts.push(a);return 'data-a="'+(ui.acts.length-1)+'"';}
+function shHead(title,sub,infoOk){
+  return `<div class="sh-h"><b>${title}</b>${infoOk?'<button class="sx" data-act="info" aria-label="О карте">ⓘ</button>':''}<button class="sx" data-act="cancel" aria-label="Отмена">✕</button></div>`+(sub?`<div class="sh-t">${sub}</div>`:'');
+}
+function tagOf(r){
+  const L=r.links.filter(l=>l.inf.base);
+  if(!L.length)return {t:r.links.length?'диссонанс':'нет связей',k:'dis'};
+  if(L.some(l=>l.inf.d===0))return {t:'сближение ⚠',k:'d0'};
+  if(L.some(l=>l.inf.d===2))return {t:'противофаза',k:'d2'};
+  return {t:'сдвиг',k:'dn'};
+}
+function phaseOptions(card,cell){
+  const rec=ui.hintShow&&ui.hintShow.a.type==='body'?ui.hintShow.a:null;
+  return [0,1,2,3].map(ph=>({ph,r:evalPlacement(G,card,cell.x,cell.y,ph,0),rec:rec&&rec.x===cell.x&&rec.y===cell.y&&rec.phase===ph}));
+}
+function sheetHTML(){
+  if(!humanTurn())return '';
+  ui.acts=[];
+  if(ui.mode==='shift')return shiftSheet();
+  const c=ui.sel;if(!c)return '';
+  if(c.kind==='body')return bodySheet(c);
+  if(c.kind==='perturb')return perturbSheet(c);
+  return hatchSheet(c);
+}
+function discardBtn(c){return `<button class="btn" ${actBtn({type:'discard',cardId:c.id})}>Сбросить карту, пропустить ход</button>`;}
+function bodySheet(c){
+  if(!ui.cell)return shHead(c.name,'Нажмите «+» на поле: карта соединится со всеми соседями (сверху, снизу, слева, справа).',true)+`<div class="sh-f">${discardBtn(c)}</div>`;
+  const opts=phaseOptions(c,ui.cell),cur=opts[ui.phase];
+  let h=shHead(c.name,'Выберите фазу (поворот карты):',true)+'<div class="ph-row">';
+  for(const o of opts){
+    const tg=tagOf(o.r);
+    h+=`<button class="ph ${tg.k}${o.ph===ui.phase?' on':''}${o.rec?' rec':''}" data-act="phase" data-v="${o.ph}">${dialSVG(o.ph)}<b>+${o.r.gained}</b><small>${tg.t}</small></button>`;
+  }
+  h+=`</div><div class="sh-f"><button class="btn pri" ${actBtn({type:'body',cardId:c.id,x:ui.cell.x,y:ui.cell.y,phase:ui.phase})}>Положить: +${cur.r.gained}</button>${discardBtn(c)}</div>`;
+  return h;
+}
+function neighborsOf(b){
+  const m=cellMap(G.bodies),out=[];
+  DIRS.forEach((d,i)=>{const n=m.get((b.x+d[0])+','+(b.y+d[1]));if(n)out.push({n,dir:i});});
+  return out;
+}
+function perturbSheet(c){
+  const sub={tide:'Нажмите на тело, чьё значение периода хотите изменить.',shift:'Нажмите на тело, фазу которого хотите повернуть.',wind:'Нажмите на тело, которое нужно убрать (его владелец потеряет '+PENALTY+' очка).',swap:'Нажмите на тело, которое хотите поменять с соседом.'}[c.fx];
+  if(!ui.tgt)return shHead(c.name,sub,true)+`<div class="sh-f">${discardBtn(c)}</div>`;
+  const b=bodyByUid(G,ui.tgt);if(!b){ui.tgt=null;return shHead(c.name,sub,true);}
+  let h=shHead(c.name,'Цель: <b>«'+b.card.name+'»</b> (период '+effP(b)+', фаза '+b.phase+')',true)+'<div class="opt-row">';
+  const gain=a=>{const sim=cloneState(G),r=applyAction(sim,a);return r.ok?r:null;};
+  if(c.fx==='tide'){
+    for(const dir of [-1,1]){
+      const a={type:'tide',cardId:c.id,uid:b.uid,dir},e=effP(b),ne=clamp(e+dir),r=ne===e?null:gain(a);
+      h+=`<button class="opt dn" ${r?actBtn(a):'disabled'}><b>${dir<0?'−1':'+1'}</b><small>период ${e} → ${ne}${r?'<br>очки +'+r.gained:''}</small></button>`;
+    }
+  }else if(c.fx==='shift'){
+    for(const dir of [-1,1]){
+      const a={type:'shift',cardId:c.id,uid:b.uid,dir},r=gain(a);
+      h+=`<button class="opt dn" ${actBtn(a)}>${dialSVG((b.phase+dir+4)%4)}<b>${dir<0?'↺ −90°':'↻ +90°'}</b><small>очки +${r?r.gained:0}</small></button>`;
+    }
+  }else if(c.fx==='wind'){
+    const a={type:'wind',cardId:c.id,uid:b.uid},ok=G.bodies.length>=2;
+    h+=`<button class="opt d0" ${ok?actBtn(a):'disabled'}><b>Убрать</b><small>«${b.card.name}»<br>${b.owner===null?'без штрафа':G.players[b.owner].name+' −'+PENALTY}</small></button>`;
+  }else{
+    const nb=neighborsOf(b);
+    if(!nb.length)h+='<div class="sh-t">У этого тела нет соседей.</div>';
+    for(const o of nb){
+      const a={type:'swap',cardId:c.id,a:b.uid,b:o.n.uid},r=gain(a);
+      h+=`<button class="opt dn" ${actBtn(a)}><b>${DIRN[o.dir][1]}</b><small>с «${o.n.card.name}»<br>очки +${r?r.gained:0}</small></button>`;
+    }
+  }
+  return h+`</div><div class="sh-f">${discardBtn(c)}</div>`;
+}
+function hatchSheet(c){
+  const sim=cloneState(G);const r=applyAction(sim,{type:'hatch',cardId:c.id});
+  const lost=G.bodies.filter(b=>!sim.bodies.some(x=>x.uid===b.uid));
+  let t='<b>'+c.text+'.</b><br>';
+  t+=lost.length?'Сразу будут выброшены: '+lost.map(b=>'«'+b.card.name+'»'+(b.owner===null?'':' ('+G.players[b.owner].name+' −'+PENALTY+')')).join(', ')+'.':'Сейчас ни одно тело не пострадает, но Люк останется в зоне и сработает в конце раунда.';
+  if(G.zone.length>=2)t+=' Самая старая карта зоны уйдёт в сброс.';
+  return shHead(c.name,t,true)+`<div class="sh-f"><button class="btn pri" ${actBtn({type:'hatch',cardId:c.id})}>Положить в зону Кирквуда</button>${discardBtn(c)}</div>`;
+}
+function shiftSheet(){
+  const p=me();
+  if(!ui.tgt)return `<div class="sh-h"><b>${p.shifts>0?'Бесплатный сдвиг фазы (осталось '+p.shifts+')':'Сдвиг фазы за '+QUANTA_SHIFT+' кванта (у вас ◈'+p.quanta+')'}</b><button class="sx" data-act="cancel">✕</button></div><div class="sh-t">Нажмите на любое тело на поле. Сдвиг не тратит ход.</div>`;
+  const b=bodyByUid(G,ui.tgt);if(!b){ui.tgt=null;return '';}
+  let h=`<div class="sh-h"><b>Сдвиг: «${b.card.name}»</b><button class="sx" data-act="cancel">✕</button></div><div class="sh-t">Фаза сейчас ${b.phase}. ${p.shifts>0?'Осталось бесплатных сдвигов: <b>'+p.shifts+'</b>.':'Будет списано <b>◈'+QUANTA_SHIFT+'</b>, у вас ◈'+p.quanta+'.'}</div><div class="opt-row">`;
+  for(const dir of [-1,1]){
+    const sim=cloneState(G),r=applyFreeShift(sim,{uid:b.uid,dir});
+    const nb=bodyByUid(sim,b.uid),inf=neighborsOf(nb);
+    h+=`<button class="opt dn" ${actBtn({type:'freeshift',uid:b.uid,dir})}>${dialSVG((b.phase+dir+4)%4)}<b>${dir<0?'↺ −90°':'↻ +90°'}</b><small>очки +${r.ok?r.gained:0}</small></button>`;
+  }
+  return h+'</div>';
+}
+function renderSheet(){
+  const S=$('#sheet'),h=sheetHTML();
+  S.className=h?'on':'';S.innerHTML=h;
+  if(h){requestAnimationFrame(()=>{
+    if(ui.cell&&ui.mode==='place')showCell(ui.cell);
+    else if(ui.tgt){const b=bodyByUid(G,ui.tgt);if(b)showBody(b);}
+  });}
+}
+
+/* ---------- окна ---------- */
+function openModal(html,o){
+  o=o||{};const m=$('#modal');
+  m.innerHTML=`<div class="mbox">${o.lock?'':'<button class="mx" data-act="mclose" aria-label="Закрыть">✕</button>'}${html}</div>`;
+  m.dataset.lock=o.lock?'1':'';m.classList.add('on');
+  const b=m.querySelector('.mbox');if(b&&o.keepScroll!==undefined)b.scrollTop=o.keepScroll;
+}
+function closeModal(){const m=$('#modal');m.classList.remove('on');m.innerHTML='';}
+function toast(text,bad){
+  const box=$('#toasts'),el=document.createElement('div');
+  el.className='toast'+(bad?' bad':'');el.textContent=text;box.appendChild(el);
+  while(box.children.length>3)box.firstChild.remove();
+  setTimeout(()=>el.remove(),2700);
+}
+function bigCard(c,b){return '<div class="big-card">'+cardEl(c,{fs:19,body:b,players:G?G.players:[],state:G})+'</div>';}
+function cardInfo(c,b){
+  let h=bigCard(c,b);
+  if(c.kind==='body'){
+    const p=b?effP(b):c.period;
+    h+=`<h2 style="margin-right:0">${c.name}</h2><p>${c.fact}.</p><p class="mut">Период <b style="color:#fff">${p}</b>${b&&b.mod?' (изначально '+c.period+')':''}. Нота: <b style="color:#fff">${noteText(p)}</b>.</p><div class="row"><button class="btn sm" data-act="note" data-v="${p}">▶ Прослушать ноту</button></div>`;
+    if(b){
+      h+='<h2 style="margin-top:16px;font-size:16px">Связи на поле</h2>';
+      const nb=neighborsOf(b);
+      if(!nb.length)h+='<p class="mut">Соседей пока нет.</p>';
+      for(const o of nb){
+        const inf=linkInfo(b,o.n),cls=!inf.base?'dis':inf.d===0?'d0':inf.d===2?'d2':'';
+        h+=`<div class="nb"><span class="pill ${cls}">${inf.base?inf.ratio+' · +'+inf.score:'×'}</span><span>${DIRN[o.dir][0]}: «${o.n.card.name}». ${linkText(inf)}</span></div>`;
+      }
+      if(isProtected(G,b))h+='<div class="note green">🛡 Тело защищено от Люков (фаза 2 или период 8 с картой «Гильды»).</div>';
+      if(hatchHits(G,b))h+='<div class="note red">⚠ Этому телу грозит Люк: оно будет выброшено.</div>';
+      if(b.owner!==null)h+=`<p class="mut">Владелец: ${G.players[b.owner].name}. Если тело вылетит, владелец потеряет ${PENALTY} очка, а карта вернётся в колоду.</p>`;
+    }
+  }else{
+    h+=`<h2 style="margin-right:0">${c.name}</h2><p>${c.text}.</p>`;
+  }
+  return h;
+}
+function linkText(inf){
+  if(!inf.base)return 'Диссонанс: простого отношения периодов нет, очков нет, нагрузка не копится.';
+  if(inf.d===0)return 'Сближение (Δ=0): очки ×2, но копится нагрузка: на третьем раунде выбрасывается тело с большим периодом.';
+  if(inf.d===2)return 'Противофаза (Δ=2): +1 очко и защита обоих тел от Люков.';
+  return 'Сдвиг фаз (Δ='+inf.d+'): обычные очки, безопасно.';
+}
+function linkInfoModal(a,b){
+  const inf=linkInfo(a,b),ld=G.loads[loadKey(a,b)]||0;
+  let h=`<h2>Связь ${inf.base?inf.ratio:'(диссонанс)'}</h2><div class="nb"><span class="pill">«${a.card.name}»</span><span>период ${effP(a)}, фаза ${a.phase}</span></div><div class="nb"><span class="pill">«${b.card.name}»</span><span>период ${effP(b)}, фаза ${b.phase}</span></div>`;
+  h+=`<div class="note ${!inf.base?'':inf.d===0?'red':inf.d===2?'green':''}">${linkText(inf)}</div>`;
+  if(inf.base)h+=`<p class="mut">Базовые очки: ${inf.base}. Итог по связи: <b style="color:#fff">${inf.score}</b>.${inf.d===0?' Жетонов нагрузки: '+ld+' из 3.':''}</p>`;
+  return h;
+}
+function logModal(){
+  openModal('<h2>Журнал событий</h2><div class="logl">'+(ui.log.length?ui.log.map(e=>`<div class="${e.kind==='round'?'rd':e.kind==='eject'?'ej':''}">${esc(e.text)}</div>`).join(''):'<div>Пока пусто</div>')+'</div>');
+}
+function menuModal(){
+  openModal(`<h2>Меню</h2><div class="menu"><button class="btn" data-act="rules">Правила игры</button><button class="btn" data-act="demo" data-from="game">▶ Демонстрация правил</button><button class="btn" data-act="sound">${ui.sound?'🔊 Звук включён':'🔇 Звук выключен'}</button>${ui.diff==='easy'?'<button class="btn" data-act="hintsw">💡 Подсказки: '+(ui.hints?'включены':'выключены')+'</button>':''}<button class="btn" data-act="newgame">Новая игра</button></div>`);
+}
+function rulesModal(from){
+  openModal(`<h2>Правила</h2><ul>
+<li><b>Ход:</b> сыграйте одну карту из руки, затем возьмите до 4. Очки получает тот, кто сыграл карту.</li>
+<li><b>Поле:</b> тело кладётся в любую свободную клетку рядом с лежащими: сверху, снизу, слева или справа. Новая карта образует связи со всеми соседями сразу.</li>
+<li><b>Очки связи</b> по отношению периодов: 1:1 = 1, 2:1 = 2, 3:1 = 2, 3:2 = 3, 4:3 = 3, иначе диссонанс = 0.</li>
+<li><b>Фаза</b> (Δ = разность фаз соседей): Δ=0 сближение, очки ×2, но копится нагрузка; Δ=2 противофаза, +1 очко и защита от Люков; Δ=1 или 3 обычные очки.</li>
+<li><b>Нагрузка:</b> в конце раунда на каждой связи с сближением появляется жетон. На третьем жетоне выбрасывается тело с большим периодом.</li>
+<li><b>Цепочка:</b> три тела по прямой (ряд или столбец) с резонансными связями дают бонус +${CHAIN_BONUS}. Если фазы у всех трёх одинаковые, бонуса нет.</li>
+<li><b>Резонанс Лапласа:</b> три тела подряд с периодами a : 2a : 4a (например Ио, Европа, Ганимед, 1:2:4), по прямой или с изгибом, дают бонус +${LAPLACE_BONUS}. Фазы не должны быть одинаковыми у всех трёх.</li>
+<li><b>Планетная цепочка = победа:</b> четыре ваших тела подряд (прямая или изгиб) с периодами 1 – 2 – 4 – 8, у соседей разные фазы. Если цепочка простоит до конца следующего раунда, вы побеждаете сразу. Соперник может её разрушить: выбросить тело, сдвинуть фазу, поставить Люк.</li>
+<li><b>Кванты ◈:</b> в конце каждого раунда вы получаете 1 квант, если у вас есть хотя бы один стабильный резонанс (связь с очками без сближения). ${QUANTA_SHIFT} кванта = ещё один сдвиг фазы без карты и без траты хода.</li>
+<li><b>Штраф:</b> когда тело вылетает (Люк, нагрузка, Солнечный ветер), его владелец теряет ${PENALTY} очка, а карта возвращается в колоду.</li>
+<li><b>Бесплатный сдвиг фазы:</b> ${FREE_SHIFTS} раза за игру можно повернуть любое тело на ±90° без карты и без траты хода (кнопка внизу поля). Когда они закончатся, сдвиг можно купить за кванты.</li>
+<li><b>Возмущения:</b> Приливная сила (период ±1), Сдвиг фазы (±90°), Солнечный ветер (убрать тело), Гравитационный толчок (поменять соседей).</li>
+<li><b>Люки</b> в зоне Кирквуда (до 2 карт) выбрасывают тела с указанным периодом, кроме тел в фазе 2. Гильды защищают период 8.</li>
+<li><b>Конец:</b> игра идёт ограниченное число раундов (18 при двух игроках, 12 при трёх, 9 при четырёх) или пока не опустеет колода. Побеждает набравший больше очков (при равенстве больше квантов) или тот, кто удержал планетную цепочку.</li>
+<li><b>Поле:</b> тяните его пальцем, масштабируйте щипком, колесом мыши или кнопками «+», «−». Нажмите на карту или на значок связи, чтобы прочитать пояснение.</li></ul>
+<div class="row"><button class="btn pri" data-act="${from==='start'?'tostart':'mclose'}">${from==='start'?'К началу':'Закрыть'}</button></div>`);
+}
+function startModal(){
+  openModal(`<h2>РЕЗОНАНС</h2><p>Стройте систему из небесных тел и земных колебаний. Простые отношения периодов дают очки, а <b>фаза</b> решает, станет ли резонанс защитой или ловушкой.</p>
+<div class="mut">Соперники</div><div class="seg">${[1,2,3].map(n=>`<button data-act="bots" data-v="${n}" class="${ui.bots===n?'on':''}">${n}</button>`).join('')}</div>
+<div class="mut">Сложность</div><div class="seg"><button data-act="diff" data-v="easy" class="${ui.diff==='easy'?'on':''}">Лёгкая (с подсказками)</button><button data-act="diff" data-v="normal" class="${ui.diff==='normal'?'on':''}">Обычная</button></div>
+<div class="row"><button class="btn pri" data-act="start">Начать игру</button><button class="btn" data-act="demo" data-from="start">▶ Демонстрация</button><button class="btn" data-act="rules" data-from="start">Правила</button></div>`,{lock:true});
+}
+function endModal(){
+  const s=G.players.slice().sort((a,b)=>b.score-a.score||b.quanta-a.quanta);
+  const cw=G.winner!==null&&G.winner!==undefined;
+  const wid=cw?G.winner:s[0].id,wp=G.players[wid];
+  const win=cw?wp.name:s.filter(p=>p.score===s[0].score&&p.quanta===s[0].quanta).map(p=>p.name).join(' и ');
+  openModal(`<h2>ИГРА ОКОНЧЕНА</h2><p>Победа: <b style="color:var(--gold)">${win}</b>${cw?'<br><span class="mut">Планетная цепочка 1-2-4-8 простояла весь раунд</span>':''}</p><table class="res">${s.map(p=>`<tr${p.id===wid||(!cw&&p.score===s[0].score&&p.quanta===s[0].quanta)?' class="win"':''}><td><span style="color:${p.color}">●</span> ${p.name}</td><td style="text-align:right">${p.score} <span class="mut">◈${p.quanta}</span></td></tr>`).join('')}</table><div class="row"><button class="btn pri" data-act="again">Играть снова</button><button class="btn" data-act="mclose">Посмотреть поле</button></div>`,{lock:true});
+}
+
+/* ---------- подсказки (лёгкий режим) ---------- */
+const TIPS=[
+ 'Ищите соседей с простым отношением периодов: 2:1, 3:2, 4:3. Чем проще дробь, тем лучше.',
+ 'Фаза 2 (стрелка вниз) у соседа даёт противофазу: +1 очко и защиту от Люков.',
+ 'Сближение (одинаковые фазы) удваивает очки, но каждый раунд кладёт жетон. После третьего тело с большим периодом вылетает, а владелец теряет '+PENALTY+' очка.',
+ 'Клетка рядом с несколькими картами даёт сразу несколько связей. Ищите такие «углы».',
+ 'Цепочка из трёх тел по прямой даёт бонус +'+CHAIN_BONUS+'. Но при одинаковых фазах всех трёх бонуса нет.',
+ 'У вас '+FREE_SHIFTS+' бесплатных сдвига фазы за игру. Они не тратят ход: используйте, чтобы убрать сближение или получить очки.',
+ 'Резонанс Лапласа: три тела с периодами 1:2:4 (или 2:4:8) подряд, по прямой или с изгибом, дают +'+LAPLACE_BONUS+'. Фазы не должны быть одинаковыми у всех трёх.',
+ 'Четыре ваших тела с периодами 1-2-4-8 и разными фазами у соседей дают победу, если цепочка простоит до конца следующего раунда. Следите, чтобы соперник её не сломал.',
+ 'Кванты ◈ копятся за стабильные резонансы (1 за раунд). За '+QUANTA_SHIFT+' кванта можно сделать ещё один сдвиг фазы без траты хода.',
+ 'Красные пульсирующие карты под угрозой Люка. Тело в фазе 2 от Люка защищено.',
+ 'Если очков не набрать, сыграйте Люк против периодов соперников или сбросьте ненужную карту.'
+];
+function computeHint(){
+  const st=G,a=botChoose(st,()=>0),c=me().hand.find(x=>x.id===a.cardId);
+  if(!c)return null;
+  let text='',gain=0;
+  if(a.type==='body'){
+    const r=evalPlacement(st,c,a.x,a.y,a.phase,0);gain=r.gained;
+    const nb=r.links.map(l=>'«'+l.other.card.name+'» ('+(l.inf.base?l.inf.ratio:'диссонанс')+')').join(', ');
+    const tg=tagOf(r);
+    const why=tg.k==='d2'?'противофаза даёт +1 очко и защиту от Люков':tg.k==='d0'?'сближение удваивает очки, но копит нагрузку: следите за жетонами':tg.k==='dn'?'простое отношение периодов приносит очки':'связей с резонансом нет';
+    text=`Положите <b>«${c.name}»</b> в клетку рядом с ${nb||'полем'} и выберите <b>фазу ${a.phase}</b>: <b>+${gain}</b>. Почему: ${why}.`;
+  }else{
+    const sim=cloneState(st),r=applyAction(sim,a);gain=r.ok?r.gained:0;
+    const b=a.uid?bodyByUid(st,a.uid):null,nm=b?'«'+b.card.name+'»':'';
+    if(a.type==='tide')text=`Сыграйте <b>«Приливная сила»</b> на ${nm}: период ${effP(b)} → ${clamp(effP(b)+a.dir)}, <b>+${gain}</b>.`;
+    else if(a.type==='shift')text=`Сыграйте <b>«Сдвиг фазы»</b> на ${nm}: фаза ${b.phase} → ${(b.phase+a.dir+4)%4}, <b>+${gain}</b>.`;
+    else if(a.type==='swap'){const x=bodyByUid(st,a.a),y=bodyByUid(st,a.b);text=`Сыграйте <b>«Гравитационный толчок»</b>: поменять «${x.card.name}» и «${y.card.name}», <b>+${gain}</b>.`;}
+    else if(a.type==='wind')text=`Сыграйте <b>«Солнечный ветер»</b> на ${nm}: тело уйдёт с поля${b.owner===null?'':', его владелец '+st.players[b.owner].name+' потеряет '+PENALTY+' очка'}.`;
+    else if(a.type==='hatch'){const lost=st.bodies.filter(b=>!sim.bodies.some(x=>x.uid===b.uid));text=`Положите Люк <b>«${c.name}»</b> в зону: `+(lost.length?'будут выброшены '+lost.map(b=>'«'+b.card.name+'»').join(', '):'пока никого не заденет, но создаст угрозу.');}
+    else text='Сбросьте карту.';
+  }
+  if(gain<=0&&['body','tide','shift','swap'].includes(a.type))text+=' Очков этот ход не принесёт: выгодных вариантов в руке нет, можно и сбросить карту.';
+  const fs=botFreeShift(st);
+  let shiftText='';
+  if(fs){const b=bodyByUid(st,fs.uid);shiftText=`Перед ходом выгодно потратить бесплатный сдвиг: повернуть <b>«${b.card.name}»</b> ${fs.dir<0?'↺ на −90°':'↻ на +90°'} (осталось ${me().shifts}).`;}
+  return {a,card:c,text,shift:fs,shiftText};
+}
+function hintModal(){
+  if(!humanTurn()){toast('Подсказка доступна в ваш ход');return;}
+  const h=computeHint();
+  if(!h){openModal('<h2>💡 Подсказка</h2><p>Подходящих ходов не найдено. Можно сбросить карту.</p>');return;}
+  ui.hintCache=h;
+  openModal(`<h2>💡 Подсказка</h2><p>${h.text}</p>${h.shiftText?'<div class="note">'+h.shiftText+'</div>':''}<div class="note">Совет: ${TIPS[ui.tipN++%TIPS.length]}</div><div class="row"><button class="btn pri" data-act="hintshow">Показать ход</button>${h.shift?'<button class="btn" data-act="hintshift">Применить сдвиг</button>':''}<button class="btn" data-act="mclose">Закрыть</button></div>`);
+}
+function hintShow(){
+  const h=ui.hintCache;closeModal();if(!h||!humanTurn())return;
+  const c=me().hand.find(x=>x.id===h.a.cardId);if(!c)return;
+  resetSel();ui.sel=c;ui.hintShow=h;
+  if(c.kind==='body'){ui.mode='place';ui.cell={x:h.a.x,y:h.a.y};ui.phase=h.a.phase;}
+  else if(c.kind==='perturb'){ui.mode='perturb';ui.tgt=h.a.uid||h.a.a||null;}
+  else ui.mode='hatch';
+  render();
+  if(ui.cell)showCell(ui.cell);
+}
+
+/* ---------- ход: человек и боты ---------- */
+function handleEvents(evs,ownMove){
+  for(const e of evs){
+    ui.log.unshift({text:e.text,kind:e.kind});
+    if(e.kind==='place'){
+      const b=bodyByUid(G,e.uid);
+      if(b){ui.last=e.uid;addFloater(b.x,b.y,'+'+e.gained);soundPlace(b);showBody(b);}
+      if(!ownMove)toast(e.text);
+    }else if(e.kind==='perturb'){
+      const b=bodyByUid(G,e.uid);
+      if(b&&e.gained>0){addFloater(b.x,b.y,'+'+e.gained);tone(660,0,0.4,0.1);}
+      if(!ownMove)toast(e.text);
+    }else if(e.kind==='eject'){
+      if(e.body){addFading(e.body);if(e.owner!==null)addFloater(e.body.x,e.body.y,'−'+PENALTY,true);}
+      soundEject();toast(e.text,true);
+    }else if(e.kind==='hatch'||e.kind==='discard'){
+      if(!ownMove)toast(e.text);
+    }else if(e.kind==='chain'||e.kind==='chainwin'){
+      toast(e.text);tone(880,0,0.5,0.12);
+    }else if(e.kind==='chainbreak'){
+      toast(e.text,true);
+    }else if(e.kind==='quanta'){
+      const g=e.gain[0];if(g)toast('◈ +'+g+' квант: стабильный резонанс');
+    }
+  }
+  while(ui.log.length>120)ui.log.pop();
+}
+function humanAct(a){
+  if(!humanTurn())return;
+  const r=applyAction(G,a);
+  if(!r.ok){toast(r.msg,true);return;}
+  resetSel();
+  handleEvents(r.events,true);
+  handleEvents(finishTurn(G),true);
+  advance();
+}
+function humanFreeShift(a){
+  if(!humanTurn())return;
+  const r=applyFreeShift(G,a);
+  if(!r.ok){toast(r.msg,true);return;}
+  resetSel();
+  handleEvents(r.events,true);
+  render();
+}
+async function advance(){
+  const gid=ui.gid;
+  ui.busy=true;render();
+  while(!G.over){
+    const p=G.players[G.cur];
+    if(!p.hand.length){ui.log.unshift({text:p.name+': карт нет, ход пропущен'});handleEvents(finishTurn(G),true);render();await sleep(300);if(gid!==ui.gid)return;continue;}
+    if(!p.isBot)break;
+    await sleep(1000);
+    if(gid!==ui.gid)return;
+    const fs=botFreeShift(G);
+    if(fs){const rs=applyFreeShift(G,fs);if(rs.ok){handleEvents(rs.events,false);render();await sleep(750);if(gid!==ui.gid)return;}}
+    const a=botChoose(G);
+    let r=applyAction(G,a);
+    if(!r.ok){r=applyAction(G,{type:'discard',cardId:p.hand[0].id});}
+    handleEvents(r.events,false);
+    handleEvents(finishTurn(G),false);
+    render();
+  }
+  ui.busy=false;render();
+  if(G.over)endModal();
+}
+function startGame(){
+  closeModal();ui.gid++;
+  G=newGame({bots:ui.bots,diff:ui.diff});
+  resetSel();ui.busy=true;ui.log=[];ui.tipN=0;ui.last=null;ui.hintCache=null;
+  $('#floaters').innerHTML='';
+  ui.log.unshift({text:'Игра началась. В систему положено «'+G.bodies[0].card.name+'».',kind:'start'});
+  render();
+  V.s=.85;ui.userView=false;
+  requestAnimationFrame(()=>centerOn(G.bodies[0]));
+  advance();
+}
+function centerOn(b){
+  const {w,h}=fieldSize();if(!w)return;
+  V.tx=w/2-(b.x*SX+CW/2)*V.s;V.ty=h/2-(b.y*SY+CH/2)*V.s;applyView();
+}
+
+/* ---------- выбор карт и клики ---------- */
+function selectCard(c){
+  if(!humanTurn())return;
+  if(ui.sel&&ui.sel.id===c.id){resetSel();render();return;}
+  resetSel();ui.sel=c;
+  ui.mode=c.kind==='body'?'place':c.kind==='perturb'?'perturb':'hatch';
+  ac();render();
+}
+function onCell(x,y){
+  if(!(humanTurn()&&ui.mode==='place'&&ui.sel))return;
+  ui.cell={x,y};
+  if(ui.diff==='easy')ui.phase=phaseOptions(ui.sel,ui.cell).reduce((b,o)=>o.r.gained>b.r.gained?o:b).ph;
+  render();
+}
+function onBody(uid){
+  const b=bodyByUid(G,uid);if(!b)return;
+  if(humanTurn()&&(ui.mode==='perturb'||ui.mode==='shift')){ui.tgt=uid;render();return;}
+  openModal(cardInfo(b.card,b));
+}
+function onAct(el){
+  const act=el.dataset.act,v=el.dataset.v;
+  switch(act){
+    case 'mclose':closeModal();break;
+    case 'menu':menuModal();break;
+    case 'log':logModal();break;
+    case 'rules':rulesModal(el.dataset.from);break;
+    case 'tostart':startModal();break;
+    case 'demo':showDemo(el.dataset.from);break;
+    case 'sound':ui.sound=!ui.sound;if(el.closest('#modal'))menuModal();render();break;
+    case 'hintsw':ui.hints=!ui.hints;menuModal();render();break;
+    case 'hint':hintModal();break;
+    case 'hintshow':hintShow();break;
+    case 'hintshift':{const h=ui.hintCache;closeModal();if(h&&h.shift)humanFreeShift(h.shift);break;}
+    case 'newgame':ui.gid++;ui.busy=true;startModal();break;
+    case 'bots':ui.bots=+v;startModal();break;
+    case 'diff':ui.diff=v;startModal();break;
+    case 'start':ac();startGame();break;
+    case 'again':startGame();break;
+    case 'note':{ui.sound=true;tone(freqOf(+v)*2,0,1.3,0.16);break;}
+    case 'zin':{const {w,h}=fieldSize();zoomAt(w/2,h/2,1.3);break;}
+    case 'zout':{const {w,h}=fieldSize();zoomAt(w/2,h/2,1/1.3);break;}
+    case 'zfit':fitView();break;
+    case 'shiftfab':
+      if(!humanTurn())break;
+      if(ui.mode==='shift'){resetSel();render();break;}
+      if(!canShift(me())){toast('Бесплатные сдвиги закончились, нужно ◈'+QUANTA_SHIFT+' (у вас ◈'+me().quanta+')',true);break;}
+      resetSel();ui.mode='shift';render();break;
+    case 'info':if(ui.sel)openModal(cardInfo(ui.sel,null));break;
+    case 'cancel':resetSel();render();break;
+    case 'phase':ui.phase=+v;render();break;
+  }
+}
+function setupEvents(){
+  document.addEventListener('click',e=>{
+    const t=e.target;
+    const ac_=t.closest('[data-act]');
+    if(ac_){onAct(ac_);return;}
+    const dm=t.closest('[data-demo]');
+    if(dm){if(!dm.disabled)demoAct(dm.dataset.demo);return;}
+    const ab=t.closest('[data-a]');
+    if(ab&&!ab.disabled){
+      const a=ui.acts[+ab.dataset.a];
+      if(a){if(a.type==='freeshift')humanFreeShift(a);else humanAct(a);}
+      return;
+    }
+    if(t.id==='modal'&&t.dataset.lock!=='1'){closeModal();return;}
+    const hc=t.closest('.hc');
+    if(hc&&G){const c=me().hand.find(x=>x.id===hc.dataset.cid);if(c){if(hc._lp){hc._lp=false;return;}selectCard(c);}return;}
+    const gh=t.closest('.gh');
+    if(gh){onCell(+gh.dataset.x,+gh.dataset.y);return;}
+    const lk=t.closest('.lk');
+    if(lk&&G){const a=bodyByUid(G,lk.dataset.la),b=bodyByUid(G,lk.dataset.lb);if(a&&b)openModal(linkInfoModal(a,b));return;}
+    const fb=t.closest('.fb');
+    if(fb&&G&&!fb.classList.contains('out')&&fb.dataset.uid!=='preview'){onBody(fb.dataset.uid);return;}
+  });
+  /* долгое нажатие на карту в руке открывает описание */
+  document.addEventListener('pointerdown',e=>{
+    const hc=e.target.closest('.hc');if(!hc||!G)return;
+    hc._lp=false;
+    const t0=setTimeout(()=>{const c=me().hand.find(x=>x.id===hc.dataset.cid);if(c){hc._lp=true;openModal(cardInfo(c,null));}},520);
+    const clr=()=>{clearTimeout(t0);document.removeEventListener('pointerup',clr);document.removeEventListener('pointermove',mv);};
+    const sx=e.clientX,sy=e.clientY;
+    const mv=ev=>{if(Math.hypot(ev.clientX-sx,ev.clientY-sy)>8)clr();};
+    document.addEventListener('pointerup',clr);document.addEventListener('pointermove',mv);
+  });
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modal').dataset.lock!=='1')closeModal();});
+  window.addEventListener('resize',()=>{if(G&&!ui.userView&&G.bodies.length<=1)centerOn(G.bodies[0]);});
+}
+function initUI(){
+  $('#defs').innerHTML=defsSVG();
+  $('#bMenu').innerHTML=ICON.menu;$('#bHint').innerHTML=ICON.bulb;$('#bLog').innerHTML=ICON.log;$('#bFit').innerHTML=ICON.fit;
+  setupField();setupEvents();
+  showDemo('start');
+}
+
+/* ====== ДЕМОНСТРАЦИЯ ПРАВИЛ ====== */
+const DEMO_PL=[{color:'#f3c24a'},{color:'#6ec6ff'}];
+const demo={step:0,from:'start',ph:0,loads:0,phB:1,ejected:false,layout:'row',same:false,hatched:false};
+function dB(name,x,y,phase,owner){
+  const b=BODIES.find(z=>z.n===name);
+  return {uid:'d'+name+x+y,card:{id:'demo',kind:'body',name:b.n,period:b.p,theme:b.k,shape:b.s,color:b.c,fact:b.f},owner:owner===undefined?null:owner,phase,mod:0,x,y};
+}
+function stageHTML(bodies,o){
+  o=o||{};
+  let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9;
+  for(const b of bodies){mnx=Math.min(mnx,b.x);mny=Math.min(mny,b.y);mxx=Math.max(mxx,b.x);mxy=Math.max(mxy,b.y);}
+  const bs=bodies.map(b=>Object.assign({},b,{x:b.x-mnx,y:b.y-mny}));
+  const w=(mxx-mnx)*SX+CW,h=(mxy-mny)*SY+CH;
+  const avail=Math.min(window.innerWidth-56,560),sc=Math.min(o.max||.8,avail/w);
+  const st={bodies:bs,loads:o.loads||{},zone:o.zone||[],players:DEMO_PL};
+  return `<div class="stage" style="width:${Math.round(w*sc)}px;height:${Math.round(h*sc)}px"><div class="sw" style="width:${w}px;height:${h}px;transform:scale(${sc})">${worldHTML(st,{players:DEMO_PL})}</div></div>`;
+}
+function dNote(t,c){return '<div class="note '+(c||'')+'">'+t+'</div>';}
+function dBtn(act,label,o){o=o||{};return `<button class="btn${o.pri?' pri':''}${o.sm?' sm':''}" data-demo="${act}"${o.dis?' disabled':''}>${label}</button>`;}
+
+const DEMO_STEPS=[
+  ()=>({title:'Что такое резонанс',html:
+    '<p>Космические тела притягивают друг друга. Если периоды их обращения относятся как простые числа (2:1, 3:2, 4:3), слабые толчки повторяются в одних и тех же местах и <b>накапливаются</b>. Так три спутника Юпитера держат строй 1:2:4.</p>'+
+    stageHTML([dB('Ио',0,0,0),dB('Европа',1,0,1),dB('Ганимед',2,0,2)])+
+    dNote('<b>Ваша цель:</b> выкладывать карты на общее поле так, чтобы у соседних карт получались простые отношения периодов, и набирать очки. Резонанс бывает не только в космосе: камертоны, качели, бокалы и мосты работают так же.')}),
+  ()=>({title:'Период и нота',html:
+    '<p>Число в золотом кружке — <b>период</b> (1–12). Чем он меньше, тем выше нота: частота = 660 / период Гц. Простые отношения звучат чисто, как музыкальные интервалы: 2:1 — октава, 3:2 — квинта, 4:3 — кварта.</p>'+
+    stageHTML([dB('Ио',0,0,0),dB('Европа',1,0,1)],{max:.7})+
+    '<div class="row c">'+dBtn('hear:ok','▶ Октава 2:1',{pri:1})+'</div>'+
+    stageHTML([dB('Бокал',0,0,0),dB('Мост',1,0,1)],{max:.7})+
+    '<div class="row c">'+dBtn('hear:bad','▶ Диссонанс 7:5')+'</div>'+
+    dNote('Нет простого отношения — нет очков. Звук включится по кнопке.')}),
+  ()=>({title:'Очки за связь',html:
+    '<p>Периоды двух соседних карт приводятся к несократимой дроби. Очки даёт только простое отношение:</p>'+
+    '<table class="res"><tr><td><b>1:1</b> унисон</td><td>Камертон и Камертон</td><td style="text-align:right"><b>1</b></td></tr>'+
+    '<tr><td><b>2:1</b> октава</td><td>Европа и Ганимед</td><td style="text-align:right"><b>2</b></td></tr>'+
+    '<tr><td><b>3:1</b> окт. + квинта</td><td>Юпитер и Астероид 3:1</td><td style="text-align:right"><b>2</b></td></tr>'+
+    '<tr><td><b>3:2</b> квинта</td><td>Нептун и Плутон</td><td style="text-align:right"><b>3</b></td></tr>'+
+    '<tr><td><b>4:3</b> кварта</td><td>Титан и Гиперион</td><td style="text-align:right"><b>3</b></td></tr>'+
+    '<tr><td>другое</td><td>Земля и Венера (8:5)</td><td style="text-align:right">0</td></tr></table>'+
+    dNote('Это базовые очки. Дальше они меняются в зависимости от <b>фазы</b>.')}),
+  ()=>{
+    const a=dB('Нептун',0,0,0),b=dB('Плутон',1,0,demo.ph),inf=linkInfo(a,b);
+    const msg=inf.d===0?dNote('<b>Сближение (Δ=0).</b> Тела сходятся в одной точке, толчки складываются: очки ×2 = '+inf.score+'. Но копится нагрузка (следующий шаг).','red')
+      :inf.d===2?dNote('<b>Противофаза (Δ=2).</b> Сближения происходят далеко друг от друга, как у Плутона и Нептуна: +1 очко = '+inf.score+' и защита от Люков.','green')
+      :dNote('<b>Сдвиг (Δ='+inf.d+').</b> Обычные очки: '+inf.score+'.');
+    return {title:'Фаза: главная механика',html:
+      '<p>Фаза — положение тела на орбите, число от 0 до 3 (четверти оборота). Кладя карту, вы <b>выбираете поворот</b>: стрелка вверх = 0. Важна разность фаз соседей Δ.</p>'+
+      stageHTML([a,b])+'<div class="row c">'+dBtn('rot','↻ Повернуть Плутон (фаза '+demo.ph+')',{pri:1})+'</div>'+msg+
+      '<p class="mut">Красный значок связи — сближение, зелёный — противофаза, жёлтый — сдвиг.</p>'};
+  },
+  ()=>{
+    const a=dB('Европа',0,0,1),b=dB('Ганимед',1,0,demo.phB,0),inf=linkInfo(a,b),lo=demo.loads;
+    let h='<p>На связи со <b>сближением</b> каждый раунд копится жетон нагрузки. На третьем жетоне выбрасывается тело с <b>большим периодом</b>. Его владелец <b>теряет '+PENALTY+' очка</b>, а карта <b>возвращается в колоду</b>.</p>';
+    if(demo.ejected){
+      h+=stageHTML([a])+dNote('<b>«Ганимед» (период 4) выброшен.</b> Вы потеряли '+PENALTY+' очка, карта вернулась в колоду и может снова попасть кому-то в руку.','red');
+    }else{
+      const loads={};if(inf.d===0)loads[loadKey(a,b)]=lo;
+      h+=stageHTML([a,b],{loads});
+      h+=inf.d===0?dNote('Жетонов нагрузки: <b>'+lo+' из 3</b>. Нажмите «Конец раунда» и посмотрите, что будет.','red'):dNote('Фаза изменилась (Δ='+inf.d+'): жетоны сняты, связь снова безопасна.','green');
+    }
+    return {title:'Нагрузка, штраф и возврат',html:h+'<div class="row c">'+dBtn('round','Конец раунда',{pri:1,dis:demo.ejected||inf.d!==0})+dBtn('rotB','↻ Повернуть Ганимед ('+demo.phB+')',{dis:demo.ejected})+dBtn('resetLoad','Сначала')+'</div>'};
+  },
+  ()=>{
+    const L={row:[[0,0],[1,0],[2,0]],col:[[0,0],[0,1],[0,2]],bend:[[0,0],[1,0],[1,1]]}[demo.layout];
+    const ph=demo.same?[1,1,1]:[0,1,2],nm=['Ио','Европа','Ганимед'];
+    const bs=nm.map((n,i)=>dB(n,L[i][0],L[i][1],ph[i]));
+    const l1=linkScore(bs[0],bs[1]),l2=linkScore(bs[1],bs[2]),cb=demo.layout==='bend'?0:chainBonus(bs[0],bs[1],bs[2]),lp=LAPLACE_BONUS*laplaceTriples(bs).length;
+    let msg;
+    if(demo.same)msg=dNote('<b>Все три в одной фазе:</b> ни бонуса цепочки, ни Лапласа (у настоящего резонанса Ио–Европа–Ганимед тройного сближения не бывает). Связи '+l1+' + '+l2+' = <b>'+(l1+l2)+'</b>, но обе копят нагрузку.','red');
+    else if(demo.layout==='bend')msg=dNote('<b>Изгиб:</b> бонус цепочки +'+CHAIN_BONUS+' даётся только по прямой, зато <b>резонанс Лапласа 1:2:4</b> засчитывается и с изгибом: +'+LAPLACE_BONUS+'. Связи '+l1+' + '+l2+' и Лаплас +'+lp+' = <b>'+(l1+l2+lp)+'</b>.','green');
+    else msg=dNote('<b>Цепочка по прямой:</b> связи '+l1+' + '+l2+', бонус цепочки +'+cb+' и <b>Лаплас +'+lp+'</b> = <b>'+(l1+l2+cb+lp)+'</b>. Безопасно: сближения нет.','green');
+    return {title:'Поле и цепочки',html:
+      '<p>Карты кладутся на <b>свободное поле</b> в любую клетку рядом с уже лежащими: справа, слева, сверху или снизу. Новая карта образует связи <b>со всеми соседями сразу</b>. Три тела подряд <b>по прямой</b> (ряд или столбец) с резонансными связями дают бонус цепочки.</p>'+
+      stageHTML(bs,{max:.7})+
+      '<div class="seg">'+['row:Ряд','col:Столбец','bend:Изгиб'].map(s=>{const [k,l]=s.split(':');return `<button data-demo="lay:${k}" class="${demo.layout===k?'on':''}">${l}</button>`;}).join('')+'</div>'+
+      '<div class="seg">'+[['diff','Разные фазы'],['same','Одинаковые фазы']].map(([k,l])=>`<button data-demo="ph:${k}" class="${(k==='same')===demo.same?'on':''}">${l}</button>`).join('')+'</div>'+msg};
+  },
+  ()=>{
+    const bs=[dB('Ио',0,0,0,0),dB('Европа',1,0,1,0),dB('Ганимед',1,1,2,0),dB('Гильда',2,1,3,0)];
+    return {title:'Лаплас, цепочка планет, кванты',html:
+      '<p><b>Резонанс Лапласа</b>: три тела подряд с периодами a : 2a : 4a (Ио, Европа, Ганимед = 1:2:4). Он засчитывается по прямой и с изгибом и даёт <b>+'+LAPLACE_BONUS+'</b>, если у всех трёх не одна и та же фаза.</p>'+
+      '<p><b>Планетная цепочка</b>: четыре ваших тела подряд с периодами <b>1 – 2 – 4 – 8</b>, у соседей разные фазы. Если она простоит до конца <b>следующего</b> раунда, вы побеждаете сразу. Соперник может её разрушить.</p>'+
+      stageHTML(bs,{max:.62})+
+      dNote('Золотое свечение на связях: победная цепочка (Ио 1, Европа 2, Ганимед 4, Гильда 8). У соседей разные фазы, так что она стабильна.','green')+
+      '<p><b>Кванты ◈</b>: в конце каждого раунда вы получаете 1 квант, если у вас есть стабильный резонанс (связь с очками без сближения). <b>'+QUANTA_SHIFT+' кванта = ещё один сдвиг фазы</b> без карты и без траты хода.</p>'};
+  },
+  ()=>({title:'Ваш ход: три типа карт',html:
+    '<p>В свой ход вы играете <b>одну карту</b> из руки (4 карты), затем берёте новую. Очки получает тот, кто сыграл карту.</p>'+
+    '<div class="row c" style="gap:10px;align-items:flex-start">'+
+      '<div style="text-align:center;width:116px">'+cardEl({id:'d',kind:'body',name:'Земля',period:8,theme:'space',shape:'round',color:'#3f8fe0',fact:''},{fs:12})+'<div class="mut" style="margin-top:6px"><b style="color:#fff">Тело.</b> На поле, с выбором фазы.</div></div>'+
+      '<div style="text-align:center;width:116px">'+cardEl({id:'d',kind:'perturb',fx:'tide',name:'Приливная сила',text:''},{fs:12})+'<div class="mut" style="margin-top:6px"><b style="color:#fff">Возмущение.</b> Меняет карту на поле.</div></div>'+
+      '<div style="text-align:center;width:116px">'+cardEl({id:'d',kind:'hatch',hx:'kirkwood',hit:6,name:'Щель 2:1',text:''},{fs:12})+'<div class="mut" style="margin-top:6px"><b style="color:#fff">Люк.</b> Выбрасывает тела.</div></div>'+
+    '</div>'+
+    dNote('Возмущения тоже приносят очки: вы получаете прирост, который они создали. <b>Солнечный ветер</b> убирает тело (владелец −'+PENALTY+'), <b>Гравитационный толчок</b> меняет двух соседей местами, <b>Сдвиг фазы</b> поворачивает карту на ±90°, <b>Приливная сила</b> меняет период на ±1.')}),
+  ()=>{
+    const hz={id:'d',kind:'hatch',hx:'kirkwood',hit:4,name:'Щель 3:1',text:''};
+    const A=dB('Астероид 3:1',0,0,0,0),B=dB('Астероид 3:1',1,0,2,1);B.uid='dB';
+    const bs=demo.hatched?[B]:[A,B];
+    let h='<p><b>Люки</b> лежат в зоне Кирквуда (Юпитер = 12) и выбрасывают тела с нужным периодом: сразу при появлении и в конце каждого раунда. От Люка защищает <b>фаза 2</b>. Период 8 защищает карта «Гильды 3:2».</p>';
+    h+=stageHTML(bs,{zone:demo.hatched?[hz]:[],max:.8});
+    h+='<div class="row c">'+dBtn('hatch','Положить «Щель 3:1» (бьёт период 4)',{pri:1,dis:demo.hatched})+dBtn('unhatch','Сначала')+'</div>';
+    h+=demo.hatched?dNote('Тело слева (фаза 0) выброшено: его владелец потерял '+PENALTY+' очка, карта вернулась в колоду. Тело справа в фазе 2 осталось: противофаза защищает.','green'):dNote('Оба тела имеют период 4. Слева фаза 0, справа фаза 2 (с щитом).');
+    return {title:'Люки: резонанс разрушает',html:h};
+  },
+  ()=>({title:'Бесплатный сдвиг фазы',html:
+    '<p>Фазу уже лежащей карты можно поменять картой «Сдвиг фазы», а ещё у вас есть <b>'+FREE_SHIFTS+' бесплатных сдвига за игру</b>. Они не требуют карты и <b>не тратят ход</b>. Когда они закончатся, сдвиг можно купить за '+QUANTA_SHIFT+' кванта.</p>'+
+    '<div class="row c"><div class="chip act" style="--c:#f3c24a;background:#2a1f6e;border-color:#c79bf2;padding:8px 16px;font-weight:600"><span style="display:inline-flex;width:18px;height:18px">'+ICON.shift+'</span>Сдвиг фазы <b style="background:#0006;border-radius:10px;padding:1px 8px">'+FREE_SHIFTS+'</b></div></div>'+
+    dNote('Нажмите кнопку внизу поля, затем на тело, и выберите поворот ↺ или ↻. Сдвиг помогает убрать опасное сближение до выброса или получить очки за новую фазу.')+
+    dNote('<b>Помните о штрафе:</b> если тело вылетает, владелец теряет '+PENALTY+' очка, а карта возвращается в колоду.','red')}),
+  ()=>({title:'Управление и конец игры',html:
+    '<ul><li><b>Поле:</b> тяните пальцем, масштабируйте щипком, колесом мыши или кнопками «+» и «−». Кнопка со скобками показывает всё поле целиком.</li>'+
+    '<li><b>Карта в руке:</b> нажмите, чтобы выбрать; удерживайте, чтобы прочитать описание.</li>'+
+    '<li><b>Карта или значок связи на поле:</b> нажмите, чтобы прочитать пояснение.</li>'+
+    '<li><b>Конец игры:</b> через ограниченное число раундов (18 при двух игроках) или когда колода опустеет и все сходят ещё раз. Побеждает набравший больше очков.</li></ul>'+
+    dNote('<b>Совет новичку:</b> выберите «Лёгкая (с подсказками)». Кнопка с лампочкой вверху подскажет лучший ход и объяснит, почему он хорош.')+
+    '<p>Коротко: простые отношения периодов дают очки, фаза решает, будет резонанс защитой (Δ=2) или ловушкой (Δ=0), а Люки и нагрузка выбрасывают лишних.</p>'})
+];
+function renderDemo(keep){
+  const old=document.querySelector('#modal .mbox');
+  const sc=keep&&old?old.scrollTop:0;
+  const st=DEMO_STEPS[demo.step](),n=DEMO_STEPS.length,last=demo.step===n-1,game=demo.from==='game';
+  openModal(`<h2>${st.title}</h2><div class="dots">${DEMO_STEPS.map((_,i)=>'<i class="'+(i===demo.step?'on':'')+'"></i>').join('')}</div><div class="mut" style="text-align:center;margin-bottom:6px">Демонстрация правил: шаг ${demo.step+1} из ${n}</div>${st.html}`+
+    `<div class="row" style="justify-content:space-between;margin-top:14px">${dBtn('skip',game?'Закрыть':'Пропустить')}<span class="row" style="margin:0">${demo.step>0?dBtn('prev','← Назад'):''}${dBtn(last?'finish':'next',last?(game?'Закрыть':'К игре →'):'Дальше →',{pri:1})}</span></div>`,
+    {lock:!game,keepScroll:sc});
+}
+function showDemo(from){
+  Object.assign(demo,{step:0,from:from||'start',ph:0,loads:0,phB:1,ejected:false,layout:'row',same:false,hatched:false});
+  renderDemo(false);
+}
+function demoAct(a){
+  if(a==='next'){demo.step=Math.min(demo.step+1,DEMO_STEPS.length-1);demo.loads=0;demo.ejected=false;renderDemo(false);return;}
+  if(a==='prev'){demo.step=Math.max(0,demo.step-1);renderDemo(false);return;}
+  if(a==='skip'||a==='finish'){if(demo.from==='game')closeModal();else startModal();return;}
+  if(a==='hear:ok'||a==='hear:bad'){
+    ui.sound=true;const p=a==='hear:ok'?[1,2]:[5,7];
+    tone(freqOf(p[0])*2,0,1.2,0.14);tone(freqOf(p[1])*2,0,1.2,0.14);return;
+  }
+  if(a==='rot')demo.ph=(demo.ph+1)%4;
+  else if(a==='round'){demo.loads++;if(demo.loads>=3){demo.ejected=true;soundEject();}}
+  else if(a==='rotB'){demo.phB=(demo.phB+1)%4;demo.loads=0;}
+  else if(a==='resetLoad'){demo.loads=0;demo.phB=1;demo.ejected=false;}
+  else if(a.startsWith('lay:'))demo.layout=a.slice(4);
+  else if(a==='ph:same')demo.same=true;
+  else if(a==='ph:diff')demo.same=false;
+  else if(a==='hatch'){demo.hatched=true;soundEject();}
+  else if(a==='unhatch')demo.hatched=false;
+  renderDemo(true);
+}
+
+initUI();
+</script>
+</body>
+</html>
