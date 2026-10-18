@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гармония Орбит (Harmony of Orbits)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        space: {
+                            900: '#060814',
+                            800: '#0d1127',
+                            700: '#161d3f',
+                            600: '#232e5f',
+                            gold: '#fbbf24',
+                            cyan: '#22d3ee',
+                            purple: '#a855f7',
+                            rose: '#f43f5e'
+                        }
+                    },
+                    boxShadow: {
+                        'neon-cyan': '0 0 15px rgba(34, 211, 238, 0.4)',
+                        'neon-gold': '0 0 15px rgba(251, 191, 36, 0.4)',
+                        'neon-purple': '0 0 15px rgba(168, 85, 247, 0.4)'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: radial-gradient(circle at center, #0f172a 0%, #060814 100%);
+            color: #e2e8f0;
+            user-select: none;
+        }
+
+        h1, h2, h3, h4, .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1127;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #232e5f;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+
+        /* Card Glowing Effects */
+        .card-hover {
+            transition: all 0.25s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Orbit Ring Canvas Styling */
+        .orbit-slot {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .orbit-slot.active-target {
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(34, 211, 238, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
+        }
+
+        @keyframes opponent-action-pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.08); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-opponent-action {
+            animation: opponent-action-pop 0.4s ease-out forwards;
+        }
+
+        /* Star Glows */
+        .star-yellow { filter: drop-shadow(0 0 18px #f59e0b); }
+        .star-red { filter: drop-shadow(0 0 18px #ef4444); }
+        .star-orange { filter: drop-shadow(0 0 18px #f97316); }
+        .star-brown { filter: drop-shadow(0 0 14px #b45309); }
+        .star-binary { filter: drop-shadow(0 0 20px #a855f7); }
+        .star-neutron { filter: drop-shadow(0 0 22px #06b6d4); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- HEADER / TOP NAV -->
+    <header class="bg-space-800/80 backdrop-blur-md border-b border-space-600/50 px-4 py-3 sticky top-0 z-40 flex items-center justify-between shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white shadow-neon-cyan">
+                <i class="fa-solid font-bold text-xl fa-atom"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-300">
+                    ГАРМОНИЯ ОРБИТ
+                </h1>
+                <p class="text-xs text-slate-400 tracking-widest uppercase">Harmony of Orbits</p>
+            </div>
+        </div>
+
+        <!-- Middle Info: Turn & Status -->
+        <div id="turnHeaderInfo" class="hidden md:flex items-center space-x-6 bg-space-900/80 px-4 py-1.5 rounded-full border border-space-600/60">
+            <div class="flex items-center space-x-2">
+                <span class="text-xs uppercase text-slate-400">Ход:</span>
+                <span id="currentTurnPlayerName" class="font-bold text-cyan-400">Игрок 1</span>
+            </div>
+            <div class="h-4 w-px bg-space-600"></div>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs uppercase text-slate-400">Фаза:</span>
+                <span id="currentPhaseName" class="font-bold text-amber-400">Действие (2/2)</span>
+            </div>
+            <div class="h-4 w-px bg-space-600"></div>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs uppercase text-slate-400">Колода:</span>
+                <span id="deckCountText" class="font-bold text-emerald-400">108</span>
+            </div>
+        </div>
+
+        <!-- Controls / Rule Modal trigger -->
+        <div class="flex items-center space-x-2">
+            <button id="btnIntroModal" class="p-2.5 rounded-lg bg-indigo-900/60 hover:bg-indigo-800 border border-indigo-500/50 text-indigo-200 transition flex items-center space-x-1.5" title="Инструкция">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span class="hidden sm:inline text-xs font-semibold">Обучение</span>
+            </button>
+            <button id="btnAudioToggle" class="p-2.5 rounded-lg bg-space-700 hover:bg-space-600 border border-space-600 text-slate-300 transition" title="Звук">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+            <button id="btnRulesModal" class="p-2.5 rounded-lg bg-space-700 hover:bg-space-600 border border-space-600 text-slate-300 transition flex items-center space-x-2" title="Правила">
+                <i class="fa-solid fa-book"></i>
+                <span class="hidden sm:inline text-xs font-semibold">Правила</span>
+            </button>
+            <button id="btnRestartGame" class="p-2.5 rounded-lg bg-rose-900/40 hover:bg-rose-800/60 border border-rose-700/50 text-rose-300 transition" title="Перезапуск">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- OPPONENT LIVE ACTION BANNER OVERLAY -->
+    <div id="opponentActionBanner" class="hidden fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-purple-950/90 via-space-900/95 to-purple-950/90 border border-purple-500/80 px-6 py-2.5 rounded-full shadow-neon-purple text-xs font-bold text-cyan-200 flex items-center space-x-3 backdrop-blur-md">
+        <i class="fa-solid fa-bolt text-amber-400 animate-pulse text-base"></i>
+        <span id="opponentActionText">Противник делает ход...</span>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-4 flex flex-col gap-4">
+
+        <!-- SETUP SCREEN -->
+        <div id="setupScreen" class="bg-space-800/90 border border-space-600/60 rounded-2xl p-6 sm:p-10 shadow-2xl my-auto max-w-2xl mx-auto w-full backdrop-blur-xl">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-cyan-300 to-indigo-400 mb-2">
+                    СОЗДАНИЕ КОСМИЧЕСКОЙ СИСТЕМЫ
+                </h2>
+                <p class="text-slate-400 text-sm">Выберите параметры партии для старта</p>
+            </div>
+
+            <form id="setupForm" class="space-y-6">
+                <!-- Game Mode -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Режим Игры</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer border border-space-600 rounded-xl p-3 flex items-center space-x-3 bg-space-900/50 hover:border-cyan-500/80 transition has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-950/20">
+                            <input type="radio" name="gameMode" value="ai" checked class="text-cyan-500 focus:ring-0">
+                            <div>
+                                <div class="font-bold text-sm text-slate-200">С ИИ (Одиночная)</div>
+                                <div class="text-xs text-slate-400">Игрок против Космического ИИ</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer border border-space-600 rounded-xl p-3 flex items-center space-x-3 bg-space-900/50 hover:border-cyan-500/80 transition has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-950/20">
+                            <input type="radio" name="gameMode" value="pvp" class="text-cyan-500 focus:ring-0">
+                            <div>
+                                <div class="font-bold text-sm text-slate-200">Pass & Play</div>
+                                <div class="text-xs text-slate-400">2-4 Игрока за одним экраном</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Player Count (PVP Mode) -->
+                <div id="playerCountContainer" class="hidden">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Количество Игроков</label>
+                    <div class="flex gap-4">
+                        <button type="button" data-count="2" class="btn-player-count flex-1 py-2 rounded-lg border border-space-600 bg-space-900 text-sm font-bold hover:border-cyan-500 transition active-count border-cyan-400 bg-cyan-900/30">2</button>
+                        <button type="button" data-count="3" class="btn-player-count flex-1 py-2 rounded-lg border border-space-600 bg-space-900 text-sm font-bold hover:border-cyan-500 transition">3</button>
+                        <button type="button" data-count="4" class="btn-player-count flex-1 py-2 rounded-lg border border-space-600 bg-space-900 text-sm font-bold hover:border-cyan-500 transition">4</button>
+                    </div>
+                </div>
+
+                <!-- Difficulty Level -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Уровень Сложности Звёзд</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer border border-space-600 rounded-xl p-3 flex flex-col bg-space-900/50 hover:border-emerald-500/80 transition has-[:checked]:border-emerald-400 has-[:checked]:bg-emerald-950/20">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <input type="radio" name="difficulty" value="easy" checked class="text-emerald-500 focus:ring-0">
+                                <span class="font-bold text-sm text-emerald-300">Простой</span>
+                            </div>
+                            <span class="text-xs text-slate-400">Только 6 базовых Жёлтых, Красных, Оранжевых и Коричневых карликов.</span>
+                        </label>
+                        <label class="cursor-pointer border border-space-600 rounded-xl p-3 flex flex-col bg-space-900/50 hover:border-purple-500/80 transition has-[:checked]:border-purple-400 has-[:checked]:bg-purple-950/20">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <input type="radio" name="difficulty" value="hard" class="text-purple-500 focus:ring-0">
+                                <span class="font-bold text-sm text-purple-300">Сложный</span>
+                            </div>
+                            <span class="text-xs text-slate-400">Полная колода звёзд (включает Двойные и Нейтронные звёзды).</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 text-white font-orbitron font-extrabold text-lg shadow-lg hover:shadow-neon-cyan transition transform active:scale-95">
+                    НАЧАТЬ ПАРТИЮ
+                </button>
+            </form>
+        </div>
+
+        <!-- GAMEPLAY SCREEN -->
+        <div id="gameplayScreen" class="hidden flex-1 flex flex-col gap-4">
+
+            <!-- Top Row: Opponents View & Log Console -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <!-- Opponent Systems List -->
+                <div class="lg:col-span-3 bg-space-800/60 border border-space-600/50 rounded-2xl p-3 backdrop-blur">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">
+                            <i class="fa-solid fa-globe mr-1"></i> Системы соперников (Наглядное состояние)
+                        </span>
+                        <span class="text-xs text-slate-500">Нажмите на систему для просмотра подробностей</span>
+                    </div>
+
+                    <div id="opponentsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Dynamic Mini Orbit Systems of other players rendered here -->
+                    </div>
+                </div>
+
+                <!-- Event Log / Info Hub -->
+                <div class="bg-space-800/60 border border-space-600/50 rounded-2xl p-3 flex flex-col h-52 lg:h-auto">
+                    <div class="flex items-center justify-between mb-1 pb-1 border-b border-space-600/40">
+                        <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">
+                            <i class="fa-solid fa-scroll mr-1"></i> Бортовой Журнал
+                        </span>
+                    </div>
+                    <div id="gameLog" class="flex-1 overflow-y-auto space-y-1.5 text-xs text-slate-300 pr-1">
+                        <!-- Log messages go here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Player Board Header -->
+            <div class="bg-space-800/80 border border-space-600/70 rounded-2xl p-4 shadow-xl backdrop-blur">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-space-600/50 pb-3 mb-3">
+                    <div class="flex items-center space-x-3">
+                        <div id="activePlayerStarIcon" class="w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold star-yellow bg-amber-500 text-slate-900">
+                            <i class="fa-solid fa-sun"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h3 id="activePlayerTitle" class="font-bold text-lg text-white">Игрок 1</h3>
+                                <span id="activePlayerBadge" class="text-xs px-2 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-600">Ваш ход</span>
+                            </div>
+                            <p id="activePlayerStarName" class="text-xs text-amber-300 font-semibold">Звезда: Жёлтый карлик (Классический баланс)</p>
+                        </div>
+                    </div>
+
+                    <!-- Actions Counter & Control Panel -->
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-space-900/80 px-3 py-1.5 rounded-xl border border-space-600/80 flex items-center space-x-2">
+                            <span class="text-xs uppercase text-slate-400 font-semibold">Осталось действий:</span>
+                            <span id="actionsCounter" class="text-lg font-bold text-amber-400 font-orbitron">2 / 2</span>
+                        </div>
+
+                        <button id="btnEndTurn" class="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm shadow-md transition transform active:scale-95 flex items-center space-x-2">
+                            <span>Завершить ход</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Star Properties Bar -->
+                <div id="starPropertiesBanner" class="bg-space-900/60 border border-amber-500/30 rounded-xl p-2.5 text-xs text-amber-200/90 mb-4 flex items-start space-x-2">
+                    <i class="fa-solid fa-circle-info text-amber-400 mt-0.5"></i>
+                    <div id="starPropertiesText">
+                        <b>Правила Звезды:</b> Допустимы любые планеты на любых орбитах. Без ограничений.
+                    </div>
+                </div>
+
+                <!-- 8 ORBITS SYSTEM TRACKER -->
+                <div class="relative overflow-x-auto pb-2">
+                    <div id="orbitsSystemTrack" class="flex items-center min-w-[850px] gap-2 justify-between">
+                        <!-- Rendered by JS: Star Node + 8 Orbit Slots + 7 Resonance Slots -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Hand Area -->
+            <div class="bg-space-800/80 border border-space-600/70 rounded-2xl p-4 backdrop-blur shadow-xl">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <h4 class="font-bold text-slate-200 text-sm">Карты в руке</h4>
+                        <span id="handCountBadge" class="text-xs px-2 py-0.5 rounded-full bg-space-700 border border-space-600 text-slate-300">5 / 6</span>
+                    </div>
+
+                    <!-- Special Action: Recycle 2 cards -->
+                    <button id="btnRecycleHand" class="text-xs bg-space-700 hover:bg-space-600 border border-space-600 text-cyan-300 px-3 py-1.5 rounded-lg transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span>Сбросить 2 карты &rarr; Взять 1</span>
+                    </button>
+                </div>
+
+                <!-- Hand Cards List -->
+                <div id="playerHandContainer" class="flex items-center gap-3 overflow-x-auto pb-2 min-h-[170px] px-1">
+                    <!-- Dynamic Cards in Hand -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL: Recycle Cards Selection -->
+    <div id="recycleModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-space-800 border border-space-600 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button id="btnRecycleModalClose" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3 class="text-lg font-bold text-cyan-400 mb-1 flex items-center space-x-2">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                <span>Сброс 2-х карт из руки</span>
+            </h3>
+            <p class="text-xs text-slate-300 mb-4">Выберите ровно <b>2 карты</b> из руки для сброса в обмен на 1 новую карту из колоды.</p>
+
+            <div id="recycleCardsList" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto mb-4 p-1">
+                <!-- Rendered dynamically -->
+            </div>
+
+            <div class="flex justify-between items-center pt-3 border-t border-space-700">
+                <span id="recycleSelectedCounter" class="text-xs font-bold text-amber-400">Выбрано: 0 / 2</span>
+                <div class="flex space-x-2">
+                    <button id="btnRecycleCancel" class="px-4 py-2 rounded-xl bg-space-700 hover:bg-space-600 text-slate-300 text-xs font-semibold">Отмена</button>
+                    <button id="btnRecycleConfirm" disabled class="px-4 py-2 rounded-xl bg-cyan-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-cyan-500 text-white font-bold text-xs">Подтвердить обмен</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Action Target Selection -->
+    <div id="actionModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-space-800 border border-space-600 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button id="btnActionModalClose" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3 id="actionModalTitle" class="text-lg font-bold text-cyan-400 mb-2">Выберите цель воздействия</h3>
+            <p id="actionModalDesc" class="text-xs text-slate-300 mb-4">Укажите игрока и его слот орбиты для применения карты.</p>
+
+            <div id="actionModalContent" class="space-y-4 max-h-80 overflow-y-auto">
+                <!-- Target Options Populated Here -->
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="btnActionModalCancel" class="px-4 py-2 rounded-xl bg-space-700 hover:bg-space-600 text-slate-300 text-sm">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: INTRO & HOW TO PLAY TUTORIAL -->
+    <div id="introModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-space-800 border border-space-600 rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between border-b border-space-600/60 pb-3 mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300">
+                        <i class="fa-solid fa-compass text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Инструкция по Игре «Гармония Орбит»</h3>
+                        <p class="text-xs text-slate-400">Как построить идеальную планетную систему</p>
+                    </div>
+                </div>
+                <button id="btnIntroClose" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto space-y-5 pr-2">
+                <!-- Step 1 -->
+                <div class="flex items-start space-x-3 bg-space-900/60 p-3.5 rounded-xl border border-space-600/60">
+                    <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center shrink-0 border border-amber-400/40">1</div>
+                    <div>
+                        <h4 class="font-bold text-amber-300 text-sm mb-1">Главная Цель</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Вам необходимо построить непрерывную планетную систему из <b>8 орбит (№1–№8)</b>. Каждая планета, начиная со 2-й орбиты, должна быть непрерывно соединена с предыдущей картой <b>Резонанса</b> или быть <b>Поясом Астероидов</b>.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex items-start space-x-3 bg-space-900/60 p-3.5 rounded-xl border border-space-600/60">
+                    <div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center shrink-0 border border-cyan-400/40">2</div>
+                    <div>
+                        <h4 class="font-bold text-cyan-300 text-sm mb-1">Связывание Орбит & Пояс Астероидов</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            • [Звезда] &rarr; (Автосвязь) &rarr; [Орбита 1] &rarr; <b>[Резонанс]</b> &rarr; [Орбита 2] &rarr; ...<br>
+                            • <b>Пояс Астероидов</b> — универсальная заглушка, которая <i>не требует карты Резонанса</i> ни для установки, ни для связи со следующей планетой!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex items-start space-x-3 bg-space-900/60 p-3.5 rounded-xl border border-space-600/60">
+                    <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center shrink-0 border border-purple-400/40">3</div>
+                    <div>
+                        <h4 class="font-bold text-purple-300 text-sm mb-1">Нестабильность и Атаки Противника</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Если в цепочке появляется разрыв (атака «Солнечная Вспышка» сжигает Резонанс или «Гравитационный Манёвр» выбивает Планету), все последующие орбиты получают <b>Жетоны Нестабильности</b>. Если не починить цепь за 1 ход — незащищённые орбиты разрушаются!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="flex items-start space-x-3 bg-space-900/60 p-3.5 rounded-xl border border-space-600/60">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center shrink-0 border border-emerald-400/40">4</div>
+                    <div>
+                        <h4 class="font-bold text-emerald-300 text-sm mb-1">Следите за Соперником и Обменом Карточками</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            • В верхней панели всегда видно, что делает соперник на своём ходу.<br>
+                            • Если у вас нет нужных планет, используйте кнопку <b>«Сбросить 2 карты &rarr; Взять 1»</b> для прокрутки руки.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-space-700 flex justify-end">
+                <button id="btnIntroStartGame" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-orbitron font-bold text-sm shadow-md">
+                    ПОНЯТНО, К ИГРЕ!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: GAME OVER / VICTORY -->
+    <div id="victoryModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-space-800 border border-amber-500/60 rounded-2xl max-w-md w-full p-6 shadow-2xl text-center relative flex flex-col items-center">
+            <div class="w-16 h-16 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center text-amber-300 text-3xl mb-4 shadow-neon-gold">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h3 class="text-2xl font-orbitron font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-cyan-300 to-indigo-300 mb-2">
+                ГАРМОНИЯ ДОСТИГНУТА!
+            </h3>
+            <p id="victoryText" class="text-sm text-slate-200 mb-6 leading-relaxed">
+                Поздравляем! Игрок сформировал полную систему из 8 устойчивых орбит!
+            </p>
+            <div class="flex flex-col sm:flex-row w-full gap-3">
+                <button id="btnVictoryRestart" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-sm shadow-md transition transform active:scale-95">
+                    Новая игра
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Rules & Card Guide -->
+    <div id="rulesModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-space-800 border border-space-600 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between border-b border-space-600/60 pb-3 mb-4">
+                <h3 class="text-xl font-bold text-cyan-300 flex items-center space-x-2">
+                    <i class="fa-solid fa-book-open text-amber-400"></i>
+                    <span>ПРАВИЛА ИГРЫ «ГАРМОНИЯ ОРБИТ»</span>
+                </h3>
+                <button id="btnRulesClose" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto space-y-4 text-sm text-slate-300 pr-2">
+                <section>
+                    <h4 class="font-bold text-amber-300 mb-1 text-base">Цель Игры</h4>
+                    <p class="text-xs leading-relaxed">
+                        Построить устойчивую планетную систему из 8 слотов (орбит №1–№8). Каждая планета, начиная со 2-й орбиты, должна быть соединена с предыдущей картой Резонанса или Поясом Астероидов.
+                    </p>
+                </section>
+
+                <section class="border-t border-space-700 pt-3">
+                    <h4 class="font-bold text-cyan-300 mb-1 text-base">Ход Игрока (3 Фазы)</h4>
+                    <ol class="list-decimal list-inside text-xs space-y-1.5">
+                        <li><b class="text-slate-200">Добра карт:</b> Игрок автоматически берет 2 карты из Колоды Космоса.</li>
+                        <li><b class="text-slate-200">Действия:</b> Можно выполнить до 2-х действий (выложить планету, резонанс, сыграть воздействие или обменять 2 карты на 1).</li>
+                        <li><b class="text-slate-200">Проверка:</b> Проверяются специфика Звезды и статус Нестабильности. Все неисправленные разрывы цепи приводят к сбросу нестабильных планет! Сброс лишних карт сверх 6.</li>
+                    </ol>
+                </section>
+
+                <section class="border-t border-space-700 pt-3">
+                    <h4 class="font-bold text-purple-300 mb-1 text-base">Особенности Карт</h4>
+                    <ul class="list-disc list-inside text-xs space-y-1">
+                        <li><b class="text-emerald-300">Пояс астероидов:</b> Не требует карты Резонанса ни для установки, ни для связи со следующей планетой.</li>
+                        <li><b class="text-sky-300">Ледяные гиганты:</b> Предоставляют естественную защиту от атаки «Гравитационный манёвр».</li>
+                        <li><b class="text-rose-400">Воздействия:</b> Атаки («Гравитационный манёвр», «Солнечная вспышка»), Защита («Магнитный щит») и Тактика («Орбитальная миграция»).</li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO SYNTHESIZER & SCRIPT ENGINE -->
+    <script>
+        /* --- AUDIO SYNTH (Web Audio API) --- */
+        class AudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playTone(freq, type = 'sine', duration = 0.2, gainVal = 0.1) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {}
+            }
+            playCardSound() { this.playTone(440, 'sine', 0.15, 0.08); }
+            playAttackSound() { this.playTone(150, 'sawtooth', 0.3, 0.12); }
+            playShieldSound() { this.playTone(587.33, 'triangle', 0.25, 0.1); }
+            playErrorSound() { this.playTone(200, 'square', 0.2, 0.08); }
+            playWinSound() {
+                this.playTone(523.25, 'sine', 0.3, 0.15);
+                setTimeout(() => this.playTone(659.25, 'sine', 0.3, 0.15), 150);
+                setTimeout(() => this.playTone(783.99, 'sine', 0.5, 0.15), 300);
+            }
+        }
+        const audio = new AudioEngine();
+
+        /* --- GAME DATA CONSTANTS --- */
+        const STAR_TYPES = {
+            // Easy
+            YELLOW_DWARF: { id: 'YELLOW_DWARF', name: 'Жёлтый карлик', desc: 'Классический баланс: любые планеты и резонансы.', level: 'easy', color: 'star-yellow', icon: 'fa-sun' },
+            RED_DWARF: { id: 'RED_DWARF', name: 'Красный карлик', desc: 'Тесный мир: На орбитах 1-3 запрещены Ледяные гиганты (сгорают).', level: 'easy', color: 'star-red', icon: 'fa-circle-dot' },
+            ORANGE_DWARF: { id: 'ORANGE_DWARF', name: 'Оранжевый карлик', desc: 'Стабильный долгожитель: 1 раз за игру игнорирует штраф за разрыв цепи.', level: 'easy', color: 'star-orange', icon: 'fa-compact-disc' },
+            BROWN_DWARF: { id: 'BROWN_DWARF', name: 'Коричневый карлик', desc: 'Холодный тупик: Запрещены все гиганты (Газовые и Ледяные).', level: 'easy', color: 'star-brown', icon: 'fa-moon' },
+            // Hard
+            BINARY_STAR: { id: 'BINARY_STAR', name: 'Двойная звезда', desc: 'Гравитационный хаос: На орбитах 4-8 обязателен хотя бы 1 Газовый гигант.', level: 'hard', color: 'star-binary', icon: 'fa-yin-yang' },
+            NEUTRON_STAR: { id: 'NEUTRON_STAR', name: 'Нейтронная звезда', desc: 'Сверхплотный пульсар: Старт с Пояса астероидов на Орбите 1. Только сложные резонансы. Мин. 2 Газовых гиганта.', level: 'hard', color: 'star-neutron', icon: 'fa-atom' }
+        };
+
+        const CARD_TYPES = {
+            PLANET_ROCK: { type: 'PLANET', sub: 'ROCK', name: 'Каменистая планета', desc: 'Базовый тип для ближних орбит.', bg: 'from-amber-700 to-amber-900', icon: 'fa-globe' },
+            PLANET_GAS: { type: 'PLANET', sub: 'GAS', name: 'Газовый гигант', desc: 'Тяжёлая планета, гравитационный якорь.', bg: 'from-purple-700 to-indigo-900', icon: 'fa-meteor' },
+            PLANET_ICE: { type: 'PLANET', sub: 'ICE', name: 'Ледяной гигант', desc: 'Дальняя планета. Защита от гравитационных манёвров.', bg: 'from-cyan-600 to-blue-900', icon: 'fa-snowflake' },
+            ASTEROID_BELT: { type: 'BELT', sub: 'ASTEROID', name: 'Пояс астероидов', desc: 'Заглушка. Не требует карт Резонанса.', bg: 'from-slate-600 to-slate-800', icon: 'fa-ring' },
+            
+            RESONANCE_SIMPLE: { type: 'RESONANCE', sub: 'SIMPLE', name: 'Простой резонанс', ratio: '2:1 / 3:2 / 4:3', desc: 'Базовое соединение планет.', bg: 'from-emerald-700 to-teal-900', icon: 'fa-link' },
+            RESONANCE_COMPLEX: { type: 'RESONANCE', sub: 'COMPLEX', name: 'Сложный резонанс', ratio: '5:3 / 7:4 / 3:1', desc: 'Асимметричный резонанс.', bg: 'from-violet-700 to-purple-900', icon: 'fa-network-wired' },
+            
+            EFFECT_MANEUVER: { type: 'EFFECT', sub: 'ATTACK_PLANET', name: 'Гравитационный манёвр', desc: 'Атака. Выбивает незащищённую планету соперника.', bg: 'from-rose-800 to-red-950', icon: 'fa-hand-fist' },
+            EFFECT_FLARE: { type: 'EFFECT', sub: 'ATTACK_RESONANCE', name: 'Солнечная вспышка', desc: 'Атака. Уничтожает карту Резонанса между планетами.', bg: 'from-orange-800 to-amber-950', icon: 'fa-volcano' },
+            EFFECT_SHIELD: { type: 'EFFECT', sub: 'DEFENSE', name: 'Магнитный щит', desc: 'Защита. Блокирует 1 атаку на планету или резонанс.', bg: 'from-blue-700 to-indigo-950', icon: 'fa-shield-halved' },
+            EFFECT_MIGRATION: { type: 'EFFECT', sub: 'TACTIC', name: 'Орбитальная миграция', desc: 'Тактика. Сдвигает планету соперника на 1 свободный соседний слот.', bg: 'from-yellow-700 to-amber-900', icon: 'fa-arrows-left-right' }
+        };
+
+        /* --- STATE MANAGEMENT --- */
+        let gameState = {
+            mode: 'ai', // 'ai' or 'pvp'
+            difficulty: 'easy',
+            playerCount: 2,
+            currentPlayerIdx: 0,
+            phase: 'ACTION', // 'DRAW', 'ACTION', 'END'
+            actionsRemaining: 2,
+            deck: [],
+            discardPile: [],
+            players: [],
+            selectedCardIdx: null,
+            recycleSelectedIndices: [],
+            orangeStarUsedAbility: {},
+            gameEnded: false
+        };
+
+        function createDeck() {
+            let deck = [];
+            let id = 1;
+
+            // Planets & Belts (48 total)
+            for (let i = 0; i < 18; i++) deck.push({ id: id++, ...CARD_TYPES.PLANET_ROCK });
+            for (let i = 0; i < 12; i++) deck.push({ id: id++, ...CARD_TYPES.PLANET_GAS });
+            for (let i = 0; i < 10; i++) deck.push({ id: id++, ...CARD_TYPES.PLANET_ICE });
+            for (let i = 0; i < 8; i++) deck.push({ id: id++, ...CARD_TYPES.ASTEROID_BELT });
+
+            // Resonances (36 total)
+            for (let i = 0; i < 24; i++) deck.push({ id: id++, ...CARD_TYPES.RESONANCE_SIMPLE, name: `Простой резонанс (${['2:1','3:2','4:3'][i%3]})` });
+            for (let i = 0; i < 12; i++) deck.push({ id: id++, ...CARD_TYPES.RESONANCE_COMPLEX, name: `Сложный резонанс (${['5:3','7:4','3:1'][i%3]})` });
+
+            // Effects (24 total)
+            for (let i = 0; i < 6; i++) deck.push({ id: id++, ...CARD_TYPES.EFFECT_MANEUVER });
+            for (let i = 0; i < 6; i++) deck.push({ id: id++, ...CARD_TYPES.EFFECT_FLARE });
+            for (let i = 0; i < 6; i++) deck.push({ id: id++, ...CARD_TYPES.EFFECT_SHIELD });
+            for (let i = 0; i < 6; i++) deck.push({ id: id++, ...CARD_TYPES.EFFECT_MIGRATION });
+
+            return shuffle(deck);
+        }
+
+        function createStarDeck(difficulty) {
+            let stars = [];
+            stars.push(STAR_TYPES.YELLOW_DWARF, STAR_TYPES.YELLOW_DWARF);
+            stars.push(STAR_TYPES.RED_DWARF, STAR_TYPES.RED_DWARF);
+            stars.push(STAR_TYPES.ORANGE_DWARF);
+            stars.push(STAR_TYPES.BROWN_DWARF);
+
+            if (difficulty === 'hard') {
+                stars.push(STAR_TYPES.BINARY_STAR, STAR_TYPES.BINARY_STAR);
+                stars.push(STAR_TYPES.NEUTRON_STAR, STAR_TYPES.NEUTRON_STAR);
+            }
+            return shuffle(stars);
+        }
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function initGame(mode, difficulty, pCount) {
+            gameState.mode = mode;
+            gameState.difficulty = difficulty;
+            gameState.playerCount = mode === 'ai' ? 2 : pCount;
+            gameState.currentPlayerIdx = 0;
+            gameState.phase = 'ACTION';
+            gameState.actionsRemaining = 2;
+            gameState.deck = createDeck();
+            gameState.discardPile = [];
+            gameState.gameEnded = false;
+            gameState.orangeStarUsedAbility = {};
+
+            const starDeck = createStarDeck(difficulty);
+            gameState.players = [];
+
+            for (let i = 0; i < gameState.playerCount; i++) {
+                const star = starDeck[i % starDeck.length];
+                const player = {
+                    id: i,
+                    name: mode === 'ai' && i === 1 ? 'Космический ИИ' : `Игрок ${i + 1}`,
+                    isAI: mode === 'ai' && i === 1,
+                    star: star,
+                    hand: [],
+                    system: Array(8).fill(null).map(() => ({ planet: null, resonance: null, shield: false, unstable: false }))
+                };
+
+                // Deal 5 initial cards
+                for (let c = 0; c < 5; c++) {
+                    if (gameState.deck.length > 0) {
+                        player.hand.push(gameState.deck.pop());
+                    }
+                }
+
+                // Special Setup Rule: Neutron Star automatically starts with Asteroid Belt on Orbit #1
+                if (star.id === 'NEUTRON_STAR') {
+                    player.system[0].planet = { type: 'BELT', sub: 'ASTEROID', name: 'Пояс астероидов', icon: 'fa-ring', bg: 'from-slate-600 to-slate-800' };
+                }
+
+                gameState.players.push(player);
+            }
+
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('gameplayScreen').classList.remove('hidden');
+            document.getElementById('turnHeaderInfo').classList.remove('hidden');
+
+            logMessage(`<b>Игра началась!</b> Режим: ${mode === 'ai' ? 'Против ИИ' : 'Pass & Play'}. Уровень: ${difficulty === 'easy' ? 'Простой' : 'Сложный'}.`, 'text-cyan-400');
+            
+            // Show intro modal on first start
+            document.getElementById('introModal').classList.remove('hidden');
+
+            // Initial Draw Phase execution for Turn 1
+            startTurn(0);
+        }
+
+        function startTurn(playerIdx) {
+            gameState.currentPlayerIdx = playerIdx;
+            gameState.phase = 'ACTION';
+            gameState.actionsRemaining = 2;
+            gameState.selectedCardIdx = null;
+
+            const player = gameState.players[playerIdx];
+
+            // Draw Phase: Draw 2 cards automatically
+            drawCards(player, 2);
+
+            logMessage(`<b>Ход игрока: ${player.name}</b>`, 'text-amber-300');
+
+            updateUI();
+
+            if (player.isAI && !gameState.gameEnded) {
+                setTimeout(executeAITurn, 1200);
+            }
+        }
+
+        function drawCards(player, count) {
+            for (let i = 0; i < count; i++) {
+                if (gameState.deck.length === 0) {
+                    if (gameState.discardPile.length === 0) break;
+                    gameState.deck = shuffle([...gameState.discardPile]);
+                    gameState.discardPile = [];
+                    logMessage('<b>Колода обновлена:</b> Сброс перемешан обратно в колоду.', 'text-emerald-400');
+                }
+                if (gameState.deck.length > 0) {
+                    player.hand.push(gameState.deck.pop());
+                }
+            }
+        }
+
+        function showOpponentBannerAction(text) {
+            const banner = document.getElementById('opponentActionBanner');
+            const bannerText = document.getElementById('opponentActionText');
+            bannerText.innerHTML = text;
+            banner.classList.remove('hidden');
+            banner.classList.add('animate-opponent-action');
+
+            setTimeout(() => {
+                banner.classList.add('hidden');
+                banner.classList.remove('animate-opponent-action');
+            }, 2500);
+        }
+
+        function endTurn() {
+            if (gameState.gameEnded) return;
+
+            const player = gameState.players[gameState.currentPlayerIdx];
+
+            // Phase 3: Check Phase & Instability Resolution
+            runEndPhaseChecks(player);
+
+            // Win Condition Check
+            if (checkWinCondition(player)) {
+                triggerWin(player);
+                return;
+            }
+
+            // Hand limit check (max 6)
+            while (player.hand.length > 6) {
+                const discarded = player.hand.pop();
+                gameState.discardPile.push(discarded);
+                logMessage(`${player.name} сбросил карту <b>${discarded.name}</b> из-за лимита руки (макс. 6).`, 'text-slate-400');
+            }
+
+            // Next player index
+            const nextIdx = (gameState.currentPlayerIdx + 1) % gameState.playerCount;
+            startTurn(nextIdx);
+        }
+
+        function runEndPhaseChecks(player) {
+            const star = player.star;
+
+            // 1. Check Star Specific Rules
+            for (let i = 0; i < 8; i++) {
+                const slot = player.system[i];
+                if (!slot.planet) continue;
+
+                // Red Dwarf Rule: Ice Giants melt on orbits 1, 2, 3
+                if (star.id === 'RED_DWARF' && i < 3 && slot.planet.sub === 'ICE') {
+                    gameState.discardPile.push(slot.planet);
+                    slot.planet = null;
+                    if (slot.resonance) {
+                        gameState.discardPile.push(slot.resonance);
+                        slot.resonance = null;
+                    }
+                    logMessage(`<b>Красный карлик:</b> Ледяной гигант на орбите ${i+1} сгорел!`, 'text-rose-400');
+                }
+
+                // Brown Dwarf Rule: No Giants allowed
+                if (star.id === 'BROWN_DWARF' && (slot.planet.sub === 'GAS' || slot.planet.sub === 'ICE')) {
+                    gameState.discardPile.push(slot.planet);
+                    slot.planet = null;
+                    if (slot.resonance) {
+                        gameState.discardPile.push(slot.resonance);
+                        slot.resonance = null;
+                    }
+                    logMessage(`<b>Коричневый карлик:</b> Гигант на орбите ${i+1} сброшен!`, 'text-rose-400');
+                }
+            }
+
+            // 2. Check Chain Break Instability
+            let gapFound = false;
+            let gapIndex = -1;
+
+            for (let i = 0; i < 8; i++) {
+                const slot = player.system[i];
+
+                if (!slot.planet) {
+                    gapFound = true;
+                    gapIndex = i;
+                    break;
+                }
+
+                // Orbit > 0 requires connection (Resonance OR Asteroid Belt on current/prev slot)
+                if (i > 0) {
+                    const prevSlot = player.system[i - 1];
+                    const currentIsBelt = slot.planet.type === 'BELT';
+                    const prevIsBelt = prevSlot.planet && prevSlot.planet.type === 'BELT';
+
+                    if (!slot.resonance && !currentIsBelt && !prevIsBelt) {
+                        gapFound = true;
+                        gapIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            // Orange Dwarf ability check
+            if (gapFound && star.id === 'ORANGE_DWARF' && !gameState.orangeStarUsedAbility[player.id]) {
+                gameState.orangeStarUsedAbility[player.id] = true;
+                gapFound = false;
+                logMessage(`<b>Оранжевый карлик:</b> Игрок ${player.name} проигнорировал разрыв цепи своей уникальной способностью!`, 'text-amber-300');
+            }
+
+            // Update Instability Tokens & Clear old unstable
+            if (gapFound) {
+                for (let i = 0; i < 8; i++) {
+                    if (i >= gapIndex && player.system[i].planet) {
+                        if (player.system[i].unstable) {
+                            // Collapse: Has been unstable for a full round, discard
+                            gameState.discardPile.push(player.system[i].planet);
+                            if (player.system[i].resonance) gameState.discardPile.push(player.system[i].resonance);
+                            player.system[i].planet = null;
+                            player.system[i].resonance = null;
+                            player.system[i].unstable = false;
+                            player.system[i].shield = false;
+                            logMessage(`<b>Коллапс цепи:</b> Нестабильная орбита ${i+1} у ${player.name} разрушена!`, 'text-rose-500');
+                        } else {
+                            // Mark unstable for next round
+                            player.system[i].unstable = true;
+                            logMessage(`<b>Разрыв цепи:</b> Орбита ${i+1} у ${player.name} получила Жетон Нестабильности!`, 'text-amber-400');
+                        }
+                    }
+                }
+            } else {
+                // Clear instability if fixed
+                for (let i = 0; i < 8; i++) {
+                    player.system[i].unstable = false;
+                }
+            }
+        }
+
+        function checkWinCondition(player) {
+            // Rule 1: All 8 orbits filled
+            for (let i = 0; i < 8; i++) {
+                if (!player.system[i].planet) return false;
+            }
+
+            // Rule 2: Continuous chain
+            for (let i = 1; i < 8; i++) {
+                const current = player.system[i];
+                const prev = player.system[i-1];
+                const isBelt = current.planet.type === 'BELT' || prev.planet.type === 'BELT';
+                if (!current.resonance && !isBelt) return false;
+            }
+
+            // Rule 3: Star Requirements
+            if (player.star.id === 'BINARY_STAR') {
+                let hasGasOuter = false;
+                for (let i = 3; i < 8; i++) {
+                    if (player.system[i].planet && player.system[i].planet.sub === 'GAS') {
+                        hasGasOuter = true;
+                        break;
+                    }
+                }
+                if (!hasGasOuter) return false;
+            }
+
+            if (player.star.id === 'NEUTRON_STAR') {
+                let gasCount = 0;
+                for (let i = 0; i < 8; i++) {
+                    if (player.system[i].planet && player.system[i].planet.sub === 'GAS') gasCount++;
+                }
+                if (gasCount < 2) return false;
+            }
+
+            // Rule 4: No instability tokens
+            for (let i = 0; i < 8; i++) {
+                if (player.system[i].unstable) return false;
+            }
+
+            return true;
+        }
+
+        function triggerWin(player) {
+            gameState.gameEnded = true;
+            audio.playWinSound();
+            logMessage(`🏆 <b>ПОБЕДА!</b> ${player.name} сформировал гармоничную систему!`, 'text-amber-300 font-bold text-base');
+            
+            // Display clean victory modal instead of blocking window.alert()
+            document.getElementById('victoryText').innerHTML = `🎉 Поздравляем! <b>${player.name}</b> одержал победу, сформировав идеальную систему из 8 устойчивых орбит!`;
+            document.getElementById('victoryModal').classList.remove('hidden');
+        }
+
+        function playCardFromHand(cardIdx) {
+            if (gameState.actionsRemaining <= 0 || gameState.gameEnded) {
+                audio.playErrorSound();
+                return;
+            }
+
+            const player = gameState.players[gameState.currentPlayerIdx];
+            const card = player.hand[cardIdx];
+
+            // 1. PLANET or BELT CARD PLAY
+            if (card.type === 'PLANET' || card.type === 'BELT') {
+                // Find target orbit (first empty orbit)
+                let targetSlot = -1;
+                for (let i = 0; i < 8; i++) {
+                    if (!player.system[i].planet) {
+                        targetSlot = i;
+                        break;
+                    }
+                }
+
+                if (targetSlot === -1) {
+                    logMessage(' Все 8 орбит уже заняты!', 'text-rose-400');
+                    audio.playErrorSound();
+                    return;
+                }
+
+                // Check Red Dwarf Orbit 1-3 Ice Giant constraint
+                if (player.star.id === 'RED_DWARF' && targetSlot < 3 && card.sub === 'ICE') {
+                    logMessage('<b>Красный карлик:</b> Запрещено ставить Ледяной гигант на орбиты 1-3!', 'text-rose-400');
+                    audio.playErrorSound();
+                    return;
+                }
+
+                // Check Brown Dwarf constraint
+                if (player.star.id === 'BROWN_DWARF' && (card.sub === 'GAS' || card.sub === 'ICE')) {
+                    logMessage('<b>Коричневый карлик:</b> Запрещены любые планеты-гиганты!', 'text-rose-400');
+                    audio.playErrorSound();
+                    return;
+                }
+
+                // Place card
+                player.system[targetSlot].planet = card;
+                player.hand.splice(cardIdx, 1);
+                gameState.actionsRemaining--;
+                audio.playCardSound();
+
+                const actionMsg = `${player.name} выложил <b>${card.name}</b> на Орбиту ${targetSlot + 1}.`;
+                logMessage(actionMsg, 'text-cyan-300');
+                if (player.isAI) showOpponentBannerAction(`🤖 ${actionMsg}`);
+
+                updateUI();
+                return;
+            }
+
+            // 2. RESONANCE CARD PLAY
+            if (card.type === 'RESONANCE') {
+                // Check Neutron Star limitation
+                if (player.star.id === 'NEUTRON_STAR' && card.sub === 'SIMPLE') {
+                    logMessage('<b>Нейтронная звезда:</b> Разрешено использовать только Сложные/Асимметричные резонансы!', 'text-rose-400');
+                    audio.playErrorSound();
+                    return;
+                }
+
+                // Find slot needing resonance
+                let targetSlot = -1;
+                for (let i = 1; i < 8; i++) {
+                    if (player.system[i].planet && player.system[i-1].planet && !player.system[i].resonance) {
+                        targetSlot = i;
+                        break;
+                    }
+                }
+
+                if (targetSlot === -1) {
+                    logMessage(' Нет подходящих соседних планет без Резонанса!', 'text-rose-400');
+                    audio.playErrorSound();
+                    return;
+                }
+
+                player.system[targetSlot].resonance = card;
+                player.hand.splice(cardIdx, 1);
+                gameState.actionsRemaining--;
+                audio.playCardSound();
+
+                const actionMsg = `${player.name} прикрепил <b>${card.name}</b> между Орбитами ${targetSlot} и ${targetSlot + 1}.`;
+                logMessage(actionMsg, 'text-emerald-300');
+                if (player.isAI) showOpponentBannerAction(`🤖 ${actionMsg}`);
+
+                updateUI();
+                return;
+            }
+
+            // 3. EFFECT CARD PLAY (Opens Target Selection Modal)
+            if (card.type === 'EFFECT') {
+                openActionModal(cardIdx);
+            }
+        }
+
+        function openActionModal(cardIdx) {
+            const player = gameState.players[gameState.currentPlayerIdx];
+            const card = player.hand[cardIdx];
+            const modal = document.getElementById('actionModal');
+            const content = document.getElementById('actionModalContent');
+
+            document.getElementById('actionModalTitle').innerText = card.name;
+            document.getElementById('actionModalDesc').innerText = card.desc;
+            content.innerHTML = '';
+
+            if (card.sub === 'ATTACK_PLANET' || card.sub === 'ATTACK_RESONANCE' || card.sub === 'TACTIC') {
+                // Select opponent and slot
+                gameState.players.forEach((p) => {
+                    if (p.id !== player.id) {
+                        p.system.forEach((slot, sIdx) => {
+                            if (slot.planet) {
+                                const btn = document.createElement('button');
+                                btn.className = "w-full text-left p-2.5 rounded-xl bg-space-900 hover:bg-space-700 border border-space-600 flex justify-between items-center text-xs transition";
+                                btn.innerHTML = `
+                                    <span><b>${p.name}</b> - Орбита #${sIdx + 1} (${slot.planet.name})</span>
+                                    ${slot.shield ? '<span class="text-blue-400 font-bold"><i class="fa-solid fa-shield-halved"></i> Щит</span>' : ''}
+                                `;
+                                btn.onclick = () => applyEffectCard(cardIdx, p.id, sIdx);
+                                content.appendChild(btn);
+                            }
+                        });
+                    }
+                });
+            } else if (card.sub === 'DEFENSE') {
+                // Target own planet to shield
+                player.system.forEach((slot, sIdx) => {
+                    if (slot.planet && !slot.shield) {
+                        const btn = document.createElement('button');
+                        btn.className = "w-full text-left p-2.5 rounded-xl bg-space-900 hover:bg-space-700 border border-space-600 text-xs text-blue-300 transition";
+                        btn.innerText = `Защитить Орбиту #${sIdx + 1} (${slot.planet.name})`;
+                        btn.onclick = () => applyEffectCard(cardIdx, player.id, sIdx);
+                        content.appendChild(btn);
+                    }
+                });
+            }
+
+            if (content.children.length === 0) {
+                content.innerHTML = '<p class="text-xs text-slate-400 italic">Нет подходящих целей для данной карты.</p>';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function applyEffectCard(cardIdx, targetPlayerId, slotIdx) {
+            const player = gameState.players[gameState.currentPlayerIdx];
+            const targetPlayer = gameState.players[targetPlayerId];
+            const card = player.hand[cardIdx];
+            const slot = targetPlayer.system[slotIdx];
+
+            // Magnetic Shield check
+            if (slot.shield && card.sub !== 'DEFENSE') {
+                slot.shield = false;
+                player.hand.splice(cardIdx, 1);
+                gameState.discardPile.push(card);
+                gameState.actionsRemaining--;
+                audio.playShieldSound();
+
+                const shieldMsg = `🛡️ <b>Магнитный щит</b> отразил атаку на Орбите ${slotIdx + 1} у ${targetPlayer.name}!`;
+                logMessage(shieldMsg, 'text-blue-400');
+                if (player.isAI) showOpponentBannerAction(`🤖 ${shieldMsg}`);
+
+                document.getElementById('actionModal').classList.add('hidden');
+                updateUI();
+                return;
+            }
+
+            if (card.sub === 'ATTACK_PLANET') {
+                // Gravitational Maneuver
+                if (slot.planet.sub === 'ICE') {
+                    logMessage(` Ледяной гигант естественным образом защищен от Гравитационного Манёвра!`, 'text-cyan-300');
+                    audio.playErrorSound();
+                    return;
+                }
+                gameState.discardPile.push(slot.planet);
+                slot.planet = null;
+                if (slot.resonance) {
+                    gameState.discardPile.push(slot.resonance);
+                    slot.resonance = null;
+                }
+                audio.playAttackSound();
+
+                const atkMsg = `💥 <b>Гравитационный манёвр:</b> Планета на Орбите ${slotIdx + 1} у ${targetPlayer.name} выбита!`;
+                logMessage(atkMsg, 'text-rose-400');
+                if (player.isAI) showOpponentBannerAction(`🤖 ${atkMsg}`);
+
+            } else if (card.sub === 'ATTACK_RESONANCE') {
+                // Solar Flare
+                if (slot.resonance) {
+                    gameState.discardPile.push(slot.resonance);
+                    slot.resonance = null;
+                    audio.playAttackSound();
+
+                    const flareMsg = `🔥 <b>Солнечная вспышка:</b> Резонанс на Орбите ${slotIdx + 1} у ${targetPlayer.name} уничтожен!`;
+                    logMessage(flareMsg, 'text-amber-400');
+                    if (player.isAI) showOpponentBannerAction(`🤖 ${flareMsg}`);
+                } else {
+                    logMessage(' На этой орбите нет карты Резонанса!', 'text-rose-400');
+                    audio.playErrorSound();
+                    return;
+                }
+            } else if (card.sub === 'DEFENSE') {
+                // Magnetic Shield
+                slot.shield = true;
+                audio.playShieldSound();
+
+                const defMsg = `🛡️ ${player.name} установил <b>Магнитный щит</b> на Орбиту ${slotIdx + 1}.`;
+                logMessage(defMsg, 'text-blue-300');
+                if (player.isAI) showOpponentBannerAction(`🤖 ${defMsg}`);
+            } else if (card.sub === 'TACTIC') {
+                // Orbital Migration
+                const emptySlot = targetPlayer.system.findIndex(s => !s.planet);
+                if (emptySlot !== -1 && Math.abs(emptySlot - slotIdx) === 1) {
+                    targetPlayer.system[emptySlot].planet = slot.planet;
+                    slot.planet = null;
+                    audio.playCardSound();
+
+                    const migMsg = `🌌 <b>Орбитальная миграция:</b> Планета перенесена с Орбиты ${slotIdx + 1} на ${emptySlot + 1}.`;
+                    logMessage(migMsg, 'text-purple-300');
+                    if (player.isAI) showOpponentBannerAction(`🤖 ${migMsg}`);
+                } else {
+                    logMessage(' Нет свободного соседнего слота для миграции!', 'text-rose-400');
+                    audio.playErrorSound();
+                    return;
+                }
+            }
+
+            player.hand.splice(cardIdx, 1);
+            gameState.discardPile.push(card);
+            gameState.actionsRemaining--;
+            document.getElementById('actionModal').classList.add('hidden');
+            updateUI();
+        }
+
+        // --- RECYCLE HAND CARDS SYSTEM ---
+        function openRecycleModal() {
+            const player = gameState.players[gameState.currentPlayerIdx];
+            if (gameState.actionsRemaining <= 0) {
+                logMessage(' У вас не осталось действий в этом ходу!', 'text-rose-400');
+                audio.playErrorSound();
+                return;
+            }
+            if (player.hand.length < 2) {
+                logMessage(' Требуется минимум 2 карты в руке для сброса!', 'text-rose-400');
+                audio.playErrorSound();
+                return;
+            }
+
+            gameState.recycleSelectedIndices = [];
+            renderRecycleModalCards();
+            document.getElementById('recycleModal').classList.remove('hidden');
+        }
+
+        function renderRecycleModalCards() {
+            const player = gameState.players[gameState.currentPlayerIdx];
+            const container = document.getElementById('recycleCardsList');
+            container.innerHTML = '';
+
+            player.hand.forEach((card, idx) => {
+                const isSelected = gameState.recycleSelectedIndices.includes(idx);
+                const cardEl = document.createElement('div');
+                cardEl.className = `cursor-pointer rounded-xl p-2.5 border transition flex flex-col justify-between text-xs ${
+                    isSelected 
+                        ? 'border-cyan-400 bg-cyan-950/80 shadow-neon-cyan ring-2 ring-cyan-400' 
+                        : 'border-space-600 bg-space-900/80 hover:border-slate-400'
+                }`;
+
+                cardEl.innerHTML = `
+                    <div class="flex items-center justify-between font-bold mb-1">
+                        <span class="text-[10px] text-cyan-300 uppercase">${card.type}</span>
+                        ${isSelected ? '<i class="fa-solid fa-circle-check text-cyan-400"></i>' : '<i class="fa-regular fa-circle text-slate-500"></i>'}
+                    </div>
+                    <span class="font-bold text-white leading-tight">${card.name}</span>
+                `;
+
+                cardEl.onclick = () => {
+                    if (isSelected) {
+                        gameState.recycleSelectedIndices = gameState.recycleSelectedIndices.filter(i => i !== idx);
+                    } else {
+                        if (gameState.recycleSelectedIndices.length < 2) {
+                            gameState.recycleSelectedIndices.push(idx);
+                        }
+                    }
+                    renderRecycleModalCards();
+                };
+
+                container.appendChild(cardEl);
+            });
+
+            const confirmBtn = document.getElementById('btnRecycleConfirm');
+            const counter = document.getElementById('recycleSelectedCounter');
+            counter.innerText = `Выбрано: ${gameState.recycleSelectedIndices.length} / 2`;
+            confirmBtn.disabled = gameState.recycleSelectedIndices.length !== 2;
+        }
+
+        function executeRecycleCards() {
+            const player = gameState.players[gameState.currentPlayerIdx];
+            if (gameState.recycleSelectedIndices.length !== 2) return;
+
+            // Sort indices descending to avoid splice index shifting
+            const sortedIndices = [...gameState.recycleSelectedIndices].sort((a, b) => b - a);
+
+            const c1 = player.hand[sortedIndices[0]];
+            const c2 = player.hand[sortedIndices[1]];
+
+            // Remove from hand
+            player.hand.splice(sortedIndices[0], 1);
+            player.hand.splice(sortedIndices[1], 1);
+
+            // Push to discard
+            gameState.discardPile.push(c1, c2);
+
+            // Draw 1 card
+            drawCards(player, 1);
+
+            gameState.actionsRemaining--;
+            audio.playCardSound();
+            logMessage(`${player.name} сбросил карты <b>${c1.name}</b> и <b>${c2.name}</b> &rarr; получил 1 новую карту.`, 'text-cyan-300');
+
+            document.getElementById('recycleModal').classList.add('hidden');
+            updateUI();
+        }
+
+        function executeAITurn() {
+            if (gameState.currentPlayerIdx !== 1 || gameState.gameEnded) return;
+
+            const aiPlayer = gameState.players[1];
+
+            // Helper delay runner to prevent synchronous locking
+            const runAIStep = () => {
+                if (gameState.gameEnded) return;
+
+                let actionTaken = false;
+
+                // 1. Try to play Planets / Belts
+                for (let i = 0; i < aiPlayer.hand.length; i++) {
+                    const c = aiPlayer.hand[i];
+                    if (c.type === 'PLANET' || c.type === 'BELT') {
+                        playCardFromHand(i);
+                        actionTaken = true;
+                        break;
+                    }
+                }
+
+                if (!actionTaken) {
+                    // 2. Try to play Resonances
+                    for (let i = 0; i < aiPlayer.hand.length; i++) {
+                        const c = aiPlayer.hand[i];
+                        if (c.type === 'RESONANCE') {
+                            playCardFromHand(i);
+                            actionTaken = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!actionTaken) {
+                    // 3. Attack Player 1 if holding attack cards
+                    for (let i = 0; i < aiPlayer.hand.length; i++) {
+                        const c = aiPlayer.hand[i];
+                        if (c.type === 'EFFECT' && c.sub === 'ATTACK_PLANET') {
+                            const humanSlot = gameState.players[0].system.findIndex(s => s.planet && !s.shield);
+                            if (humanSlot !== -1) {
+                                applyEffectCard(i, 0, humanSlot);
+                                actionTaken = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!actionTaken && aiPlayer.hand.length >= 2) {
+                    // 4. Fallback: Recycle cards if holding >= 2 cards
+                    const c1 = aiPlayer.hand.pop();
+                    const c2 = aiPlayer.hand.pop();
+                    gameState.discardPile.push(c1, c2);
+                    drawCards(aiPlayer, 1);
+                    gameState.actionsRemaining--;
+                    audio.playCardSound();
+
+                    const recMsg = `${aiPlayer.name} сбросил 2 карты и взял 1 из колоды.`;
+                    logMessage(recMsg, 'text-cyan-300');
+                    showOpponentBannerAction(`🤖 ${recMsg}`);
+                    actionTaken = true;
+                }
+
+                if (gameState.gameEnded) return;
+
+                if (actionTaken && gameState.actionsRemaining > 0) {
+                    setTimeout(runAIStep, 800);
+                } else {
+                    setTimeout(endTurn, 1000);
+                }
+            };
+
+            runAIStep();
+        }
+
+        function updateUI() {
+            const player = gameState.players[gameState.currentPlayerIdx];
+
+            // Header info
+            document.getElementById('currentTurnPlayerName').innerText = player.name;
+            document.getElementById('currentPhaseName').innerText = `Действие (${gameState.actionsRemaining}/2)`;
+            document.getElementById('deckCountText').innerText = gameState.deck.length;
+
+            // Active player banner
+            document.getElementById('activePlayerTitle').innerText = player.name;
+            document.getElementById('activePlayerStarName').innerText = `Звезда: ${player.star.name}`;
+            document.getElementById('starPropertiesText').innerHTML = `<b>Правила Звезды:</b> ${player.star.desc}`;
+            document.getElementById('actionsCounter').innerText = `${gameState.actionsRemaining} / 2`;
+
+            const starIcon = document.getElementById('activePlayerStarIcon');
+            starIcon.className = `w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold bg-amber-500 text-slate-900 ${player.star.color}`;
+            starIcon.innerHTML = `<i class="fa-solid ${player.star.icon}"></i>`;
+
+            // Active System Tracks
+            renderOrbitsTrack(player);
+
+            // Hand Cards
+            renderPlayerHand(player);
+
+            // Opponent Cards Mini Views
+            renderOpponentsList();
+        }
+
+        function renderOrbitsTrack(player) {
+            const container = document.getElementById('orbitsSystemTrack');
+            container.innerHTML = '';
+
+            // Star Node
+            const starNode = document.createElement('div');
+            starNode.className = "flex flex-col items-center justify-center space-y-1 min-w-[70px]";
+            starNode.innerHTML = `
+                <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg border-2 border-amber-300 ${player.star.color} bg-amber-500 text-slate-950">
+                    <i class="fa-solid ${player.star.icon}"></i>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">${player.star.name}</span>
+            `;
+            container.appendChild(starNode);
+
+            // 8 Orbits
+            for (let i = 0; i < 8; i++) {
+                const slot = player.system[i];
+
+                // Connection / Resonance Node (between orbit i-1 and i)
+                if (i > 0) {
+                    const connNode = document.createElement('div');
+                    connNode.className = "flex flex-col items-center justify-center w-8";
+                    if (slot.resonance) {
+                        connNode.innerHTML = `
+                            <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs border border-emerald-300 shadow" title="${slot.resonance.name}">
+                                <i class="fa-solid fa-link"></i>
+                            </div>
+                        `;
+                    } else if (slot.planet && slot.planet.type === 'BELT') {
+                        connNode.innerHTML = `<div class="h-0.5 w-full bg-slate-500"></div>`;
+                    } else {
+                        connNode.innerHTML = `<div class="h-0.5 w-full bg-rose-500/50 border-t border-dashed border-rose-400"></div>`;
+                    }
+                    container.appendChild(connNode);
+                }
+
+                // Orbit Slot Card Box
+                const slotBox = document.createElement('div');
+                slotBox.className = `orbit-slot relative flex flex-col items-center justify-center w-24 h-32 rounded-xl border-2 p-2 transition text-center ${
+                    slot.planet 
+                        ? 'border-cyan-500/80 bg-gradient-to-b ' + slot.planet.bg 
+                        : 'border-dashed border-space-600 bg-space-900/40 hover:border-slate-400'
+                }`;
+
+                if (slot.planet) {
+                    slotBox.innerHTML = `
+                        <div class="absolute top-1 right-1 flex space-x-1">
+                            ${slot.shield ? '<span class="text-blue-300 text-xs"><i class="fa-solid fa-shield-halved"></i></span>' : ''}
+                            ${slot.unstable ? '<span class="text-amber-400 text-xs animate-bounce" title="Нестабильность!"><i class="fa-solid fa-triangle-exclamation"></i></span>' : ''}
+                        </div>
+                        <i class="fa-solid ${slot.planet.icon} text-2xl text-white mb-2"></i>
+                        <span class="text-[11px] font-bold leading-tight text-slate-100">${slot.planet.name}</span>
+                        <span class="text-[9px] text-slate-300/80 uppercase mt-1">Орбита ${i + 1}</span>
+                    `;
+                } else {
+                    slotBox.innerHTML = `
+                        <span class="text-xs text-slate-500 font-bold">#${i + 1}</span>
+                        <span class="text-[10px] text-slate-600 uppercase mt-1">Свободно</span>
+                    `;
+                }
+
+                container.appendChild(slotBox);
+            }
+        }
+
+        function renderPlayerHand(player) {
+            const container = document.getElementById('playerHandContainer');
+            container.innerHTML = '';
+
+            document.getElementById('handCountBadge').innerText = `${player.hand.length} / 6`;
+
+            player.hand.forEach((card, idx) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = `card-hover cursor-pointer flex-shrink-0 w-32 h-44 rounded-xl p-2.5 border border-space-600 bg-gradient-to-b ${card.bg} flex flex-col justify-between shadow-lg relative`;
+                cardEl.onclick = () => playCardFromHand(idx);
+
+                cardEl.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-300">${card.type}</span>
+                        <i class="fa-solid ${card.icon} text-sm text-slate-200"></i>
+                    </div>
+                    <div class="my-auto text-center">
+                        <h5 class="text-xs font-bold text-white leading-tight mb-1">${card.name}</h5>
+                        <p class="text-[9px] text-slate-300/90 leading-tight">${card.desc}</p>
+                    </div>
+                    <div class="text-center pt-1 border-t border-white/10">
+                        <span class="text-[9px] font-bold text-cyan-200">Сыграть &rarr;</span>
+                    </div>
+                `;
+                container.appendChild(cardEl);
+            });
+
+            if (player.hand.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic my-auto">Ваша рука пуста.</p>`;
+            }
+        }
+
+        function renderOpponentsList() {
+            const container = document.getElementById('opponentsContainer');
+            container.innerHTML = '';
+
+            gameState.players.forEach((p) => {
+                if (p.id !== gameState.currentPlayerIdx) {
+                    const card = document.createElement('div');
+                    card.className = "bg-space-900/80 border border-space-600 rounded-xl p-3 flex flex-col justify-between transition hover:border-cyan-500/50";
+
+                    let filledCount = p.system.filter(s => s.planet).length;
+
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid ${p.star.icon} text-amber-400 text-sm"></i>
+                                <span class="font-bold text-xs text-slate-200">${p.name}</span>
+                                <span class="text-[10px] text-slate-400">(${p.hand.length} карт в руке)</span>
+                            </div>
+                            <span class="text-[10px] font-bold text-cyan-300 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">${filledCount}/8 орбит</span>
+                        </div>
+                        <div class="grid grid-cols-8 gap-1">
+                            ${p.system.map((s, idx) => `
+                                <div class="h-8 rounded flex flex-col items-center justify-center text-[9px] font-bold border transition ${
+                                    s.planet 
+                                        ? (s.unstable ? 'bg-amber-900/80 border-amber-500 text-amber-200' : 'bg-cyan-900/60 border-cyan-500 text-cyan-200') 
+                                        : 'bg-space-800 border-space-700 text-slate-600'
+                                }" title="${s.planet ? s.planet.name + (s.resonance ? ' (+Резонанс)' : '') : 'Свободно'}">
+                                    <span>#${idx + 1}</span>
+                                    ${s.planet ? `<i class="fa-solid ${s.planet.icon} text-[8px]"></i>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    container.appendChild(card);
+                }
+            });
+        }
+
+        function logMessage(text, colorClass = 'text-slate-300') {
+            const log = document.getElementById('gameLog');
+            const entry = document.createElement('div');
+            entry.className = `leading-tight mb-1 ${colorClass}`;
+            entry.innerHTML = `• ${text}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup Player Count Toggles
+            document.querySelectorAll('.btn-player-count').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.btn-player-count').forEach(b => b.classList.remove('active-count', 'border-cyan-400', 'bg-cyan-900/30'));
+                    e.target.classList.add('active-count', 'border-cyan-400', 'bg-cyan-900/30');
+                });
+            });
+
+            // Toggle Mode
+            document.querySelectorAll('input[name="gameMode"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const container = document.getElementById('playerCountContainer');
+                    if (e.target.value === 'pvp') {
+                        container.classList.remove('hidden');
+                    } else {
+                        container.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Start Game Submit
+            document.getElementById('setupForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const mode = document.querySelector('input[name="gameMode"]:checked').value;
+                const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+                const pCountBtn = document.querySelector('.btn-player-count.active-count');
+                const pCount = pCountBtn ? parseInt(pCountBtn.getAttribute('data-count')) : 2;
+
+                initGame(mode, difficulty, pCount);
+            });
+
+            // Gameplay Controls
+            document.getElementById('btnEndTurn').addEventListener('click', () => {
+                if (!gameState.players[gameState.currentPlayerIdx].isAI) {
+                    endTurn();
+                }
+            });
+
+            document.getElementById('btnRecycleHand').addEventListener('click', () => {
+                openRecycleModal();
+            });
+
+            document.getElementById('btnRecycleModalClose').addEventListener('click', () => {
+                document.getElementById('recycleModal').classList.add('hidden');
+            });
+            document.getElementById('btnRecycleCancel').addEventListener('click', () => {
+                document.getElementById('recycleModal').classList.add('hidden');
+            });
+            document.getElementById('btnRecycleConfirm').addEventListener('click', () => {
+                executeRecycleCards();
+            });
+
+            document.getElementById('btnRestartGame').addEventListener('click', () => {
+                if (confirm('Вы уверены, что хотите перезапустить игру?')) {
+                    location.reload();
+                }
+            });
+
+            // Modals
+            document.getElementById('btnIntroModal').addEventListener('click', () => {
+                document.getElementById('introModal').classList.remove('hidden');
+            });
+            document.getElementById('btnIntroClose').addEventListener('click', () => {
+                document.getElementById('introModal').classList.add('hidden');
+            });
+            document.getElementById('btnIntroStartGame').addEventListener('click', () => {
+                document.getElementById('introModal').classList.add('hidden');
+            });
+
+            document.getElementById('btnVictoryRestart').addEventListener('click', () => {
+                document.getElementById('victoryModal').classList.add('hidden');
+                document.getElementById('gameplayScreen').classList.add('hidden');
+                document.getElementById('turnHeaderInfo').classList.add('hidden');
+                document.getElementById('setupScreen').classList.remove('hidden');
+            });
+
+            document.getElementById('btnRulesModal').addEventListener('click', () => {
+                document.getElementById('rulesModal').classList.remove('hidden');
+            });
+            document.getElementById('btnRulesClose').addEventListener('click', () => {
+                document.getElementById('rulesModal').classList.add('hidden');
+            });
+
+            document.getElementById('btnActionModalClose').addEventListener('click', () => {
+                document.getElementById('actionModal').classList.add('hidden');
+            });
+            document.getElementById('btnActionModalCancel').addEventListener('click', () => {
+                document.getElementById('actionModal').classList.add('hidden');
+            });
+
+            // Audio Toggle
+            document.getElementById('btnAudioToggle').addEventListener('click', (e) => {
+                audio.enabled = !audio.enabled;
+                e.currentTarget.classList.toggle('text-rose-400', !audio.enabled);
+            });
+        });
+    </script>
+</body>
+</html>
