@@ -4,7 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0a0c24">
-<title>Резонанс — карточная игра</title>
+<title>Резонансы — карточная игра</title>
+<meta name="description" content="Карточная игра о резонансах: в космосе, музыке и физике. Составляйте цепочки из планет, струн и маятников.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Резонансы — карточная игра">
+<meta property="og:description" content="Карточная игра о резонансах: в космосе, музыке и физике. Составляйте цепочки из планет, струн и маятников.">
+<meta property="og:image" content="resonance_game_preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="resonance_game_preview.png">
 <style>
 :root{--bg:#0a0c24;--panel:#13174a;--panel2:#1d2268;--gold:#e0b858;--ink:#eef0ff;--mut:#a3a9ff;--red:#ff6b5e;--green:#5fd18a;--yel:#f3c24a;--grey:#8a8fb5;--line:#ffffff26}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -35,6 +44,7 @@ button:disabled{opacity:.4;cursor:default}
 
 /* поле */
 #fieldWrap{position:relative;flex:1;min-height:0}
+#field,#field *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #field{position:absolute;inset:0;overflow:hidden;touch-action:none;cursor:grab;background:radial-gradient(#ffffff2a 1px,transparent 1.6px) 0 0/34px 34px,radial-gradient(#ffffff18 1px,transparent 1.6px) 17px 17px/34px 34px}
 #field:active{cursor:grabbing}
 #world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
@@ -263,8 +273,7 @@ table.res tr.win td{color:var(--gold);font-weight:700}
 .names{display:flex;flex-direction:column;gap:6px;margin:4px 0 10px}
 .nm{background:#141a5a;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 12px;font-size:15px;width:100%;box-sizing:border-box}
 
-#factsFab{position:absolute;left:8px;top:8px;z-index:5;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4b55c8,#1a1f66);border:1.5px solid #7be0ff;display:grid;place-items:center;box-shadow:0 0 14px #7be0ff66;cursor:pointer;padding:0}
-#factsFab svg{width:26px;height:26px;stroke:#bff3ff;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#factsFab{border-color:#7be0ff;box-shadow:0 0 10px #7be0ff55}
 #factsFab svg path{fill:#ffe9a0;stroke:none}
 .fh{margin:14px 0 4px;color:#7be0ff;font-size:15px}
 .fq{border-top:1px solid var(--line);padding:6px 0}.fq b{color:var(--gold)}.fq p{margin:3px 0;font-size:14px;line-height:1.45}
@@ -282,6 +291,28 @@ table.res tr.win td{color:var(--gold);font-weight:700}
 .shbtns .vk{background:#0077ff;border-color:#0077ff;color:#fff}.shbtns .tg{background:#229ed9;border-color:#229ed9;color:#fff}
 #toasts{z-index:9800}
 
+.bkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(6.2em,1fr));gap:.6em;max-height:58vh;overflow:auto;margin:.6em 0;padding:.2em}
+.bk{position:relative;background:none;border:0;padding:0;cursor:pointer;font-size:10px;border-radius:.8em}
+.bk:hover,.bk:focus-visible{outline:2px solid #ffd34d}
+.bk .cd{width:100%;height:auto;aspect-ratio:7.5/10.5}
+.bkn{position:absolute;right:.3em;top:.3em;background:#000c;color:#ffd34d;border-radius:.7em;padding:0 .5em;font:700 1.3em system-ui}
+
+#dlm{position:fixed;right:8px;top:calc(52px + env(safe-area-inset-top));z-index:80;display:none;flex-direction:column;gap:6px;background:#161a58;border:1px solid var(--line);border-bottom:2px solid var(--gold);border-radius:14px;padding:10px;min-width:15em;box-shadow:0 10px 30px #000b}
+#dlm.on{display:flex}
+#dlm b{font-size:.85em;color:var(--gold);letter-spacing:.06em;text-transform:uppercase}
+#dlm button{text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:9px 12px;border-radius:10px;font:inherit}
+#dlm button:hover{border-color:var(--gold)}
+
+.jv{margin:8px 0;background:radial-gradient(#1b2260,#0a0c24);border-radius:16px;padding:6px}
+.jl{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin:6px 0;font-size:.95em}
+.jl i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.jl b{display:inline-block;min-width:1.4em;text-align:right;color:var(--gold)}
+.fcard{float:right;width:7.5em;margin:0 0 .4em .8em;font-size:11px}
+.fq::after{content:'';display:block;clear:both}
+
+.rollv{margin:8px 0;min-height:3em;text-align:center}
+.rollv img{max-height:46vh;object-fit:contain;background:#0b1020}
+
 </style>
 </head>
 <body>
@@ -291,6 +322,8 @@ table.res tr.win td{color:var(--gold);font-weight:700}
       <button class="ib" id="bMenu" data-act="menu" aria-label="Меню"></button>
       <div class="tb-title" id="tTitle"></div>
       <button class="ib" id="bHint" data-act="hint" aria-label="Подсказка" style="display:none"></button>
+      <button class="ib" id="factsFab" data-act="facts" aria-label="Интересные факты" title="А знаете ли вы, что…"></button>
+      <button class="ib" id="bDl" data-act="dlmenu" aria-label="Загрузки" title="Загрузки" style="display:none"></button>
       <button class="ib" id="bLog" data-act="log" aria-label="Журнал"></button>
       <button class="ib" id="bSound" data-act="sound" aria-label="Звук"></button>
     </div>
@@ -299,7 +332,6 @@ table.res tr.win td{color:var(--gold);font-weight:700}
   <div id="kz"></div>
   <main id="fieldWrap">
     <div id="field"><div id="world"><div id="wBodies"></div><div id="floaters"></div></div></div>
-    <button id="factsFab" data-act="facts" aria-label="Интересные факты" title="А знаете ли вы, что…"></button>
     <div id="turn"></div>
     <div id="zoom">
       <button class="fab" data-act="zin" aria-label="Приблизить">+</button>
@@ -314,6 +346,7 @@ table.res tr.win td{color:var(--gold);font-weight:700}
 </div>
 <div id="toasts"></div>
 <button id="shareFab" data-act="shareopen" data-v="promo" aria-label="Поделиться" title="Поделиться игрой"></button>
+<div id="dlm"></div>
 <div id="share"></div>
 <div id="fact"></div>
 <div id="fxb"></div>
@@ -419,8 +452,9 @@ const PERTURBS=[
  {fx:'damper',n:'Демпфер',t:'Снимает жетоны со всех ваших нестабильных резонансов, их счёт начинается заново',c:2},
  {fx:'doppler',n:'Эффект Доплера',t:'Меняет период тела на ±2',c:2},
  {fx:'amp',n:'Усилитель',t:'Играется вместе с картой тела: очки за выкладывание удваиваются',c:2},
- {fx:'reboot',n:'Перезагрузка',t:'Все ваши карты заменяются новыми из колоды',c:2},
+ {fx:'reboot',n:'Перезагрузка',t:'Замена всех карт',c:2},
  {fx:'shield',n:'Защита цепочки',t:'Ваша планетная цепочка защищена от разрушения до вашего следующего хода',c:2},
+ {fx:'beacon',n:'Маяк',t:'Выберите любую карту из колоды: она перейдёт к вам в руку',c:2},
  {fx:'cash',n:'Обмен квантов',t:'Обменять '+CASH_COST+' квантов на '+CASH_POINTS+' очков',c:2}
 ];
 const HATCHES=[
@@ -513,8 +547,8 @@ function laplaceTriples(bodies,m){
   return out;
 }
 /* планетная цепочка 1:2:4:8: четыре тела подряд (прямая или изгиб), периоды 1-2-4-8, у всех четырёх тел разные фазы (0, 1, 2, 3): все связи стабильны */
-function findChain(bodies,m){
-  m=m||cellMap(bodies);
+function findChains(bodies,m){
+  m=m||cellMap(bodies);const out=[];
   for(const a of bodies){
     if(effP(a)!==1)continue;
     for(const b of neighborsIn(a,m)){
@@ -523,13 +557,16 @@ function findChain(bodies,m){
         if(c===a||effP(c)!==4)continue;
         for(const d of neighborsIn(c,m)){
           if(d===b||effP(d)!==8)continue;
-          if(new Set([a.phase,b.phase,c.phase,d.phase]).size===4)return [a,b,c,d];
+          if(new Set([a.phase,b.phase,c.phase,d.phase]).size===4)out.push([a,b,c,d]);
         }
       }
     }
   }
-  return null;
+  return out;
 }
+function findChain(bodies,m){const r=findChains(bodies,m);return r.length?r[0]:null;}
+function chainKey(c){return c.map(x=>x.uid).join('>');}
+function ownChain(st,id){return (st.chains||[]).find(c=>c.by===id)||null;}
 function totalScore(bodies){
   const m=cellMap(bodies);let t=0;
   for(const p of pairsOf(bodies,m))t+=linkScore(p[0],p[1]);
@@ -549,20 +586,25 @@ function lapNew(st,before,ev,by){
 }
 /* цепочка достаётся тому, кто своим ходом её собрал; побеждает, если простоит два полных раунда после сборки (до конца раунда N+2) */
 function updateChain(st,ev,by){
-  const c=findChain(st.bodies);
-  if(c){
-    if(!st.chain){
-      st.chain={by,round:st.round,uids:c.map(x=>x.uid),names:c.map(x=>x.card.name)};
-      ev.push({kind:'chain',by,uids:st.chain.uids,text:'Планетная цепочка 1-2-4-8 ('+chainNames(st,st.chain.uids)+')! '+pname(st,by)+' победит, если она простоит до конца раунда '+(st.round+2)+'.'});
-    }
-  }else if(st.chain){
-    ev.push({kind:'chainbreak',text:'Планетная цепочка разрушена'+(st.chain.names?' ('+st.chain.names.map(n=>'«'+n+'»').join(' – ')+')':'')});
-    st.chain=null;
+  st.chains=st.chains||[];
+  const cur=findChains(st.bodies),keys=new Set(cur.map(chainKey)),keep=[];
+  for(const c of st.chains){
+    if(keys.has(c.key))keep.push(c);
+    else ev.push({kind:'chainbreak',text:'Планетная цепочка ('+c.names.map(n=>'«'+n+'»').join(' – ')+') разрушена'});
   }
+  st.chains=keep;
+  for(const c of cur){
+    const k=chainKey(c);
+    if(st.chains.some(o=>o.key===k))continue;
+    const ch={by,round:st.round,uids:c.map(x=>x.uid),names:c.map(x=>x.card.name),key:k,seq:st.chainSeq++};
+    st.chains.push(ch);
+    ev.push({kind:'chain',by,uids:ch.uids,text:'Планетная цепочка 1-2-4-8 ('+chainNames(st,ch.uids)+')! '+pname(st,by)+' победит, если она простоит до конца раунда '+(st.round+2)+'.'});
+  }
+  st.chain=st.chains.length?st.chains[0]:null;
 }
 function loadKey(a,b){return a.uid<b.uid?a.uid+'|'+b.uid:b.uid+'|'+a.uid;}
 function isProtected(st,b){return b.phase===2;}
-function shielded(st,b){return !!(st.shield&&st.chain&&st.shield.uids.includes(b.uid));}
+function shielded(st,b){return !!(st.shield&&st.shield.uids.includes(b.uid));}
 function hatchHits(st,b){return !isProtected(st,b)&&!shielded(st,b)&&st.zone.some(c=>c.hx==='kirkwood'&&c.hit===effP(b));}
 function pruneLoads(st){
   const nl={};
@@ -580,7 +622,7 @@ function evalPlacement(st,card,x,y,phase,owner){
   const nb={uid:'tmp',card,owner,phase,mod:0,x,y};
   st.bodies.push(nb);
   let gained=totalScore(st.bodies)-before;
-  const makesChain=!st.chain&&!!findChain(st.bodies);
+  const known=new Set((st.chains||[]).map(c=>c.key)),makesChain=findChains(st.bodies).some(c=>!known.has(chainKey(c)));
   const m=cellMap(st.bodies),links=[];
   for(const d of DIRS){
     const n=m.get((x+d[0])+','+(y+d[1]));
@@ -633,9 +675,11 @@ function endRound(st,ev){
     ejectBody(st,effP(a)>effP(b)?a.uid:b.uid,'load',ev);
   }
   updateChain(st,ev,st.cur);
-  if(st.chain&&st.round>st.chain.round+1){
-    st.over=true;st.winner=st.chain.by;
-    ev.push({kind:'chainwin',by:st.chain.by,uids:(findChain(st.bodies)||[]).map(x=>x.uid),text:'Планетная цепочка'+(st.chain.names?' ('+st.chain.names.map(n=>'«'+n+'»').join(' – ')+')':'')+' простояла весь раунд: '+pname(st,st.chain.by)+' побеждает!'});
+  const ready=(st.chains||[]).filter(c=>st.round>c.round+1);
+  if(ready.length){
+    const c=ready[0];
+    st.over=true;st.winner=c.by;
+    ev.push({kind:'chainwin',by:c.by,uids:c.uids.slice(),text:'Планетная цепочка ('+c.names.map(n=>'«'+n+'»').join(' – ')+') простояла весь раунд: '+pname(st,c.by)+' побеждает!'+(ready.length>1?' (обе цепочки выстояли, побеждает собранная раньше)':'')});
   }
   /* кванты: +1 за каждый стабильный резонанс (связь без сближения) каждому владельцу его тел */
   const gain={};
@@ -665,7 +709,7 @@ function newGame(opts){
   for(let i=0;i<nh;i++)players.push({id:i,name:hname(i),isBot:false,color:cols[i],hand:[],score:0,shifts:FREE_SHIFTS,quanta:0,removes:0,skip:false});
   for(let i=0;i<nb;i++)players.push({id:nh+i,name:names[i],isBot:true,color:cols[nh+i],hand:[],score:0,shifts:FREE_SHIFTS,quanta:0,removes:0,skip:false});
   const diff=opts.diff||'normal';
-  const st={deck,discard:[],players,bodies:[],loads:{},zone:[],cur:0,round:1,turnsInRound:0,endLeft:null,over:false,winner:null,chain:null,shield:null,bought:false,drew:false,uidN:0,diff,maxRounds:diff==='hard'?0:ROUNDS_LIMIT};
+  const st={deck,discard:[],players,bodies:[],loads:{},zone:[],cur:0,round:1,turnsInRound:0,endLeft:null,over:false,winner:null,chain:null,chains:[],chainSeq:0,shield:null,bought:false,drew:false,uidN:0,diff,maxRounds:diff==='hard'?0:ROUNDS_LIMIT};
   const si=st.deck.findIndex(c=>c.kind==='body');
   const seed=st.deck.splice(si,1)[0];
   st.bodies.push({uid:'u'+(st.uidN++),card:seed,owner:null,phase:0,mod:0,x:0,y:0});
@@ -775,11 +819,12 @@ function applyAction(st,a){
     }
   }else if(a.type==='shield'){
     if(card.kind!=='perturb'||card.fx!=='shield')return fail('Карта не подходит');
-    if(!st.chain||st.chain.by!==p.id)return fail('У вас нет планетной цепочки');
+    const oc=ownChain(st,p.id);
+    if(!oc)return fail('У вас нет планетной цепочки');
     if(st.shield)return fail('Цепочка уже под защитой');
     p.hand.splice(ci,1);st.discard.push(card);
-    st.shield={by:p.id,uids:st.chain.uids.slice()};
-    ev.push({kind:'shield',text:p.name+' защищает цепочку ('+st.chain.names.map(n=>'«'+n+'»').join(' – ')+') до своего следующего хода'});
+    st.shield={by:p.id,uids:oc.uids.slice()};
+    ev.push({kind:'shield',text:p.name+' защищает цепочку ('+oc.names.map(n=>'«'+n+'»').join(' – ')+') до своего следующего хода'});
   }else if(a.type==='damper'){
     if(card.kind!=='perturb'||card.fx!=='damper')return fail('Карта не подходит');
     const keys=[];
@@ -811,6 +856,13 @@ function applyAction(st,a){
     p.hand=[];
     for(let i=0;i<n&&st.deck.length;i++)p.hand.push(st.deck.pop());
     ev.push({kind:'reboot',text:p.name+' перезагружает руку: '+n+' карт заменены'});
+  }else if(a.type==='beacon'){
+    if(card.kind!=='perturb'||card.fx!=='beacon')return fail('Карта не подходит');
+    const ix=st.deck.findIndex(c=>c.id===a.pickId);
+    if(ix<0)return fail('Такой карты нет в колоде');
+    p.hand.splice(ci,1);st.discard.push(card);
+    const got=st.deck.splice(ix,1)[0];p.hand.push(got);
+    ev.push({kind:'beacon',text:p.name+' зажигает «Маяк» и берёт из колоды «'+got.name+'»'});
   }else if(a.type==='cash'){
     if(card.kind!=='perturb'||card.fx!=='cash')return fail('Карта не подходит');
     if(p.quanta<CASH_COST)return fail('Нужно '+kv(CASH_COST));
@@ -885,10 +937,11 @@ function applySpend0(st,a){
   }
   if(a.kind==='shield'){
     if(p.quanta<COST_SHIELD)return fail('Не хватает квантов');
-    if(!st.chain||st.chain.by!==p.id)return fail('У вас нет планетной цепочки');
+    const oc=ownChain(st,p.id);
+    if(!oc)return fail('У вас нет планетной цепочки');
     if(st.shield)return fail('Цепочка уже под защитой');
-    p.quanta-=COST_SHIELD;st.shield={by:p.id,uids:st.chain.uids.slice()};
-    return {ok:true,gained:0,events:[{kind:'shield',text:p.name+' покупает защиту цепочки ('+st.chain.names.map(n=>'«'+n+'»').join(' – ')+') до своего следующего хода (−'+kv(COST_SHIELD)+')'}]};
+    p.quanta-=COST_SHIELD;st.shield={by:p.id,uids:oc.uids.slice()};
+    return {ok:true,gained:0,events:[{kind:'shield',text:p.name+' покупает защиту цепочки ('+oc.names.map(n=>'«'+n+'»').join(' – ')+') до своего следующего хода (−'+kv(COST_SHIELD)+')'}]};
   }
   if(a.kind==='clear'){
     if(p.quanta<COST_CLEAR)return fail('Не хватает квантов');
@@ -979,11 +1032,24 @@ function legalActions(st){
       else if(c.fx==='swap'){for(const [x,y] of pairsOf(bs))acts.push({type:'swap',cardId:c.id,a:x.uid,b:y.uid});}
       else if(c.fx==='doppler'){for(const b of bs)for(const dir of [-2,2]){const e=effP(b);if(clamp(e+dir)!==e)acts.push({type:'doppler',cardId:c.id,uid:b.uid,dir});}}
       else if(c.fx==='trade'||c.fx==='overload'||c.fx==='steal'||c.fx==='eclipse'){for(const q of st.players)if(q.id!==p.id)acts.push({type:c.fx,cardId:c.id,target:q.id});}
-      else if(c.fx==='shield'){if(st.chain&&st.chain.by===p.id&&!st.shield)acts.push({type:'shield',cardId:c.id});}
+      else if(c.fx==='shield'){if(ownChain(st,p.id)&&!st.shield)acts.push({type:'shield',cardId:c.id});}
+      else if(c.fx==='beacon'){const pk=beaconPick(st);if(pk)acts.push({type:'beacon',cardId:c.id,pickId:pk.id});}
       else if(c.fx==='damper'||c.fx==='reboot'||c.fx==='cash')acts.push({type:c.fx,cardId:c.id});
     }else acts.push({type:'hatch',cardId:c.id});
   }
   return acts;
+}
+/* бот: какую карту взять Маяком: тело, дающее больше простых отношений с телами на поле */
+function beaconPick(st){
+  let best=null,bv=-1;
+  const per=st.bodies.map(b=>effP(b));
+  for(const c of st.deck){
+    if(c.kind!=='body')continue;
+    let v=0;for(const q of per){const g=gcd(c.period,q),r=[c.period/g,q/g].sort((x,y)=>y-x).join(':');if(['1:1','2:1','3:2','3:1','4:3'].includes(r))v++;}
+    if(c.period===1||c.period===2||c.period===4||c.period===8)v+=.5;
+    if(v>bv){bv=v;best=c;}
+  }
+  return best||st.deck[0]||null;
 }
 function riskOf(st,me){
   let r=0;
@@ -1020,8 +1086,8 @@ function botChoose(st,rng){
     const sim=cloneState(st),r=applyAction(sim,a);
     if(!r.ok)continue;
     let v=r.gained-(riskOf(sim,me)-baseRisk);
-    if(!st.chain&&sim.chain&&sim.chain.by===me)v+=30;
-    if(st.chain&&st.chain.by!==me&&!sim.chain)v+=40;
+    if((sim.chains||[]).some(c=>c.by===me&&!(st.chains||[]).some(o=>o.key===c.key)))v+=30;
+    if((st.chains||[]).some(c=>c.by!==me&&!(sim.chains||[]).some(o=>o.key===c.key)))v+=40;
     const t=a.target!==undefined?st.players[a.target]:null,rest=p.hand.filter(c=>c.id!==a.cardId);
     if(a.type==='steal')v+=Math.min(STEAL_N,t.quanta)*0.45;
     else if(a.type==='eclipse')v+=2.5;
@@ -1036,6 +1102,7 @@ function botChoose(st,rng){
     }
     else if(a.type==='trade')v+=(handScore(t.hand)-handScore(rest))*0.6-0.5;
     else if(a.type==='reboot')v+=(6-handScore(rest))*0.5-0.8;
+    else if(a.type==='beacon')v+=1.5;
     for(const e of r.events)if(e.kind==='eject'&&e.owner!==null)v+=e.owner===me?-2.5:2;
     scored.push({a,v:v+rng()*noise});
   }
@@ -1050,20 +1117,20 @@ function botFreeShift(st){
   if((paid&&(p.quanta<COST_SHIFT||st.bought))||st.bodies.length<2)return null;
   const me=st.cur,before=totalScore(st.bodies),rb=riskOf(st,me);
   let best=null,bv=0;
-  const hadChain=!!st.chain;
+  const known0=new Set((st.chains||[]).map(c=>c.key));
   for(const b of st.bodies)for(const dir of [-1,1]){
     if(!paid&&b.owner!==p.id)continue;
     if(shielded(st,b))continue;
     const o=b.phase;b.phase=(((o+dir)%4)+4)%4;
     let v=(totalScore(st.bodies)-before)+(rb-riskOf(st,me));
-    if(!hadChain&&findChain(st.bodies))v+=30;
+    if(findChains(st.bodies).some(c=>!known0.has(chainKey(c))))v+=30;
     b.phase=o;
     if(v>bv){bv=v;best={uid:b.uid,dir,paid};}
   }
   return bv>=(paid?4:3)?best:null;
 }
 if(typeof module!=='undefined')module.exports={clamp,gcd,baseScore,ratioText,linkInfo,linkScore,chainBonus,totalScore,cellMap,pairsOf,triplesOf,freeCells,evalPlacement,
-  newGame,applyAction,applyFreeShift,finishTurn,endRound,legalActions,botChoose,botFreeShift,cloneState,effP,hatchHits,isProtected,buildDeck,noteText,noteOf,loadKey,pruneLoads,applyHatches,ejectBody,BODIES,PENALTY,FREE_SHIFTS,CHAIN_BONUS,QUANTA_SHIFT,COST_SHIFT,COST_DRAW,COST_REMOVE,REMOVE_MAX,STEAL_N,HAND_N,COST_SHIELD,shielded,COST_TIDE,COST_CLEAR,COST_ANALYZE,analyzeOpp,CASH_COST,CASH_POINTS,LAPLACE_BONUS,laplaceTriples,findChain,updateChain,applySpend,kv,lapKeys};
+  newGame,applyAction,applyFreeShift,finishTurn,endRound,legalActions,botChoose,botFreeShift,cloneState,effP,hatchHits,isProtected,buildDeck,noteText,noteOf,loadKey,pruneLoads,applyHatches,ejectBody,BODIES,PENALTY,FREE_SHIFTS,CHAIN_BONUS,QUANTA_SHIFT,COST_SHIFT,COST_DRAW,COST_REMOVE,REMOVE_MAX,STEAL_N,HAND_N,COST_SHIELD,shielded,COST_TIDE,COST_CLEAR,COST_ANALYZE,analyzeOpp,CASH_COST,CASH_POINTS,LAPLACE_BONUS,laplaceTriples,findChain,findChains,chainKey,ownChain,updateChain,applySpend,kv,lapKeys};
 
 /* ====== ИЛЛЮСТРАЦИИ КАРТ (SVG, viewBox 0 0 100 100) ====== */
 function hash(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
@@ -1224,12 +1291,13 @@ function artPert(c){
       case 'doppler':return '<g fill="none" stroke="#8fe3ff" stroke-width="3.2"><circle cx="40" cy="50" r="34" opacity=".35"/><circle cx="48" cy="50" r="26" opacity=".5"/><circle cx="56" cy="50" r="18" opacity=".7"/><circle cx="64" cy="50" r="10"/></g><circle cx="74" cy="50" r="5.5" fill="#ffd27a"/><path d="M82 50 H96 M90 44 L97 50 L90 56" fill="none" stroke="#ffd27a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>';
       case 'amp':return '<path d="M10 34 H28 L50 16 V70 L28 52 H10 Z" fill="#3a2a7a" stroke="#e8c9ff" stroke-width="3" stroke-linejoin="round"/><g fill="none" stroke="#ffd27a" stroke-width="4" stroke-linecap="round"><path d="M60 32 Q68 43 60 54"/><path d="M70 22 Q84 43 70 64" opacity=".85"/><path d="M80 12 Q100 43 80 74" opacity=".6"/></g><text x="50" y="96" text-anchor="middle" font-size="24" font-weight="800" fill="#ffd27a" stroke="#000" stroke-width=".6">×2</text>';
       case 'reboot':return '<path d="M50 14 V50" stroke="#ffd27a" stroke-width="8" stroke-linecap="round"/><path d="M28 28 A32 32 0 1 0 72 28" fill="none" stroke="#e8c9ff" stroke-width="7" stroke-linecap="round"/>';
+      case 'beacon':return '<path d="M38 90 L44 38 H56 L62 90 Z" fill="#e9eefc" stroke="#9fb0d8" stroke-width="2.5"/><path d="M41 62 H59 M40 76 H60" stroke="#d8453f" stroke-width="7"/><rect x="40" y="26" width="20" height="12" rx="2" fill="#ffd34d" stroke="#fff2c0" stroke-width="2"/><path d="M40 26 L50 14 L60 26 Z" fill="#3a2a7a"/><path d="M36 32 L6 22 M36 32 L6 42 M64 32 L94 22 M64 32 L94 42" stroke="#ffd34d" stroke-width="3" stroke-linecap="round" opacity=".8"/>';
       case 'cash':return '<path d="M22 34 L34 46 L22 68 L10 46 Z" fill="#7be0ff" stroke="#e6fbff" stroke-width="2.5" stroke-linejoin="round"/><path d="M40 52 H62 M54 44 L63 52 L54 60" fill="none" stroke="#e8c9ff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M80 30 L85 45 L100 45 L88 54 L92 69 L80 60 L68 69 L72 54 L60 45 L75 45 Z" transform="translate(-6 2) scale(.9)" fill="#ffd27a" stroke="#fff2c0" stroke-width="2" stroke-linejoin="round"/>';
     }
   }
   return '<ellipse cx="50" cy="62" rx="38" ry="18" fill="#12040a" stroke="#ff9a8a" stroke-width="3.5"/><ellipse cx="50" cy="62" rx="24" ry="9.5" fill="#000"/><text x="50" y="42" text-anchor="middle" font-size="32" font-weight="800" fill="#ffd27a" stroke="#000" stroke-width=".8">'+c.hit+'</text><g fill="#fff" opacity=".7"><circle cx="12" cy="30" r="1.4"/><circle cx="88" cy="24" r="1.2"/><circle cx="82" cy="86" r="1.4"/></g>';
 }
-const SHORT={shield:'защита цепочки',tide:'период ±1',shift:'фаза ±90°',wind:'убрать тело',swap:'поменять',trade:'обмен руками',overload:'жетоны сопернику',steal:'украсть кванты',eclipse:'пропуск хода',damper:'снять жетоны',doppler:'период ±2',amp:'очки ×2',reboot:'новая рука',cash:'кванты → очки'};
+const SHORT={beacon:'любая карта из колоды',shield:'защита цепочки',tide:'период ±1',shift:'фаза ±90°',wind:'убрать тело',swap:'поменять',trade:'обмен руками',overload:'жетоны сопернику',steal:'украсть кванты',eclipse:'пропуск хода',damper:'снять жетоны',doppler:'период ±2',amp:'очки ×2',reboot:'замена всех карт',cash:'кванты → очки'};
 function shortOf(c){return c.kind==='perturb'?SHORT[c.fx]:'бьёт период '+c.hit;}
 function noteShort(p){const n=noteOf(p);return (n.approx?'≈':'')+n.name+n.oct;}
 
@@ -1336,6 +1404,7 @@ const FX_FACTS={
  damper:['В небоскрёбе Тайбэй 101 установлен стальной шар массой около 660 тонн: он качается в противофазе зданию и гасит колебания при ветре и землетрясениях.'],
  doppler:['Эффект Доплера: звук приближающейся сирены кажется выше, а удаляющейся — ниже. По тому же принципу астрономы измеряют скорость звёзд и находят экзопланеты.'],
  amp:['Усилитель в радиоприёмнике работает вместе с резонансным контуром: контур выбирает нужную станцию, а усилитель делает её сигнал громче.'],
+ beacon:['Маяки стали видны на десятки километров благодаря линзе Френеля: в 1820-х годах она собрала свет лампы в узкий мощный луч. Каждый маяк мигает по своему ритму, и по нему моряк узнаёт, где находится.'],
  reboot:['Колебания в реальных системах затухают из-за трения. Чтобы они не прекращались, их нужно регулярно подпитывать энергией — как маятниковые часы с гирей.'],
  cash:['Добротность показывает, как долго система «звенит» после толчка. У хорошего камертона колебания затухают десятки секунд, а у кварцевого резонатора часов — гораздо дольше.'],
  shield:['Орбитальные резонансы могут сохраняться миллиарды лет, но внешнее возмущение, например близкий пролёт звезды, способно их нарушить.'],
@@ -1363,6 +1432,7 @@ const DIRN=[['справа','→'],['слева','←'],['снизу','↓'],['�
 const ICON={
   menu:'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
   bulb:'<svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg>',
+  dl:'<svg viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 19h14"/></svg>',
   log:'<svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>',
   snd:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
   mute:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>',
@@ -1438,7 +1508,9 @@ function setupField(){
   const f=$('#field'),pts=new Map();
   let drag=null,pinch=null,moved=false;
   const two=()=>{const a=[...pts.values()];return {d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1,cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2};};
+  f.addEventListener('selectstart',e=>e.preventDefault());f.addEventListener('dragstart',e=>e.preventDefault());
   f.addEventListener('pointerdown',e=>{
+    try{const sl=getSelection();if(sl&&sl.rangeCount)sl.removeAllRanges();}catch(_){}
     pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pts.size===1){moved=false;drag={x:e.clientX,y:e.clientY,tx:V.tx,ty:V.ty};}
     else if(pts.size===2){moved=true;drag=null;const t=two();pinch={d:t.d};}
@@ -1480,7 +1552,7 @@ function worldHTML(st,o){
   for(const [a,b,c] of triplesOf(bodies,m))if(chainBonus(a,b,c)>0){chain.add(lkKey(a,b));chain.add(lkKey(b,c));mids.add(b.uid);}
   const lap=new Set(),pc=new Set(),lapB=new Set(),pcB=new Set();
   for(const [a,b,c] of laplaceTriples(bodies,m)){lap.add(lkKey(a,b));lap.add(lkKey(b,c));lapB.add(a.uid);lapB.add(b.uid);lapB.add(c.uid);}
-  const pch=findChain(bodies,m);if(pch){for(let i=0;i<3;i++)pc.add(lkKey(pch[i],pch[i+1]));pch.forEach(b=>pcB.add(b.uid));}
+  for(const pch of findChains(bodies,m)){for(let i=0;i<3;i++)pc.add(lkKey(pch[i],pch[i+1]));pch.forEach(b=>pcB.add(b.uid));}
   let h='';
   if(o.ghosts)for(const g of o.ghosts){
     const sel=o.cell&&o.cell.x===g.x&&o.cell.y===g.y;
@@ -1543,10 +1615,11 @@ function fmtTime(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60);return (m>=6
 function clockText(){return '⏱ '+fmtTime((ui.tEnd||Date.now())-ui.t0);}
 function renderTop(){
   const rd=G.maxRounds?'Раунд '+Math.min(G.round,G.maxRounds)+' из '+G.maxRounds:'Раунд '+G.round+' · без лимита';
-  $('#tTitle').innerHTML='<b>РЕЗОНАНС <span class="clk" id="clock">'+clockText()+'</span></b>'+rd+' · колода '+G.deck.length+(G.chain?' · ⛓ '+G.players[G.chain.by].name+' до конца раунда '+(G.chain.round+2):'');
+  $('#tTitle').innerHTML='<b>РЕЗОНАНСЫ <span class="clk" id="clock">'+clockText()+'</span></b>'+rd+' · колода '+G.deck.length+(G.chains&&G.chains.length?' · ⛓ '+G.chains.map(c=>G.players[c.by].name+' до конца раунда '+(c.round+2)).join('; '):'');
   $('#chips').innerHTML=G.players.map((p,i)=>`<div class="chip${i===G.cur&&!G.over?' act':''}${p.skip?' skip':''}" style="--c:${p.color}"><i></i><span>${p.name}</span><b>${p.score}</b><small>↻${p.shifts} · ◈${p.quanta} · 🂠${p.hand.length}</small></div>`).join('');
   $('#bSound').innerHTML=ui.sound?ICON.snd:ICON.mute;
-  const bh=$('#bHint');bh.style.display=ui.diff==='easy'?'':'none';
+  $('#bDl').style.display=G.over?'':'none';if(!G.over)dlClose();
+  const bh=$('#bHint');bh.style.display=ui.diff==='easy'&&!G.over?'':'none';
   bh.className='ib'+(ui.diff==='easy'&&humanTurn()&&ui.hints?' pulse':'');
   const t=$('#turn');
   if(G.over){t.className='';t.textContent='Игра окончена';}
@@ -1649,12 +1722,16 @@ function perturbSheet(c){
     return shHead(c.name,c.text+'.<br>'+(n?'Сейчас на ваших резонансах: '+tk+' жетонов на '+n+' связях.':'На ваших резонансах жетонов нет.'),true)+`<div class="sh-f"><button class="btn pri" ${n?actBtn({type:'damper',cardId:c.id}):'disabled'}>Снять жетоны</button>${discardBtn(c)}</div>`;
   }
   if(c.fx==='shield'){
-    const ok=G.chain&&G.chain.by===G.cur&&!G.shield;
-    return shHead(c.name,c.text+'.<br>'+(ok?'Защита действует на все тела вашей цепочки: их нельзя убрать, сдвинуть, поменять, выбросить Люком или нагрузкой.':(G.chain&&G.chain.by===G.cur?'Цепочка уже защищена.':'У вас сейчас нет планетной цепочки.')),true)+`<div class="sh-f"><button class="btn pri" ${ok?actBtn({type:'shield',cardId:c.id}):'disabled'}>Защитить цепочку</button>${discardBtn(c)}</div>`;
+    const ok=ownChain(G,G.cur)&&!G.shield;
+    return shHead(c.name,c.text+'.<br>'+(ok?'Защита действует на все тела вашей цепочки: их нельзя убрать, сдвинуть, поменять, выбросить Люком или нагрузкой.':(ownChain(G,G.cur)?'Цепочка уже защищена.':'У вас сейчас нет планетной цепочки.')),true)+`<div class="sh-f"><button class="btn pri" ${ok?actBtn({type:'shield',cardId:c.id}):'disabled'}>Защитить цепочку</button>${discardBtn(c)}</div>`;
   }
   if(c.fx==='reboot'){
     const k=me().hand.length-1;
     return shHead(c.name,c.text+'. Сейчас в руке ещё '+k+' карт: они уйдут в сброс.',true)+`<div class="sh-f"><button class="btn pri" ${actBtn({type:'reboot',cardId:c.id})}>Перезагрузить руку</button>${discardBtn(c)}</div>`;
+  }
+  if(c.fx==='beacon'){
+    const n=G.deck.length;
+    return shHead(c.name,c.text+'. В колоде сейчас '+n+' карт.',true)+`<div class="sh-f"><button class="btn pri" ${n?'data-act="beacon" data-v="'+c.id+'"':'disabled'}>Выбрать карту из колоды</button>${discardBtn(c)}</div>`;
   }
   if(c.fx==='cash'){
     const ok=me().quanta>=CASH_COST;
@@ -1732,7 +1809,7 @@ function csvCell(v){
 function buildCSV(){
   const rows=[],R=(...a)=>rows.push(a.map(csvCell).join(';')),own=o=>o===null||o===undefined?'—':G.players[o].name;
   const cw=G.winner!==null&&G.winner!==undefined;
-  R('РЕЗОНАНС: итоги партии');
+  R('РЕЗОНАНСЫ: итоги партии');
   R('Время партии',fmtTime((ui.tEnd||Date.now())-ui.t0));
   R('Раундов',Math.min(G.round,G.maxRounds||G.round));
   R('Победа цепочкой',cw?G.players[G.winner].name:'нет');
@@ -1752,25 +1829,118 @@ function buildCSV(){
   R();R('ОСОБЫЕ КОМБИНАЦИИ');
   R('Вид','Тела');
   for(const t of laplaceTriples(G.bodies))R('Резонанс Лапласа '+t.map(x=>effP(x)).join(':'),t.map(x=>x.card.name).join(' – '));
-  const ch=findChain(G.bodies);if(ch)R('Планетная цепочка 1-2-4-8',ch.map(x=>x.card.name).join(' – '));
+  for(const ch of findChains(G.bodies))R('Планетная цепочка 1-2-4-8',ch.map(x=>x.card.name).join(' – '));
   R();R('ЖУРНАЛ СОБЫТИЙ');
   R('№','Раунд','Событие');
   ui.log.slice().reverse().forEach((l,i)=>R(i+1,l.round===undefined?'':l.round,l.text));
   return '\ufeff'+rows.join('\r\n');
 }
 function downloadCSV(){saveBlob(new Blob([buildCSV()],{type:'text/csv;charset=utf-8'}),'resonance_'+stamp()+'.csv');}
-function melodyNotes(){
-  const bs=G.bodies.slice().sort((a,b)=>(+a.uid.slice(1))-(+b.uid.slice(1))).slice(0,40),step=.38,out=[];
-  bs.forEach((b,i)=>out.push({f:freqOf(effP(b))*2,t:i*step,d:.7,v:.15,type:'triangle'}));
-  [...new Set(bs.map(b=>effP(b)))].forEach(p=>out.push({f:freqOf(p)*2,t:bs.length*step+.1,d:2.2,v:.09,type:'sine'}));
-  return {notes:out,len:bs.length*step+2.5};
+/* Мелодия: полиритмия. Тело с периодом p звучит каждые p долей своей нотой (660/p Гц, на октаву выше),
+   фаза сдвигает удар внутри периода (фаза/4 периода). Если два тела бьют одновременно, добавляется удар барабана.
+   Порядок: планетные цепочки, затем резонансы Лапласа вперемешку с остальными телами, затем всё поле вместе.
+   Тела одной секции играют разными инструментами, чтобы одновременные ноты различались на слух. */
+const INSTR=['flute','bell','clar','string','pluck','organ'];
+const INSTR_VOL={flute:1,bell:.85,clar:.5,string:.55,pluck:1,organ:.8};
+function melodyPlan(){
+  const BEAT=.3,notes=[],names=[],starts=[],ends=[],bs=G.bodies;
+  const lcm=(a,b)=>a/gcd(a,b)*b;
+  const secs=[];
+  for(const c of findChains(bs))secs.push({name:'планетная цепочка '+c.map(x=>effP(x)).join('-'),list:c,vol:.2});
+  const laps=[],seenL=new Set();
+  for(const t of laplaceTriples(bs)){
+    const k=t.map(x=>effP(x)).sort((a,b)=>a-b).join(':');
+    if(seenL.has(k)||laps.length>=3)continue;seenL.add(k);
+    laps.push({name:'Лаплас '+t.map(x=>effP(x)).join(':'),list:t,vol:.16});
+  }
+  const used=new Set([...secs,...laps].flatMap(s=>s.list.map(b=>b.uid)));
+  const rest=bs.filter(b=>!used.has(b.uid)).sort((a,b)=>effP(a)-effP(b));
+  const others=[];
+  for(let k=0;k<rest.length&&others.length<3;k+=3){
+    const g=rest.slice(k,k+3);
+    if(g.length>=2||!others.length)others.push({name:'другие тела',list:g,vol:.13});
+  }
+  for(let k=0;k<Math.max(laps.length,others.length);k++){
+    if(laps[k])secs.push(laps[k]);
+    if(others[k])secs.push(others[k]);
+  }
+  if(bs.length>1)secs.push({name:'все вместе ещё раз',list:bs.slice(0,14),vol:.12,final:true});
+  else if(bs.length===1&&!secs.length)secs.push({name:'единственное тело',list:bs,vol:.14});
+  let t=0;
+  for(const s of secs){
+    starts.push(t);
+    const seenP=new Set(),vl=[];
+    for(const b of s.list){const p=effP(b);if(!seenP.has(p)){seenP.add(p);vl.push(b);}}
+    const vs=vl.slice(0,6),per=[...new Set(vs.map(b=>effP(b)))];
+    let L=per.reduce((a,p)=>lcm(a,p),1);if(L>8)L=8;
+    const total=L,hits=[],sn=[];
+    vs.forEach((b,bi)=>{
+      const p=effP(b),off=((b.phase%4)/4)*p,ins=INSTR[bi%INSTR.length];
+      for(let bt=off;bt<total-1e-9;bt+=p){
+        hits.push({bt,id:b.uid});
+        sn.push({f:freqOf(p)*2,t:t+bt*BEAT,d:Math.min(.45+p*.16,2)*(ins==='pluck'?.5:1),v:s.vol*INSTR_VOL[ins],ins,sec:names.length});
+      }
+    });
+    hits.sort((a,b)=>a.bt-b.bt);
+    sn.sort((x,y)=>x.t-y.t||x.f-y.f);
+    for(let i=0;i<sn.length;){
+      let j=i;while(j+1<sn.length&&sn[j+1].t-sn[i].t<.06*BEAT)j++;
+      const g=sn.slice(i,j+1);
+      if(g.length>3){notes.push(g[0],g[g.length>>1],g[g.length-1]);}else notes.push(...g);
+      i=j+1;
+    }
+    for(let i=0;i<hits.length;){
+      let j=i;const ids=new Set([hits[i].id]);
+      while(j+1<hits.length&&hits[j+1].bt-hits[i].bt<.06){j++;ids.add(hits[j].id);}
+      if(ids.size>=2)notes.push({kick:true,f:90,t:t+hits[i].bt*BEAT,d:.3,v:.3,sec:names.length});
+      i=j+1;
+    }
+    names.push(s.name);
+    t+=(total+1)*BEAT;
+    if(s.final){per.forEach(p=>notes.push({f:freqOf(p)*2,t:t-BEAT,d:2.4,v:.07,ins:'organ',sec:names.length-1}));t+=2.2;}
+    ends.push(t);
+  }
+  return {notes,len:t+.5,names,starts,ends,beat:BEAT};
+}
+function melodyVoice(c,n,t0){
+  const s=t0+n.t,g=c.createGain(),dst=c.destination;
+  g.gain.setValueAtTime(0.0001,s);
+  if(n.kick){
+    const o=c.createOscillator();o.type='sine';o.frequency.setValueAtTime(130,s);o.frequency.exponentialRampToValueAtTime(45,s+.18);
+    g.gain.exponentialRampToValueAtTime(n.v,s+.005);g.gain.exponentialRampToValueAtTime(.0001,s+n.d);
+    o.connect(g);g.connect(dst);o.start(s);o.stop(s+n.d+.05);return;
+  }
+  const atk=n.ins==='string'?.08:n.ins==='flute'?.03:.012;
+  g.gain.exponentialRampToValueAtTime(n.v,s+atk);g.gain.exponentialRampToValueAtTime(.0001,s+n.d);
+  let out=g;
+  const mk=(type,f,gain)=>{const o=c.createOscillator();o.type=type;o.frequency.value=f;const x=c.createGain();x.gain.value=gain;o.connect(x);o.start(s);o.stop(s+n.d+.05);return x;};
+  const lp=fr=>{const b=c.createBiquadFilter();b.type='lowpass';b.frequency.value=fr;b.connect(g);return b;};
+  switch(n.ins){
+    case 'bell':mk('sine',n.f,1).connect(g);mk('sine',n.f*2.76,.35).connect(g);break;
+    case 'clar':mk('square',n.f,1).connect(lp(1300));break;
+    case 'string':mk('sawtooth',n.f,1).connect(lp(1000));mk('sawtooth',n.f*1.004,.6).connect(lp(1000));break;
+    case 'pluck':mk('triangle',n.f,1).connect(g);mk('triangle',n.f*2,.3).connect(g);break;
+    case 'organ':mk('sine',n.f,1).connect(g);mk('sine',n.f*2,.5).connect(g);break;
+    default:mk('triangle',n.f,1).connect(g);
+  }
+  g.connect(dst);
 }
 function playMelody(){
   ui.sound=true;
-  const m=melodyNotes();if(!m.notes.length)return;
+  const m=melodyPlan();if(!m.notes.length)return;
+  const c=ac();if(!c)return;
   const btn=document.getElementById('melBtn');if(btn){btn.disabled=true;btn.textContent='♪ Играет…';}
-  m.notes.forEach(n=>tone(n.f,n.t,n.d,n.v,n.type));
+  const t0=c.currentTime+.05;
+  m.notes.forEach(n=>melodyVoice(c,n,t0));
+  toast('Мелодия: '+m.names.join(' → '));
   setTimeout(()=>{const b2=document.getElementById('melBtn');if(b2){b2.disabled=false;b2.textContent='♪ Мелодия поля';}},m.len*1000);
+}
+function dlClose(){const d=$('#dlm');if(d)d.classList.remove('on');}
+function dlToggle(){
+  const d=$('#dlm');if(!d||!G)return;
+  if(d.classList.contains('on')){dlClose();return;}
+  d.innerHTML='<b>Материалы партии</b><button data-act="dlpick" data-v="melody">▶ Прослушать музыку</button><button data-act="dlpick" data-v="shot">📷 Скриншот поля (PNG)</button><button data-act="dlpick" data-v="rollview">🎼 Пиано-ролл и ноты (PNG)</button><button data-act="dlpick" data-v="meldl">♪ Мелодия поля (WAV)</button><button data-act="dlpick" data-v="csv">⬇ Журнал и итоги (CSV)</button>';
+  d.classList.add('on');
 }
 function stamp(){const d=new Date(),z=n=>String(n).padStart(2,'0');return d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'_'+z(d.getHours())+z(d.getMinutes());}
 function saveBlob(blob,name){
@@ -1787,19 +1957,123 @@ function wavBlob(buf){
   for(let k=0;k<n;k++){const x=Math.max(-1,Math.min(1,ch[k]));v.setInt16(44+k*2,x<0?x*0x8000:x*0x7fff,true);}
   return new Blob([v],{type:'audio/wav'});
 }
+
+/* ---------- пиано-ролл и нотный стан (PNG) ---------- */
+const ROLL_COL={flute:'#4aa3ff',bell:'#ffd24a',clar:'#ff6a6a',string:'#7be08a',pluck:'#c58bff',organ:'#ff9f43'};
+const ROLL_RU=['до','ре♭','ре','ми♭','ми','фа','соль♭','соль','ля♭','ля','си♭','си'];
+const ROLL_LET=[0,1,1,2,2,3,4,4,5,5,6,6];
+function rollPitch(f){const m=Math.round(69+12*Math.log2(f/440)),pc=((m%12)+12)%12,o=Math.floor(m/12)-1;return {m,pc,o,y:7*o+ROLL_LET[pc]-30,flat:[1,3,6,8,10].includes(pc)};}
+function rollLatin(f){const p=rollPitch(f);return ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][p.pc]+p.o;}
+function pianoRollBlob(){
+  const m=melodyPlan(),tone=m.notes.filter(n=>!n.kick),kicks=m.notes.filter(n=>n.kick);
+  if(!tone.length)throw new Error('no notes');
+  const W=1800,H=1260,ML=150,MR=30,LEN=m.len,BEAT=m.beat,T0=-.9,ns=m.names.length;
+  const X=t=>ML+(t-T0)/(LEN-T0)*(W-ML-MR),PX=(W-ML-MR)/(LEN-T0);
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const c=cv.getContext('2d'),bg='#0b1020',fg='#dfe6f5',grid='#2a3558',SANS='system-ui,"Segoe UI",Roboto,sans-serif';
+  c.fillStyle=bg;c.fillRect(0,0,W,H);
+  const A0=70,A1=560,B0=640,B1=1130;
+  c.fillStyle=fg;c.font='600 24px '+SANS;c.textAlign='center';c.textBaseline='alphabetic';
+  c.fillText('Резонансы: пиано-ролл мелодии поля (тонкие линии — доли, жирные — границы секций)',W/2,36);
+  c.font='500 19px '+SANS;c.fillText('Те же ноты в нотной записи (скрипичный и басовый ключи; пустая головка — длинная нота)',W/2,B0-18);
+  const frame=(y0,y1)=>{
+    for(let i=0;i<ns;i++){
+      if(i%2===0){c.fillStyle='rgba(255,255,255,.03)';c.fillRect(X(m.starts[i]),y0,X(m.ends[i])-X(m.starts[i]),y1-y0);}
+      c.strokeStyle=grid;c.lineWidth=1;
+      for(let x=m.starts[i];x<m.ends[i]-1e-6;x+=BEAT){c.beginPath();c.moveTo(X(x),y0);c.lineTo(X(x),y1);c.stroke();}
+      c.strokeStyle='#8fa3d6';c.lineWidth=2.4;c.beginPath();c.moveTo(X(m.starts[i]),y0);c.lineTo(X(m.starts[i]),y1);c.stroke();
+    }
+    c.strokeStyle=grid;c.lineWidth=1;c.strokeRect(ML,y0,W-ML-MR,y1-y0);
+  };
+  frame(A0,A1);frame(B0,B1);
+  c.fillStyle=fg;c.font='500 17px '+SANS;c.textAlign='center';
+  m.names.forEach((n,i)=>c.fillText(n,(X(m.starts[i])+X(m.ends[i]))/2,A0+24));
+  /* --- пиано-ролл --- */
+  const fs=[...new Set(tone.map(n=>n.f))].sort((a,b)=>a-b);
+  const lo=Math.log(fs[0]/1.35),hi=Math.log(fs[fs.length-1]*2.4),YA=f=>A1-(Math.log(f)-lo)/(hi-lo)*(A1-A0);
+  c.textAlign='right';c.textBaseline='middle';c.font='500 16px '+SANS;c.fillStyle=fg;
+  for(const f of fs)c.fillText(Math.round(f)+' Гц · '+rollLatin(f),ML-10,YA(f));
+  for(const n of tone){c.fillStyle=ROLL_COL[n.ins]||'#4aa3ff';const w=Math.min(n.d,.6)*PX;c.beginPath();if(c.roundRect)c.roundRect(X(n.t),YA(n.f)-5,w,10,3);else c.rect(X(n.t),YA(n.f)-5,w,10);c.fill();}
+  c.fillStyle='#aaa';for(const n of kicks){const x=X(n.t),y=A1-14;c.beginPath();c.moveTo(x-6,y-6);c.lineTo(x+6,y-6);c.lineTo(x,y+6);c.fill();}
+  const per=f=>Math.round(1320/f),RS={'2:1':1,'3:2':1,'3:1':1,'4:3':1};
+  const ratio=(a,b)=>{if(a<b)[a,b]=[b,a];const g=gcd(a,b),r=(a/g)+':'+(b/g);return RS[r]?r:null;};
+  for(let i=0;i<ns;i++){
+    const gr=new Map(),used=new Set();
+    for(const n of tone)if(n.sec===i){const k=n.t.toFixed(2);if(!gr.has(k))gr.set(k,[]);gr.get(k).push(n);}
+    for(const [k,g] of [...gr].sort((a,b)=>a[0]-b[0])){
+      const t=+k,fl=[...new Set(g.map(n=>n.f))].sort((a,b)=>a-b);
+      for(let p=0;p<fl.length;p++)for(let q=p+1;q<fl.length;q++){
+        const r=ratio(per(fl[p]),per(fl[q]));if(!r)continue;
+        c.strokeStyle='rgba(255,255,255,.85)';c.lineWidth=1.4;c.beginPath();c.moveTo(X(t+.02),YA(fl[p]));c.lineTo(X(t+.02),YA(fl[q]));c.stroke();
+        const key=fl[p]+'_'+fl[q];
+        if(!used.has(key)){used.add(key);c.font='600 13px '+SANS;c.textAlign='left';c.textBaseline='middle';const lx=X(t+.04),ly=Math.sqrt(YA(fl[p])*YA(fl[q]));
+          const ly2=(YA(fl[p])+YA(fl[q]))/2;c.fillStyle='#1b2547';c.fillRect(lx-2,ly2-9,c.measureText(r).width+8,18);c.fillStyle='#fff';c.fillText(r,lx+2,ly2);}
+      }
+    }
+  }
+  /* --- нотный стан --- */
+  const YC=(B0+B1)/2,STEP=(B1-B0)/36,YB=y=>YC-y*STEP;
+  c.strokeStyle='#9fb0d8';c.lineWidth=1.4;
+  for(const y of [0,2,4,6,8,-12,-10,-8,-6,-4]){c.beginPath();c.moveTo(ML,YB(y));c.lineTo(W-MR,YB(y));c.stroke();}
+  c.fillStyle=fg;c.textAlign='left';c.textBaseline='middle';
+  c.font='88px "Noto Music","Segoe UI Symbol","Apple Symbols",FreeSerif,"DejaVu Sans",serif';c.fillText('\u{1D11E}',ML+8,YB(3.6));
+  c.font='64px "Noto Music","Segoe UI Symbol","Apple Symbols",FreeSerif,"DejaVu Sans",serif';c.fillText('\u{1D122}',ML+10,YB(-7));
+  const seen=new Set();
+  for(const n of tone.slice().sort((a,b)=>a.t-b.t)){
+    const p=rollPitch(n.f),x=X(n.t+.02),col=ROLL_COL[n.ins]||'#4aa3ff',treble=p.m>=60,y=p.y,led=[];
+    if(treble){if(y>8)for(let l=10;l<=y;l+=2)led.push(l);if(y<0)for(let l=-2;l>=y-1;l-=2)led.push(l);}
+    else{if(y>-4)for(let l=-2;l<=y;l+=2)led.push(l);if(y<-12)for(let l=-14;l>=y-1;l-=2)led.push(l);}
+    c.strokeStyle='#9fb0d8';c.lineWidth=1.4;
+    for(const l of led){c.beginPath();c.moveTo(x-13,YB(l));c.lineTo(x+13,YB(l));c.stroke();}
+    const up=y<(treble?4:-8),long=n.d>=1;
+    c.strokeStyle=col;c.fillStyle=col;c.lineWidth=2.4;
+    c.beginPath();c.ellipse(x,YB(y),9.5,7,-.35,0,7);if(long)c.stroke();else c.fill();
+    c.lineWidth=2;c.beginPath();const sx=up?x+8.5:x-8.5;c.moveTo(sx,YB(y));c.lineTo(sx,YB(y+(up?3.5:-3.5)));c.stroke();
+    if(p.flat){c.fillStyle=fg;c.font='22px '+SANS;c.textAlign='right';c.fillText('♭',x-13,YB(y));}
+    const key=n.sec+'_'+p.m;
+    if(!seen.has(key)){seen.add(key);c.fillStyle=fg;c.font='500 14px '+SANS;c.textAlign='center';c.fillText(ROLL_RU[p.pc]+p.o,x,YB(y+(up?-3.2:2.6)));}
+  }
+  /* --- подписи --- */
+  c.textAlign='left';c.textBaseline='middle';let lx=ML;const ly=H-52;
+  c.font='500 16px '+SANS;
+  for(const [k,col] of Object.entries(ROLL_COL)){c.fillStyle=col;c.fillRect(lx,ly-5,30,10);c.fillStyle=fg;c.fillText(k,lx+38,ly);lx+=38+c.measureText(k).width+26;}
+  c.fillStyle='#aaa';c.beginPath();c.moveTo(lx,ly-6);c.lineTo(lx+12,ly-6);c.lineTo(lx+6,ly+6);c.fill();c.fillStyle=fg;c.fillText('барабан (≥2 тел)',lx+20,ly);lx+=20+c.measureText('барабан (≥2 тел)').width+26;
+  c.strokeStyle='#fff';c.lineWidth=1.6;c.beginPath();c.moveTo(lx,ly-8);c.lineTo(lx,ly+8);c.stroke();c.fillText('резонансная пара в один момент (2:1, 3:2, 3:1, 4:3)',lx+10,ly);
+  c.fillStyle='#7f8bb5';c.font='400 14px '+SANS;c.fillText('Резонансы · игра о резонансах в космосе, музыке и физике',ML,H-18);
+  return new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('blob')),'image/png'));
+}
+
+function rollKey(){return ui.gid+':'+G.bodies.map(b=>b.uid+b.phase+effP(b)).join(',');}
+async function rollUrl(){
+  const k=rollKey();
+  if(ui.rollC&&ui.rollC.k===k)return ui.rollC.url;
+  const b=await pianoRollBlob(),url=URL.createObjectURL(b);
+  if(ui.rollC)URL.revokeObjectURL(ui.rollC.url);
+  ui.rollC={k,url};return url;
+}
+async function fillRoll(id){
+  const el=document.getElementById(id);if(!el)return;
+  try{const url=await rollUrl();const e2=document.getElementById(id);if(e2)e2.innerHTML='<img src="'+url+'" alt="Пиано-ролл мелодии" style="width:100%;border-radius:10px;display:block">';}
+  catch(e){const e2=document.getElementById(id);if(e2)e2.textContent='Не удалось нарисовать пиано-ролл';}
+}
+function rollModal(){
+  if(!G||!G.bodies.length){toast('Поле пусто',true);return;}
+  openModal('<h2>Пиано-ролл мелодии</h2><div id="rollView" class="rollv mut">Рисую…</div><div class="row"><button class="btn pri" data-act="rollpng">⬇ Загрузить</button><button class="btn" data-act="melody">▶ Прослушать</button>'+(G.over?'<button class="btn" data-act="endm">К итогам</button>':'')+'<button class="btn" data-act="mclose">Закрыть</button></div>');
+  fillRoll('rollView');
+}
+async function downloadRoll(){
+  if(!G||!G.bodies.length){toast('Поле пусто',true);return;}
+  try{saveBlob(await pianoRollBlob(),'resonance_pianoroll_'+stamp()+'.png');}
+  catch(e){toast('Не удалось нарисовать пиано-ролл',true);console.error(e);}
+}
 async function downloadMelody(){
-  const m=melodyNotes();if(!m.notes.length){toast('На поле нет тел',true);return;}
+  const m=melodyPlan();if(!m.notes.length){toast('На поле нет тел',true);return;}
   const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
   if(!OAC){toast('Браузер не умеет записывать звук',true);return;}
   toast('Готовлю мелодию…');
   try{
     const sr=44100,c=new OAC(1,Math.ceil(sr*(m.len+.3)),sr);
-    for(const n of m.notes){
-      const o=c.createOscillator(),g=c.createGain();
-      o.type=n.type;o.frequency.value=n.f;
-      g.gain.setValueAtTime(0.0001,n.t);g.gain.exponentialRampToValueAtTime(n.v,n.t+.02);g.gain.exponentialRampToValueAtTime(0.0001,n.t+n.d);
-      o.connect(g);g.connect(c.destination);o.start(n.t);o.stop(n.t+n.d+.05);
-    }
+    for(const n of m.notes)melodyVoice(c,n,0);
     const buf=await c.startRendering();
     saveBlob(wavBlob(buf),'resonance_melody_'+stamp()+'.wav');
   }catch(e){toast('Не удалось записать мелодию',true);}
@@ -1807,11 +2081,11 @@ async function downloadMelody(){
 
 function factsModal(){
   const sec=(t,items)=>items.length?'<h3 class="fh">'+t+'</h3>'+items.join(''):'';
-  const one=(name,list)=>list&&list.length?'<div class="fq"><b>'+esc(name)+'</b>'+list.map(x=>'<p>'+esc(x)+'</p>').join('')+'</div>':'';
+  const one=(name,list,card)=>list&&list.length?'<div class="fq">'+(card?'<div class="fcard">'+cardEl(card,{fs:11})+'</div>':'')+'<b>'+esc(name)+'</b>'+list.map(x=>'<p>'+esc(x)+'</p>').join('')+'</div>':'';
   const seen=new Set(),sp=[],er=[];
-  for(const b of BODIES){if(seen.has(b.n))continue;seen.add(b.n);const q=one(b.n,FACTS[b.n]);if(q)(b.k==='space'?sp:er).push(q);}
-  const fx=PERTURBS.map(x=>one(x.n,FX_FACTS[x.fx]));
-  const hx=[one('Люки и щели Кирквуда',FX_FACTS.kirkwood)];
+  for(const b of BODIES){if(seen.has(b.n))continue;seen.add(b.n);const q=one(b.n,FACTS[b.n],{id:'f'+b.n,kind:'body',name:b.n,period:b.p,theme:b.k,shape:b.s,color:b.c,fact:b.f});if(q)(b.k==='space'?sp:er).push(q);}
+  const fx=PERTURBS.map(x=>one(x.n,FX_FACTS[x.fx],{id:'f'+x.fx,kind:'perturb',fx:x.fx,name:x.n,text:x.t}));
+  const hx=[one('Люки и щели Кирквуда',FX_FACTS.kirkwood,{id:'fh',kind:'hatch',hx:'kirkwood',hit:6,name:HATCHES[0].n,text:''})];
   openModal('<h2>А знаете ли вы, что…</h2><p class="mut">Все факты из игры в одном месте.</p>'+sec('Космос',sp)+sec('Земные колебания',er)+sec('Карты действий',fx)+sec('Люки',hx));
 }
 /* ---------- картинки: растр из HTML, фейерверк ---------- */
@@ -1861,12 +2135,13 @@ async function shotBlob(kind){
   const xs=new XMLSerializer();
   if(kind==='promo'){
     const mk=n=>{const b=BODIES.find(z=>z.n===n);return {id:'p'+n,kind:'body',name:b.n,period:b.p,theme:b.k,shape:b.s,color:b.c,fact:''};};
-    const names=['Ио','Европа','Ганимед','Бокал'],W=920,H=500;
-    const cards=names.map(n=>'<div style="width:150px;font-size:15.5px">'+cardEl(mk(n),{fs:15.5})+'</div>');
-    const link=t=>'<div style="width:64px;height:64px;border-radius:50%;background:#4a3a05;border:4px solid #f3c24a;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;color:#ffe9a0">'+t+'</div>';
+    const names=['Ио','Европа','Ганимед','Бокал'],W=1200,H=630;
+    const cards=names.map(n=>'<div style="width:210px;font-size:21.5px">'+cardEl(mk(n),{fs:21.5})+'</div>');
+    const link=t=>'<div style="width:78px;height:78px;border-radius:50%;background:#4a3a05;border:5px solid #f3c24a;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:23px;color:#ffe9a0">'+t+'</div>';
     const row=cards[0]+link('2:1')+cards[1]+link('2:1')+cards[2]+link('5:4')+cards[3];
-    const inner='<div style="position:absolute;left:0;right:0;top:26px;text-align:center"><div style="font-size:58px;font-weight:900;letter-spacing:6px;color:#f3c24a">РЕЗОНАНС</div><div style="font-size:21px;color:#cfd6ff;margin-top:6px">Карточная игра о резонансах: в космосе, музыке и физике</div></div><div style="position:absolute;left:0;right:0;top:170px;display:flex;align-items:center;justify-content:center;gap:6px">'+row+'</div>';
-    return rasterize(inner,W,H,(cx,w,h)=>fireworks(cx,w,h,3,77));
+    const inner='<div style="position:absolute;left:0;right:0;top:30px;text-align:center"><div style="font-size:76px;font-weight:900;letter-spacing:8px;color:#f3c24a">РЕЗОНАНСЫ</div><div style="font-size:27px;color:#cfd6ff;margin-top:6px">Карточная игра о резонансах: в космосе, музыке и физике</div></div><div style="position:absolute;left:0;right:0;top:310px;display:flex;align-items:center;justify-content:center;gap:8px">'+row+'</div>';
+    const holder=document.createElement('div');holder.innerHTML=inner;
+    return rasterize(xs.serializeToString(holder),W,H,(cx,w,h)=>fireworks(cx,w,h,4,77));
   }
   const bs=G.bodies;
   if(!bs.length)throw new Error('empty');
@@ -1878,8 +2153,8 @@ async function shotBlob(kind){
   src.querySelectorAll('.sel,.hnt').forEach(el=>el.classList.remove('sel','hnt'));
   const ox=pad-minX+(W-(maxX-minX+pad*2))/2,oy=pad+top-minY;
   const R=gameResult(),time=fmtTime((ui.tEnd||Date.now())-ui.t0);
-  const sc=R.s.map(p=>'<span style="color:'+p.color+'">●</span> '+esc(p.name)+' <b>'+p.score+'</b> <span style="opacity:.7">◈'+p.quanta+'</span>').join(' &#160; ');
-  const head='<div style="position:absolute;left:0;right:0;top:14px;text-align:center"><div style="font-size:15px;letter-spacing:4px;color:#cfd6ff">РЕЗОНАНС</div><div style="font-size:34px;font-weight:900;color:#f3c24a;margin-top:4px;text-shadow:0 2px 12px #000a">🏆 '+(G.over?'Победитель: ':'Лидер: ')+esc(R.win)+'</div><div style="font-size:17px;margin-top:6px;color:#fff">Время игры: <b>'+time+'</b> · раундов: <b>'+Math.min(G.round,G.maxRounds||G.round)+'</b>'+(R.cw?' · планетная цепочка 1-2-4-8':'')+'</div><div style="font-size:15px;margin-top:6px">'+sc+'</div></div>';
+  const sc=R.s.map(p=>'<span style="color:'+p.color+'">●</span> '+esc(p.name)+' <b>'+p.score+'</b> <span style="opacity:.7">◈'+p.quanta+' · карт '+G.bodies.filter(b=>b.owner===p.id).length+'</span>').join(' &#160; ');
+  const head='<div style="position:absolute;left:0;right:0;top:14px;text-align:center"><div style="font-size:15px;letter-spacing:4px;color:#cfd6ff">РЕЗОНАНСЫ</div><div style="font-size:34px;font-weight:900;color:#f3c24a;margin-top:4px;text-shadow:0 2px 12px #000a">🏆 '+(G.over?'Победитель: ':'Лидер: ')+esc(R.win)+'</div><div style="font-size:17px;margin-top:6px;color:#fff">Время игры: <b>'+time+'</b> · раундов: <b>'+Math.min(G.round,G.maxRounds||G.round)+'</b> · карт на поле: <b>'+G.bodies.length+'</b>'+(R.cw?' · планетная цепочка 1-2-4-8':'')+'</div><div style="font-size:15px;margin-top:6px">'+sc+'</div></div>';
   const inner=head+'<div id="world" style="position:absolute;left:'+ox+'px;top:'+oy+'px;width:1px;height:1px">'+xs.serializeToString(src)+'</div>';
   return rasterize(inner,W,H,(cx,w,h)=>{fireworks(cx,w,h,Math.max(6,Math.round(w/130)),(ui.t0%100000)+13);const g=cx.createLinearGradient(0,0,0,top+10);g.addColorStop(0,'rgba(11,16,48,.82)');g.addColorStop(.75,'rgba(11,16,48,.72)');g.addColorStop(1,'rgba(11,16,48,0)');cx.fillStyle=g;cx.fillRect(0,0,w,top+10);});
 }
@@ -1889,22 +2164,25 @@ async function downloadShot(){
   catch(e){toast('Не удалось сделать скриншот',true);console.error(e);}
 }
 /* ---------- поделиться ---------- */
+const PREVIEW_FILE='resonance_game_preview.png';
+function filePreviewOk(){return new Promise(res=>{const im=new Image();im.onload=()=>res(true);im.onerror=()=>res(false);im.src=PREVIEW_FILE;});}
+function previewAbs(){try{return new URL(PREVIEW_FILE,location.href).href;}catch(e){return '';}}
 function shareLink(){return /^https?:/.test(location.href)?location.href.split('#')[0]:'';}
 function shareText(kind){
-  if(kind==='game'&&G&&G.over){const R=gameResult();return 'Я сыграл в «Резонанс» — карточную игру о резонансах в космосе, музыке и физике. Победитель: '+R.win+'. Время партии: '+fmtTime((ui.tEnd||Date.now())-ui.t0)+'.';}
-  return '«Резонанс» — карточная игра о резонансах в космосе, музыке и физике. Составляйте цепочки из планет, струн и маятников!';
+  if(kind==='game'&&G&&G.over){const R=gameResult();return 'Я сыграл в «Резонансы» — карточную игру о резонансах в космосе, музыке и физике. Победитель: '+R.win+'. Время партии: '+fmtTime((ui.tEnd||Date.now())-ui.t0)+'.';}
+  return '«Резонансы» — карточная игра о резонансах в космосе, музыке и физике. Составляйте цепочки из планет, струн и маятников!';
 }
 async function shareOpen(kind){
   const box=document.getElementById('share'),id=++ui.shareId;
   ui.share={kind,blob:null,url:null};
-  const canNative=!!navigator.share;
-  box.innerHTML=`<div class="shbox"><button class="mx" data-act="shareclose" aria-label="Закрыть">✕</button><h2>Поделиться</h2><div class="shprev" id="shPrev">Готовлю картинку…</div><p class="mut" style="margin:8px 0">${esc(shareText(kind))}</p><div class="shbtns"><button class="btn sv vk" data-act="share" data-v="vk">ВКонтакте</button><button class="btn sv tg" data-act="share" data-v="tg">Телеграм</button>${canNative?'<button class="btn" data-act="share" data-v="native">Поделиться…</button>':''}<button class="btn" data-act="share" data-v="save">Скачать картинку</button><button class="btn" data-act="share" data-v="copy">Копировать текст</button></div><small class="mut">ВКонтакте и Телеграм откроются в новой вкладке. Картинка копируется в буфер обмена (или скачивается): вставьте её в сообщение.</small></div>`;
+  const canNative=!!navigator.share,hasFile=kind==='promo'?await filePreviewOk():false;
+  box.innerHTML=`<div class="shbox"><button class="mx" data-act="shareclose" aria-label="Закрыть">✕</button><h2>Поделиться</h2><div class="shprev" id="shPrev">${hasFile?'<img alt="превью" src="'+PREVIEW_FILE+'">':'Готовлю картинку…'}</div><p class="mut" style="margin:8px 0">${esc(shareText(kind))}</p><div class="shbtns"><button class="btn sv vk" data-act="share" data-v="vk">ВКонтакте</button><button class="btn sv tg" data-act="share" data-v="tg">Телеграм</button>${canNative?'<button class="btn" data-act="share" data-v="native">Поделиться…</button>':''}<button class="btn" data-act="share" data-v="save">Скачать картинку</button><button class="btn" data-act="share" data-v="copy">Копировать текст</button></div><small class="mut">ВКонтакте и Телеграм откроются в новой вкладке. Ссылки соцсетей не умеют прикреплять картинку сами: превью они берут со страницы игры (файл «${PREVIEW_FILE}» рядом с html). Поэтому картинка ещё копируется в буфер обмена (или скачивается): вставьте её в сообщение.</small></div>`;
   box.classList.add('on');
   try{
     const blob=await shotBlob(kind);
     if(id!==ui.shareId)return;
     ui.share.blob=blob;ui.share.url=URL.createObjectURL(blob);
-    const p=document.getElementById('shPrev');if(p)p.innerHTML='<img alt="превью" src="'+ui.share.url+'">';
+    const p=document.getElementById('shPrev');if(p&&!hasFile)p.innerHTML='<img alt="превью" src="'+ui.share.url+'">';
   }catch(e){const p=document.getElementById('shPrev');if(p)p.textContent='Не удалось подготовить картинку';console.error(e);}
 }
 function shareClose(){
@@ -1921,14 +2199,14 @@ function shareAct(v){
     }catch(e){}
     saveBlob(S.blob,'resonance_share_'+stamp()+'.png');
   };
-  if(v==='vk'){window.open('https://vk.com/share.php?url='+enc(link)+'&title='+enc('Резонанс')+'&comment='+enc(text)+'&noparse=true','_blank','noopener');pic();}
+  if(v==='vk'){window.open('https://vk.com/share.php?url='+enc(link)+'&title='+enc('Резонансы')+'&description='+enc(text)+(link?'&image='+enc(previewAbs()):'')+'&noparse=true','_blank','noopener');pic();}
   else if(v==='tg'){window.open('https://t.me/share/url?url='+enc(link)+'&text='+enc(text),'_blank','noopener');pic();}
   else if(v==='save'){if(S.blob)saveBlob(S.blob,'resonance_share_'+stamp()+'.png');else toast('Картинка ещё готовится',true);}
   else if(v==='copy'){
     const t=text+(link?' '+link:'');
     if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('Текст скопирован'),()=>toast('Не удалось скопировать',true));else toast('Не удалось скопировать',true);
   }else if(v==='native'){
-    const data={title:'Резонанс',text};if(link)data.url=link;
+    const data={title:'Резонансы',text};if(link)data.url=link;
     try{
       if(S.blob){const f=new File([S.blob],'resonance.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]}))data.files=[f];}
       navigator.share(data).catch(()=>{});
@@ -1941,7 +2219,7 @@ function incomeModal(){
     const inf=linkInfo(a,b);if(!inf.base||inf.d===0)continue;
     const ows=[...new Set([a.owner,b.owner].filter(o=>o!==null))];
     ows.forEach(o=>per[o]++);
-    rows.push(`<div class="nb"><span class="pill">${inf.ratio}</span><span>«${esc(a.card.name)}» и «${esc(b.card.name)}»: ${ows.length?ows.map(o=>`<span style="color:${G.players[o].color}">●</span> ${esc(G.players[o].name)}`).join(', ')+' (+1 каждому)':'ничьи тела, кванты никому'}</span></div>`);
+    rows.push(`<div class="nb"><span class="pill">${inf.ratio}</span><span>«${esc(a.card.name)}» и «${esc(b.card.name)}»: ${ows.length?ows.map(o=>`<span style="color:${G.players[o].color}">●</span> ${esc(G.players[o].name)}`).join(', ')+(ows.length>1?' (+1 каждому)':' (+1)'):'ничьи тела, кванты никому'}</span></div>`);
   }
   openModal('<h2>Доход квантов ◈</h2><p class="mut">В конце раунда каждый стабильный резонанс (не Δ=0) даёт +1 квант владельцу каждого из двух тел.</p>'+
     '<p>'+G.players.map((p,i)=>`<span style="color:${p.color}">●</span> ${esc(p.name)}: <b>+${per[i]}</b> за раунд`).join('<br>')+'</p>'+(rows.join('')||'<p class="mut">Стабильных резонансов пока нет.</p>')+'<div class="row"><button class="btn pri" data-act="mclose">Закрыть</button></div>');
@@ -2024,10 +2302,10 @@ function linkInfoModal(a,b){
   return h;
 }
 function logModal(){
-  openModal('<h2>Журнал событий</h2>'+(G&&G.over?'<div class="row"><button class="btn pri" data-act="csv">⬇ Скачать журнал (CSV)</button><button class="btn" data-act="endm">К итогам</button></div>':'')+'<div class="logl">'+(ui.log.length?ui.log.map(e=>`<div class="${e.kind==='round'?'rd':e.kind==='eject'?'ej':''}">${esc(e.text)}</div>`).join(''):'<div>Пока пусто</div>')+'</div>');
+  openModal('<h2>Журнал событий</h2>'+(G&&G.over?'<div class="row"><button class="btn pri" data-act="endm">К итогам</button></div>':'')+'<div class="logl">'+(ui.log.length?ui.log.map(e=>`<div class="${e.kind==='round'?'rd':e.kind==='eject'?'ej':''}">${esc(e.text)}</div>`).join(''):'<div>Пока пусто</div>')+'</div>');
 }
 function menuModal(){
-  openModal(`<h2>Меню</h2><div class="menu"><button class="btn" data-act="rules">Правила игры</button><button class="btn" data-act="demo" data-from="game">▶ Демонстрация правил</button><button class="btn" data-act="sound">${ui.sound?'🔊 Звук включён':'🔇 Звук выключен'}</button><button class="btn" data-act="factsw2">💬 Факты: ${ui.noFacts?'выключены':'включены'}</button>${ui.diff==='easy'?'<button class="btn" data-act="hintsw">💡 Подсказки: '+(ui.hints?'включены':'выключены')+'</button>':''}${G&&G.over?'<button class="btn" data-act="meldl">♪ Скачать мелодию (WAV)</button><button class="btn" data-act="shot">📷 Скриншот поля (PNG)</button><button class="btn" data-act="csv">⬇ Скачать журнал (CSV)</button><button class="btn" data-act="shareopen" data-v="game">↗ Поделиться в соц сетях</button>':'<button class="btn" data-act="endgame">Завершить партию</button>'}<button class="btn" data-act="newgame">Новая игра</button></div>`);
+  openModal(`<h2>Меню</h2><div class="menu"><button class="btn" data-act="rules">Правила игры</button><button class="btn" data-act="demo" data-from="game">▶ Демонстрация правил</button><button class="btn" data-act="sound">${ui.sound?'🔊 Звук включён':'🔇 Звук выключен'}</button><button class="btn" data-act="factsw2">💬 Факты: ${ui.noFacts?'выключены':'включены'}</button>${ui.diff==='easy'?'<button class="btn" data-act="hintsw">💡 Подсказки: '+(ui.hints?'включены':'выключены')+'</button>':''}${G&&G.over?'<button class="btn" data-act="dlmenu">⬇ Загрузки</button><button class="btn" data-act="shareopen" data-v="game">↗ Поделиться в соц сетях</button>':'<button class="btn" data-act="endgame">Завершить партию</button>'}<button class="btn" data-act="newgame">Новая игра</button></div>`);
 }
 function rulesModal(from){
   openModal(`<h2>Правила</h2><ul>
@@ -2044,7 +2322,7 @@ function rulesModal(from){
 <li><b>Бесплатный сдвиг фазы:</b> ${FREE_SHIFTS} раза за игру можно повернуть своё тело на ±90° (чужие: только за кванты или картой «Сдвиг фазы») без карты и без траты хода (кнопка внизу поля).</li>
 <li><b>Возмущения:</b> Приливная сила (период ±1), Эффект Доплера (период ±2), Сдвиг фазы (±90°), Солнечный ветер (убрать тело), Гравитационный толчок (поменять соседей).</li>
 <li><b>Карты против соперников:</b> Обмен (поменяться руками), Перегрузка (+1 жетон на нестабильные резонансы), Кража (украсть ${STEAL_N} квантов), Затмение (соперник пропускает ход).</li>
-<li><b>Карты для себя:</b> Демпфер (снять жетоны со своих резонансов), Усилитель (очки за тело ×2, играется вместе с картой тела), Перезагрузка (заменить всю руку), Обмен квантов (${CASH_COST} квантов = ${CASH_POINTS} очков).</li>
+<li><b>Карты для себя:</b> Демпфер (снять жетоны со своих резонансов), Усилитель (очки за тело ×2, играется вместе с картой тела), Перезагрузка (замена всех карт), Маяк (взять в руку любую карту из колоды), Обмен квантов (${CASH_COST} квантов = ${CASH_POINTS} очков).</li>
 <li><b>Люки</b> в зоне Кирквуда (до 2 карт) выбрасывают все тела с указанным периодом, кроме тел в фазе 2. Название карты говорит сам период: «Люк: период 4» бьёт тела с периодом 4, а в скобках указана щель Кирквуда (резонанс с Юпитером). Зону можно очистить за кванты.</li>
 <li><b>Конец:</b> в лёгкой и обычной игре ${ROUNDS_LIMIT} раундов, в сложной раундов без ограничения: партия заканчивается, когда опустеет колода или по кнопке «Завершить партию» в меню. Побеждает набравший больше очков (при равенстве больше квантов) или тот, кто удержал планетную цепочку.</li>
 <li><b>Несколько игроков:</b> до 3 соперников-людей на одном устройстве (карты показываются по очереди) и ИИ. Часы вверху показывают время партии.</li>
@@ -2059,7 +2337,7 @@ function askName(i){
 }
 function startModal(){
   const seg=(act,cur,vals)=>vals.map(n=>`<button data-act="${act}" data-v="${n}" class="${cur===n?'on':''}">${n}</button>`).join('');
-  openModal(`<h2>РЕЗОНАНС</h2><p>Стройте систему из небесных тел и земных колебаний. Простые отношения периодов дают очки, а <b>фаза</b> решает, станет ли резонанс защитой или ловушкой.</p>
+  openModal(`<h2>РЕЗОНАНСЫ</h2><p>Стройте систему из небесных тел и земных колебаний. Простые отношения периодов дают очки, а <b>фаза</b> решает, станет ли резонанс защитой или ловушкой.</p>
 <div class="mut">Соперники-люди (ходят по очереди на этом устройстве)</div><div class="seg">${seg('humans',ui.humansOpp,[0,1,2,3])}</div>
 <div class="mut">Соперники-ИИ</div><div class="seg">${seg('bots',ui.bots,[0,1,2,3])}</div>
 <div class="mut">Сложность</div><div class="seg seg3"><button data-act="diff" data-v="easy" class="${ui.diff==='easy'?'on':''}">Лёгкая<small>подсказки, ${ROUNDS_LIMIT} раундов</small></button><button data-act="diff" data-v="normal" class="${ui.diff==='normal'?'on':''}">Обычная<small>${ROUNDS_LIMIT} раундов</small></button><button data-act="diff" data-v="hard" class="${ui.diff==='hard'?'on':''}">Сложная<small>раундов без лимита</small></button></div>
@@ -2073,7 +2351,8 @@ function endModal(){
   const tied=s.filter(p=>p.score===top.score&&p.quanta===top.quanta);
   const win=cw?G.players[wid].name:tied.map(p=>p.name).join(' и ');
   const isWin=p=>cw?p.id===wid:tied.includes(p);
-  openModal(`<h2>ИГРА ОКОНЧЕНА</h2><p>Победа: <b style="color:var(--gold)">${esc(win)}</b>${cw?'<br><span class="mut">Планетная цепочка 1-2-4-8 простояла два раунда</span>':''}</p><table class="res">${s.map(p=>`<tr${isWin(p)?' class="win"':''}><td><span style="color:${p.color}">●</span> ${esc(p.name)}</td><td style="text-align:right">${p.score} <span class="mut">◈${p.quanta}</span></td></tr>`).join('')}</table><p class="mut">Время партии: ${fmtTime((ui.tEnd||Date.now())-ui.t0)} · раундов: ${Math.min(G.round,G.maxRounds||G.round)}</p><div class="row"><button class="btn" data-act="melody" id="melBtn">♪ Мелодия поля</button><button class="btn" data-act="meldl">♪ WAV</button><button class="btn" data-act="shot">📷 PNG</button><button class="btn" data-act="csv">⬇ CSV</button><button class="btn" data-act="log">Журнал</button><button class="btn" data-act="shareopen" data-v="game">↗ Поделиться в соц сетях</button><button class="btn pri" data-act="again">Играть снова</button><button class="btn" data-act="mclose">Посмотреть поле</button></div>`,{lock:true});
+  openModal(`<h2>ИГРА ОКОНЧЕНА</h2><p>Победа: <b style="color:var(--gold)">${esc(win)}</b>${cw?'<br><span class="mut">Планетная цепочка 1-2-4-8 простояла два раунда</span>':''}</p><table class="res">${s.map(p=>`<tr${isWin(p)?' class="win"':''}><td><span style="color:${p.color}">●</span> ${esc(p.name)}</td><td style="text-align:right">${p.score} <span class="mut">◈${p.quanta}</span></td></tr>`).join('')}</table><div id="rollPrev" class="rollv mut" data-act="rollview" style="cursor:pointer">Рисую пиано-ролл…</div><p class="mut">Время партии: ${fmtTime((ui.tEnd||Date.now())-ui.t0)} · раундов: ${Math.min(G.round,G.maxRounds||G.round)}</p><div class="row"><button class="btn" data-act="melody" id="melBtn">♪ Мелодия поля</button><button class="btn" data-act="dlmenu">⬇ Загрузки</button><button class="btn" data-act="log">Журнал</button><button class="btn" data-act="shareopen" data-v="game">↗ Поделиться в соц сетях</button><button class="btn pri" data-act="again">Играть снова</button><button class="btn" data-act="mclose">Посмотреть поле</button></div>`,{lock:true});
+  fillRoll('rollPrev');
 }
 /* ---------- подсказки (лёгкий режим) ---------- */
 const TIPS=[
@@ -2206,14 +2485,14 @@ function handleEvents(evs,ownMove){
       const u=e.uids.slice();
       fxSchedule(()=>{fxBurst(u,'#7be0ff');fxBanner('lap','РЕЗОНАНС ЛАПЛАСА','+'+LAPLACE_BONUS,esc(namesOf(u))+' (ход: '+esc(G.players[e.by].name)+')');chordTones(u,'lap');});
     }else if(e.kind==='chain'){
-      const u=e.uids.slice(),by=e.by,r=G.chain?G.chain.round+2:'';
+      const u=e.uids.slice(),by=e.by,r=(()=>{const c=(G.chains||[]).find(c=>c.uids.join()===e.uids.join());return c?c.round+2:'';})();
       fxSchedule(()=>{fxBurst(u,'#ffd34d');fxBanner('pc','ПЛАНЕТНАЯ ЦЕПОЧКА','1 · 2 · 4 · 8',esc(G.players[by].name)+' победит, если цепочка простоит до конца раунда '+r);chordTones(u,'pc');});
     }else if(e.kind==='chainwin'){
       const u=(e.uids||[]).slice(),by=e.by;
       fxSchedule(()=>{fxBurst(u,'#ffd34d');fxConfetti();fxBanner('win','ПОБЕДА',esc(G.players[by].name),'Планетная цепочка простояла два раунда');chordTones(u,'pc');});
     }else if(e.kind==='chainbreak'){
       toast(e.text,true);
-    }else if(['trade','overload','steal','eclipse','damper','reboot','cash','skip','spend','quanta','shield'].includes(e.kind)){
+    }else if(['trade','overload','steal','eclipse','damper','reboot','beacon','cash','skip','spend','quanta','shield'].includes(e.kind)){
       if(e.kind==='quanta'){const g=e.gain[me().id];if(g&&!ownMove)toast('◈ +'+g+' за стабильные резонансы');}
       else toast(e.text);
     }
@@ -2226,6 +2505,7 @@ function humanAct(a){
   const cardPlayed=a.type==='amp'?pl.hand.find(x=>x.id===a.bodyId):pl.hand.find(x=>x.id===a.cardId);
   const r=applyAction(G,a);
   if(!r.ok){toast(r.msg,true);return;}
+  if(a.type==='beacon')closeModal();
   resetSel();
   handleEvents(r.events,true);
   if(a.type!=='discard')showFact(cardPlayed);
@@ -2254,13 +2534,13 @@ function spendModal(){
   const p=me(),left=REMOVE_MAX-(p.removes||0);
   const done=!!G.bought;
   const row=(v,t,d,c,ok0,why0)=>{const ok=ok0&&!done,why=done?'В этот ход покупка уже сделана':why0;return `<button class="sp-row" data-act="buy" data-v="${v}" ${ok?'':'disabled'}><span><b>${t}</b><small>${why||d}</small></span><span class="pr">◈ ${c}</span></button>`;};
-  const mych=G.chain&&G.chain.by===p.id&&!G.shield;
+  const mych=ownChain(G,p.id)&&!G.shield;
   openModal(`<h2>Потратить кванты</h2><p class="qbal">У вас ◈ ${p.quanta} · за ход можно сделать одну покупку</p>`+
     row('shift','Дополнительный сдвиг фазы','Поворот любого тела (в том числе чужого) на ±90° без карты и без траты хода. Три бесплатных сдвига остаются целы.',COST_SHIFT,p.quanta>=COST_SHIFT,p.quanta<COST_SHIFT?'Не хватает квантов':'')+
     row('draw','Ещё одна карта из колоды','Берёте карту сразу, ход не тратится. Один раз за ход.',COST_DRAW,p.quanta>=COST_DRAW&&!G.drew&&G.deck.length>0,G.drew?'В этот ход уже брали':(G.deck.length?(p.quanta<COST_DRAW?'Не хватает квантов':''):'Колода пуста'))+
     row('tide','Приливная сила без карты','Период любого тела ±1. Ход не тратится.',COST_TIDE,p.quanta>=COST_TIDE&&G.bodies.length>0,p.quanta<COST_TIDE?'Не хватает квантов':'')+
     row('remove','Убрать любое тело с поля','Тело уходит без штрафа, карта возвращается в колоду. Осталось раз: '+left+' из '+REMOVE_MAX+'.',COST_REMOVE,p.quanta>=COST_REMOVE&&left>0&&G.bodies.length>1,left<=0?'Лимит исчерпан':(p.quanta<COST_REMOVE?'Не хватает квантов':''))+
-    row('shield','Защита цепочки','Ваша планетная цепочка не может быть разрушена до вашего следующего хода.',COST_SHIELD,p.quanta>=COST_SHIELD&&mych,!(G.chain&&G.chain.by===p.id)?'У вас нет планетной цепочки':(G.shield?'Цепочка уже защищена':(p.quanta<COST_SHIELD?'Не хватает квантов':'')))+
+    row('shield','Защита цепочки','Ваша планетная цепочка не может быть разрушена до вашего следующего хода.',COST_SHIELD,p.quanta>=COST_SHIELD&&mych,!ownChain(G,p.id)?'У вас нет планетной цепочки':(G.shield?'Цепочка уже защищена':(p.quanta<COST_SHIELD?'Не хватает квантов':'')))+
     row('clear','Очистить зону Кирквуда','Все Люки из зоны уходят в сброс. Сейчас в зоне: '+G.zone.length+'.',COST_CLEAR,p.quanta>=COST_CLEAR&&G.zone.length>0,!G.zone.length?'Зона пуста':(p.quanta<COST_CLEAR?'Не хватает квантов':''))+
     row('analyze','Анализ стратегии противника','Видно карты в руке соперника, его ресурсы и вероятный ход.',COST_ANALYZE,p.quanta>=COST_ANALYZE,p.quanta<COST_ANALYZE?'Не хватает квантов':'')+
     `<p class="mut" style="margin-top:10px">Кванты начисляются в конце каждого раунда: по 1 за каждый стабильный резонанс, где участвует ваше тело.</p>`);
@@ -2364,6 +2644,20 @@ function onAct(el){
     case 'income':incomeModal();break;
     case 'melody':playMelody();break;
     case 'meldl':downloadMelody();break;
+    case 'beacon':{
+      const bc=me().hand.find(x=>x.id===v);if(!bc)break;
+      const grp=new Map();
+      for(const c of G.deck){const k=c.kind+'|'+c.name;if(!grp.has(k))grp.set(k,{c,n:0});grp.get(k).n++;}
+      const ord={body:0,perturb:1,hatch:2};
+      const list=[...grp.values()].sort((x,y)=>ord[x.c.kind]-ord[y.c.kind]||(x.c.period||0)-(y.c.period||0)||x.c.name.localeCompare(y.c.name,'ru'));
+      openModal('<h2>Маяк: выберите карту</h2><p class="mut">В колоде '+G.deck.length+' карт. Выбранная перейдёт к вам в руку.</p><div class="bkgrid">'+
+        list.map(x=>`<button class="bk" ${actBtn({type:'beacon',cardId:bc.id,pickId:x.c.id})}>${cardEl(x.c,{fs:10})}${x.n>1?'<span class="bkn">×'+x.n+'</span>':''}</button>`).join('')+'</div>');
+      break;
+    }
+    case 'dlmenu':dlToggle();break;
+    case 'dlpick':dlClose();onAct({dataset:{act:v}});break;
+    case 'rollpng':downloadRoll();break;
+    case 'rollview':rollModal();break;
     case 'shot':downloadShot();break;
     case 'csv':downloadCSV();break;
     case 'endm':endModal();break;
@@ -2411,6 +2705,7 @@ function setupEvents(){
   document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='nameIn'){e.preventDefault();const b=document.querySelector('[data-act="namenext"]');if(b)b.click();}});
   document.addEventListener('click',e=>{
     const t=e.target;
+    if(!t.closest('#dlm')&&!t.closest('#bDl'))dlClose();
     const ac_=t.closest('[data-act]');
     if(ac_){onAct(ac_);return;}
     const dm=t.closest('[data-demo]');
@@ -2447,14 +2742,14 @@ function setupEvents(){
 function initUI(){
   setInterval(()=>{const e=$('#clock');if(e&&G&&!G.over)e.textContent=clockText();},1000);
   $('#defs').innerHTML=defsSVG();
-  $('#bMenu').innerHTML=ICON.menu;$('#factsFab').innerHTML=ICON.space;$('#shareFab').innerHTML=ICON.share;$('#bHint').innerHTML=ICON.bulb;$('#bLog').innerHTML=ICON.log;$('#bFit').innerHTML=ICON.fit;
+  $('#bMenu').innerHTML=ICON.menu;$('#factsFab').innerHTML=ICON.space;$('#shareFab').innerHTML=ICON.share;$('#bHint').innerHTML=ICON.bulb;$('#bLog').innerHTML=ICON.log;$('#bDl').innerHTML=ICON.dl;$('#bFit').innerHTML=ICON.fit;
   setupField();setupEvents();
   showDemo('start');
 }
 
 /* ====== ДЕМОНСТРАЦИЯ ПРАВИЛ ====== */
 const DEMO_PL=[{color:'#f3c24a'},{color:'#6ec6ff'}];
-const demo={step:0,from:'start',ph:0,loads:0,phB:1,ejected:false,layout:'row',same:false,hatched:false};
+const demo={jt:0,jpause:false,step:0,from:'start',ph:0,loads:0,phB:1,ejected:false,layout:'row',same:false,hatched:false};
 function dB(name,x,y,phase,owner){
   const b=BODIES.find(z=>z.n===name);
   return {uid:'d'+name+x+y,card:{id:'demo',kind:'body',name:b.n,period:b.p,theme:b.k,shape:b.s,color:b.c,fact:b.f},owner:owner===undefined?null:owner,phase,mod:0,x,y};
@@ -2472,7 +2767,60 @@ function stageHTML(bodies,o){
 function dNote(t,c){return '<div class="note '+(c||'')+'">'+t+'</div>';}
 function dBtn(act,label,o){o=o||{};return `<button class="btn${o.pri?' pri':''}${o.sm?' sm':''}" data-demo="${act}"${o.dis?' disabled':''}>${label}</button>`;}
 
+
+const JUP_NAME=['Ио','Европа','Ганимед'];
+const JUP_R=[68,108,144],JUP_COL=['#f0b43c','#e6d7b8','#9a9080'],JUP_SEC=12,JC=160; /* секунд на оборот Ганимеда */
+function jupiterSVG(){
+  const S=JUP_R.map(r=>'<circle cx="'+JC+'" cy="'+JC+'" r="'+r+'" fill="none" stroke="#ffffff30" stroke-width="1.2" stroke-dasharray="3 5"/>').join('');
+  const MR=[11,11,12.5];
+  const M=JUP_R.map((r,i)=>'<g id="jmg'+i+'"><circle id="jm'+i+'" cx="'+(JC+r)+'" cy="'+JC+'" r="'+MR[i]+'" fill="'+JUP_COL[i]+'" stroke="#fff" stroke-width="1.5"/><text id="jt'+i+'" x="'+(JC+r)+'" y="'+JC+'" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#1a1230" font-family="system-ui,sans-serif">0</text><text id="jn'+i+'" x="'+(JC+r)+'" y="'+(JC-MR[i]-6)+'" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff" stroke="#0a0c24" stroke-width="3" paint-order="stroke" font-family="system-ui,sans-serif">'+JUP_NAME[i]+'</text></g>').join('');
+  const R=40,bands=[[-33,6,'#d9a66b'],[-24,5,'#b8743f'],[-14,7,'#f0d2a4'],[-4,6,'#c98a55'],[5,6,'#e8bf8c'],[14,8,'#a9653a'],[25,6,'#d9a66b'],[33,5,'#f0d2a4']]
+    .map(b=>'<rect x="'+(JC-R)+'" y="'+(JC+b[0]-b[1]/2)+'" width="'+(R*2)+'" height="'+b[1]+'" fill="'+b[2]+'" opacity=".85"/>').join('');
+  const wav='<path d="M'+(JC-R)+' '+(JC-9)+' q10 -4 20 0 t20 0 t20 0 t20 0" fill="none" stroke="#f6e3c0" stroke-width="1.6" opacity=".6"/><path d="M'+(JC-R)+' '+(JC+20)+' q10 4 20 0 t20 0 t20 0 t20 0" fill="none" stroke="#8a4a26" stroke-width="1.8" opacity=".5"/>';
+  const spot='<g transform="translate('+(JC+14)+' '+(JC+16)+') rotate(-8)"><ellipse rx="15" ry="9.5" fill="#a8341f"/><ellipse rx="12" ry="7" fill="#c8472c"/><ellipse rx="7" ry="4" fill="#e06a45" opacity=".85"/><ellipse rx="15" ry="9.5" fill="none" stroke="#f0d2a4" stroke-width="1.4" opacity=".6"/></g>';
+  return '<svg viewBox="0 0 320 320" style="width:100%;max-width:400px;display:block;margin:0 auto"><defs>'+
+    '<radialGradient id="jsh" cx="38%" cy="36%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#1a0a05" stop-opacity=".6"/></radialGradient>'+
+    '<radialGradient id="jgl" cx="50%" cy="50%" r="50%"><stop offset=".6" stop-color="#f3c28a" stop-opacity=".35"/><stop offset="1" stop-color="#f3c28a" stop-opacity="0"/></radialGradient>'+
+    '<clipPath id="jcl"><circle cx="'+JC+'" cy="'+JC+'" r="'+R+'"/></clipPath></defs>'+
+    '<line x1="'+JC+'" y1="'+JC+'" x2="316" y2="'+JC+'" stroke="#fff" stroke-opacity=".6" stroke-width="1.6"/>'+S+
+    '<circle cx="'+JC+'" cy="'+JC+'" r="'+(R+16)+'" fill="url(#jgl)"/>'+
+    '<g clip-path="url(#jcl)"><rect x="'+(JC-R)+'" y="'+(JC-R)+'" width="'+(R*2)+'" height="'+(R*2)+'" fill="#e2b585"/>'+bands+wav+spot+'<circle cx="'+JC+'" cy="'+JC+'" r="'+R+'" fill="url(#jsh)"/></g>'+M+'</svg>';
+}
+let jAnim=0;
+function jupiterRun(){
+  const cancel=()=>{if(jAnim){cancelAnimationFrame(jAnim);jAnim=0;}};
+  cancel();
+  if(!document.getElementById('jv'))return;
+  const ms=[0,1,2].map(i=>document.getElementById('jm'+i)),ts=[0,1,2].map(i=>document.getElementById('jt'+i)),ns=[0,1,2].map(i=>document.getElementById('jn'+i));
+  const MR=[11,11,12.5],mult=[4,2,1];
+  let last=performance.now(),hold=0;
+  const tick=now=>{
+    if(!document.getElementById('jv')){jAnim=0;return;}
+    const dt=(now-last)/1000;last=now;
+    if(!demo.jpause){
+      if(hold>0){hold-=dt;if(hold<=0){demo.jt=0;hold=0;}}
+      else{demo.jt+=dt;if(demo.jt>=JUP_SEC){demo.jt=JUP_SEC;hold=2;}}  /* один цикл Лапласа: Ио 4, Европа 2, Ганимед 1 — затем сброс */
+    }
+    const g=demo.jt/JUP_SEC*Math.PI*2;
+    ms.forEach((m,i)=>{
+      const a=g*mult[i],x=JC+JUP_R[i]*Math.cos(a),y=JC+JUP_R[i]*Math.sin(a);
+      m.setAttribute('cx',x.toFixed(2));m.setAttribute('cy',y.toFixed(2));
+      ts[i].setAttribute('x',x.toFixed(2));ts[i].setAttribute('y',y.toFixed(2));
+      ts[i].textContent=Math.floor(demo.jt/JUP_SEC*mult[i]+1e-6);
+      const lx=Math.max(34,Math.min(284,x)),below=i===1?y-MR[i]-6<14||true:y-MR[i]-6<14,ly=below?y+MR[i]+15:y-MR[i]-6;
+      ns[i].setAttribute('x',lx.toFixed(2));ns[i].setAttribute('y',ly.toFixed(2));
+    });
+    jAnim=requestAnimationFrame(tick);
+  };
+  jAnim=requestAnimationFrame(tick);
+}
+
 const DEMO_STEPS=[
+  ()=>({title:'Спутники Юпитера',html:
+    '<p>Спутники Юпитера (<b>Ио, Европа и Ганимед</b>) не просто вращаются на своих орбитах, они вращаются <b>в резонансе</b>. Вот как это работает: за 1 оборот Ганимеда Европа делает 2 оборота, а Ио 4. И этот цикл продолжается бесконечно, никогда не сбиваясь. Поэтому и говорят о резонансе. <b>Резонанс — это основа стабильности орбит.</b></p>'+
+    '<div id="jv" class="jv">'+jupiterSVG()+'</div>'+
+    '<div class="row c">'+dBtn('jpause',demo.jpause?'▶ Продолжить':'⏸ Пауза',{pri:1})+dBtn('jreset','↺ Сначала')+'</div>'+
+    dNote('Отношение периодов <b>1 : 2 : 4</b> — тот самый резонанс Лапласа из игры. Белая линия отмечает точку старта: за 1 оборот Ганимеда Европа делает 2 оборота, а Ио 4, и все три снова выстраиваются на линии. После одного такого цикла анимация начинается заново.')}),
   ()=>({title:'Что такое резонанс',html:
     '<p>Космические тела притягивают друг друга. Если периоды их обращения относятся как простые числа (2:1, 3:2, 4:3), слабые толчки повторяются в одних и тех же местах и <b>накапливаются</b>. Так три спутника Юпитера держат строй 1:2:4.</p>'+
     stageHTML([dB('Ио',0,0,0),dB('Европа',1,0,1),dB('Ганимед',2,0,2)])+
@@ -2553,12 +2901,6 @@ const DEMO_STEPS=[
       dNote('Здесь связь Европа–Ганимед стабильна (Δ=1): каждый раунд +1 квант владельцам обоих тел. Сближение (Δ=0) квантов не даёт.','green')+
       '<p class="mut" style="margin-top:8px">Кнопка «◈ Доход» в строке зоны Кирквуда показывает, какие резонансы приносят кванты.</p>'};
   },
-  ()=>{
-    const NEW=PERTURBS.filter(x=>['trade','overload','steal','eclipse','damper','doppler','amp','reboot','shield','cash'].includes(x.fx));
-    const cards=NEW.map(x=>'<div style="text-align:center;width:84px">'+cardEl({id:'d',kind:'perturb',fx:x.fx,name:x.n,text:x.t},{fs:8.5})+'</div>').join('');
-    return {title:'Дополнительные карты',html:
-      '<div class="row c" style="gap:8px;align-items:flex-start;flex-wrap:wrap;margin:8px 0">'+cards+'</div>'};
-  },
   ()=>({title:'Ваш ход: три типа карт',html:
     '<p>В свой ход вы играете <b>одну карту</b> из руки (5 карт). Можно без потери хода тратить очки сдвига фазы (кнопка на поле) или кванты. Для карт тел вы выбираете не только положение на столе, но и правильную фазу. Следите за фазой!</p>'+
     '<div class="row c" style="gap:10px;align-items:flex-start">'+
@@ -2596,12 +2938,13 @@ function renderDemo(keep){
   const old=document.querySelector('#modal .mbox');
   const sc=keep&&old?old.scrollTop:0;
   const st=DEMO_STEPS[demo.step](),n=DEMO_STEPS.length,last=demo.step===n-1,game=demo.from==='game';
-  openModal(`<h2>${st.title}</h2><div class="dots">${DEMO_STEPS.map((_,i)=>'<i class="'+(i===demo.step?'on':'')+'"></i>').join('')}</div><div class="mut" style="text-align:center;margin-bottom:6px">Демонстрация правил: шаг ${demo.step+1} из ${n}</div>${st.html}`+
+  openModal(`<h2>${st.title}</h2><div class="dots">${DEMO_STEPS.map((_,i)=>'<i class="'+(i===demo.step?'on':'')+'"></i>').join('')}</div><div class="mut" style="text-align:center;margin-bottom:6px">Демонстрация правил: шаг ${demo.step+1} из ${n} <span style="opacity:.65">· листайте стрелками ← →</span></div>${st.html}`+
     `<div class="row" style="justify-content:space-between;margin-top:14px">${dBtn('skip',game?'Закрыть':'Пропустить')}<span class="row" style="margin:0">${demo.step>0?dBtn('prev','← Назад'):''}${dBtn(last?'finish':'next',last?(game?'Закрыть':'К игре →'):'Дальше →',{pri:1})}</span></div>`,
     {lock:!game,keepScroll:sc});
+  if(demo.step===0)jupiterRun();
 }
 function showDemo(from){
-  Object.assign(demo,{step:0,from:from||'start',ph:0,loads:0,phB:1,ejected:false,layout:'row',same:false,hatched:false});
+  Object.assign(demo,{jt:0,jpause:false,step:0,from:from||'start',ph:0,loads:0,phB:1,ejected:false,layout:'row',same:false,hatched:false});
   renderDemo(false);
 }
 function demoAct(a){
@@ -2612,6 +2955,8 @@ function demoAct(a){
     ui.sound=true;const p=a==='hear:ok'?[1,2]:[5,7];
     tone(freqOf(p[0])*2,0,1.2,0.14);tone(freqOf(p[1])*2,0,1.2,0.14);return;
   }
+  if(a==='jpause'){demo.jpause=!demo.jpause;renderDemo(true);return;}
+  if(a==='jreset'){demo.jt=0;renderDemo(true);return;}
   if(a==='rot')demo.ph=(demo.ph+1)%4;
   else if(a==='round'){demo.loads++;if(demo.loads>=3){demo.ejected=true;soundEject();}}
   else if(a==='rotB'){demo.phB=(demo.phB+1)%4;demo.loads=0;}
@@ -2623,6 +2968,14 @@ function demoAct(a){
   else if(a==='unhatch')demo.hatched=false;
   renderDemo(true);
 }
+
+document.addEventListener('keydown',e=>{
+  if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;
+  if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+  if(!document.querySelector('#modal.on .dots'))return;
+  const b=document.querySelector('#modal.on [data-demo="'+(e.key==='ArrowRight'?'next':'prev')+'"]');
+  if(b&&!b.disabled){e.preventDefault();demoAct(e.key==='ArrowRight'?'next':'prev');}
+});
 
 initUI();
 </script>
