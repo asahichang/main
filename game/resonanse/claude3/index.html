@@ -313,6 +313,45 @@ table.res tr.win td{color:var(--gold);font-weight:700}
 .rollv{margin:8px 0;min-height:3em;text-align:center}
 .rollv img{max-height:46vh;object-fit:contain;background:#0b1020}
 
+/* десктоп: панель выбранной карты — узкая полоска над рукой */
+@media (min-width:900px){
+  #sheet.on{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding:5px 12px;max-height:22vh}
+  #sheet .sh-h{flex:none;gap:6px}
+  #sheet .sh-h b{flex:none;font-size:14px;max-width:18em}
+  #sheet .sh-h .sx{width:28px;height:28px;font-size:14px;border-radius:8px}
+  #sheet .sh-t{flex:1 1 220px;margin:0;font-size:12.5px;line-height:1.3}
+  #sheet .ph-row,#sheet .opt-row,#sheet .opp-row{display:flex;flex:0 1 auto;flex-wrap:wrap;gap:6px;margin:0}
+  #sheet .ph{flex-direction:row;gap:6px;min-height:36px;padding:3px 12px;border-radius:10px}
+  #sheet .ph svg,#sheet .opt svg{width:20px;height:20px}
+  #sheet .ph b,#sheet .opt b{font-size:14px}
+  #sheet .ph small,#sheet .opt small{font-size:10.5px;text-align:left}
+  #sheet .opt{flex:0 1 auto;min-height:36px;padding:4px 12px;flex-direction:row;gap:6px}
+  #sheet .opp{flex:0 1 auto;padding:4px 12px;font-size:12.5px;min-height:0}
+  #sheet .opp b{display:inline;font-size:13px;margin-right:8px}
+  #sheet .sh-f{margin:0;flex:0 1 auto;gap:6px}
+  #sheet .btn{min-height:34px;padding:5px 14px;font-size:13px}
+  #sheet .btn.pri{flex:0 1 auto;min-width:9em}
+  #sheet .rec::after{top:-8px}
+}
+@media (min-width:900px){
+  #sheet.on{gap:4px 10px}
+  #sheet .ph{padding:3px 8px;gap:5px}
+  #sheet .btn.pri{min-width:0}
+  #sheet .btn{padding:5px 10px;font-size:12.5px}
+  #sheet .sh-t{flex:1 1 150px;min-width:140px}
+}
+
+.mus-q{margin:10px 0 4px;font-weight:600;color:var(--gold)}
+.mwave{display:block;width:100%;height:auto;aspect-ratio:900/110;border-radius:10px 10px 0 0;background:#0b1020}
+.rwrap{position:relative;line-height:0}
+.rwrap img{width:100%;display:block;border-radius:0 0 10px 10px}
+.mph,.dph{position:absolute;top:0;bottom:0;width:2px;background:#ffd34d;box-shadow:0 0 10px #ffd34d;display:none;pointer-events:none}
+.mplay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:#0b1020cc;border:2px solid var(--gold);color:var(--gold);font-size:28px;line-height:1;display:grid;place-items:center;box-shadow:0 4px 20px #000a;cursor:pointer}
+.mplay:hover{background:#1b2260}
+
+.dvid{margin:8px 0;border-radius:12px;overflow:hidden;background:#0b1020}
+.dvid video{display:block;width:100%;max-height:52vh;object-fit:contain;background:#0b1020}
+
 </style>
 </head>
 <body>
@@ -1446,7 +1485,7 @@ const ICON={
 let AC=null;
 function ac(){
   if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}
-  if(AC&&AC.state==='suspended')AC.resume();
+  if(AC&&AC.state==='suspended'&&!(ui.mp&&ui.mp.state==='pause'))AC.resume();
   return AC;
 }
 function tone(f,t,d,vol,type){
@@ -1902,8 +1941,8 @@ function melodyPlan(){
   }
   return {notes,len:t+.5,names,starts,ends,beat:BEAT};
 }
-function melodyVoice(c,n,t0){
-  const s=t0+n.t,g=c.createGain(),dst=c.destination;
+function melodyVoice(c,n,t0,dest){
+  const s=t0+n.t,g=c.createGain(),dst=dest||c.destination;
   g.gain.setValueAtTime(0.0001,s);
   if(n.kick){
     const o=c.createOscillator();o.type='sine';o.frequency.setValueAtTime(130,s);o.frequency.exponentialRampToValueAtTime(45,s+.18);
@@ -1925,21 +1964,102 @@ function melodyVoice(c,n,t0){
   }
   g.connect(dst);
 }
+/* ---------- плеер мелодии: плей/пауза, волна, всполохи ---------- */
+const FL_COL={flute:'#4aa3ff',bell:'#ffd24a',clar:'#ff6a6a',string:'#7be08a',pluck:'#c58bff',organ:'#ff9f43'};
+function melBus(c){
+  if(ui.mb&&ui.mb.c===c)return ui.mb;
+  const an=c.createAnalyser();an.fftSize=1024;an.smoothingTimeConstant=.55;an.connect(c.destination);
+  return ui.mb={c,an,buf:new Uint8Array(an.fftSize)};
+}
+function mpSync(){
+  const st=ui.mp?ui.mp.state:'idle';
+  document.querySelectorAll('.mplay').forEach(b=>{b.textContent=st==='play'?'⏸':'▶';b.setAttribute('aria-label',st==='play'?'Пауза':'Играть');});
+  const mb=document.getElementById('melBtn');if(mb)mb.textContent=st==='play'?'⏸ Пауза':st==='pause'?'▶ Продолжить':'♪ Мелодия поля';
+}
+function mpStop(){
+  if(ui.mp){try{ui.mp.sg.disconnect();}catch(e){}ui.mp.state='idle';}
+  mpSync();
+}
 function playMelody(){
   ui.sound=true;
-  const m=melodyPlan();if(!m.notes.length)return;
+  const mp=ui.mp;
+  if(mp&&mp.state==='play'){mp.c.suspend();mp.state='pause';mpSync();return;}
+  if(mp&&mp.state==='pause'){mp.state='play';mp.c.resume();mpSync();mpLoop();return;}
+  const m=melodyPlan();if(!m.notes.length){toast('На поле нет тел',true);return;}
   const c=ac();if(!c)return;
-  const btn=document.getElementById('melBtn');if(btn){btn.disabled=true;btn.textContent='♪ Играет…';}
+  const bus=melBus(c),sg=c.createGain();sg.connect(bus.an);
   const t0=c.currentTime+.05;
-  m.notes.forEach(n=>melodyVoice(c,n,t0));
+  m.notes.forEach(n=>melodyVoice(c,n,t0,sg));
+  ui.mp={m,c,t0,sg,state:'play',fl:[],ni:0,last:0};
   toast('Мелодия: '+m.names.join(' → '));
-  setTimeout(()=>{const b2=document.getElementById('melBtn');if(b2){b2.disabled=false;b2.textContent='♪ Мелодия поля';}},m.len*1000);
+  mpSync();mpLoop();
+}
+function mpTime(){const mp=ui.mp;return mp?Math.max(0,mp.c.currentTime-mp.t0):0;}
+function drawWave(cx,w,h,an,buf,fl,tt,fade){
+  cx.globalCompositeOperation='source-over';
+  cx.fillStyle='rgba(11,16,32,'+fade+')';cx.fillRect(0,0,w,h);
+  if(an)an.getByteTimeDomainData(buf);
+  const n=buf.length,mid=h/2,amp=h*.46;
+  cx.globalCompositeOperation='lighter';
+  /* всполохи на нотах: расходящееся свечение, затухает */
+  for(const f of fl){
+    const age=tt-f.t,k=Math.min(1,age/.9);if(k>=1)continue;
+    const r=14+k*46,al=(1-k)*.8;
+    const g=cx.createRadialGradient(f.x*w,mid,0,f.x*w,mid,r);
+    g.addColorStop(0,f.c+Math.round(al*255).toString(16).padStart(2,'0'));g.addColorStop(1,f.c+'00');
+    cx.fillStyle=g;cx.beginPath();cx.arc(f.x*w,mid,r,0,7);cx.fill();
+  }
+  const gr=cx.createLinearGradient(0,0,w,0);gr.addColorStop(0,'#7be0ff');gr.addColorStop(.5,'#ffd34d');gr.addColorStop(1,'#ff8ad8');
+  for(const [lw,al,blur] of [[7,.18,0],[2.6,1,14]]){
+    cx.strokeStyle=gr;cx.globalAlpha=al;cx.lineWidth=lw;cx.lineJoin='round';cx.shadowColor='#ffd34d';cx.shadowBlur=blur;
+    cx.beginPath();
+    for(let i=0;i<n;i+=2){
+      const x=i/(n-1)*w,v=(buf[i]-128)/128,env=Math.sin(Math.PI*i/(n-1)),y=mid+Math.max(-amp,Math.min(amp,v*amp*Math.min(1,env*1.3)*6));
+      i?cx.lineTo(x,y):cx.moveTo(x,y);
+    }
+    cx.stroke();
+  }
+  cx.globalAlpha=1;cx.shadowBlur=0;cx.globalCompositeOperation='source-over';
+}
+function mpFlashes(tt){
+  const mp=ui.mp;if(!mp)return;
+  while(mp.ni<mp.m.notes.length&&mp.m.notes[mp.ni].t<=tt){
+    const n=mp.m.notes[mp.ni++];
+    if(n.kick)mp.fl.push({t:n.t,x:.5,c:'#ffffff'});
+    else mp.fl.push({t:n.t,x:.06+.88*Math.min(1,Math.max(0,(Math.log2(n.f)-Math.log2(100))/(Math.log2(1400)-Math.log2(100)))),c:FL_COL[n.ins]||'#ffd34d'});
+  }
+  mp.fl=mp.fl.filter(f=>tt-f.t<1);
+}
+function mpLoop(){
+  if(ui.mpRaf)return;
+  const frame=()=>{
+    ui.mpRaf=0;
+    const mp=ui.mp,cv=document.getElementById('mwave'),ph=document.querySelector('.mph');
+    if(!mp&&!cv)return;
+    if(mp&&mp.state==='play'&&mpTime()>=mp.m.len+.2){mpStop();ui.mp.ni=0;}
+    const st=mp?mp.state:'idle',tt=mpTime();
+    if(st==='play')mpFlashes(tt);
+    if(cv){
+      const cx=cv.getContext('2d'),bus=ui.mb;
+      if(st==='play'&&bus)drawWave(cx,cv.width,cv.height,bus.an,bus.buf,mp.fl,tt,.2);
+      else{
+        const idle=new Uint8Array(512);for(let i=0;i<512;i++)idle[i]=128+(st==='pause'?0:Math.sin(i/16+performance.now()/900)*4);
+        drawWave(cx,cv.width,cv.height,null,idle,mp?mp.fl:[],tt,.25);
+      }
+    }
+    if(ph&&ui.rollGeom){
+      const g=ui.rollGeom,x=st==='idle'?-1:(g.ML+(tt-g.T0)/(g.LEN-g.T0)*(g.W-g.ML-g.MR))/g.W*100;
+      ph.style.display=x<0?'none':'block';ph.style.left=x+'%';
+    }
+    if(cv||st==='play')ui.mpRaf=requestAnimationFrame(frame);
+  };
+  ui.mpRaf=requestAnimationFrame(frame);
 }
 function dlClose(){const d=$('#dlm');if(d)d.classList.remove('on');}
 function dlToggle(){
   const d=$('#dlm');if(!d||!G)return;
   if(d.classList.contains('on')){dlClose();return;}
-  d.innerHTML='<b>Материалы партии</b><button data-act="dlpick" data-v="melody">▶ Прослушать музыку</button><button data-act="dlpick" data-v="shot">📷 Скриншот поля (PNG)</button><button data-act="dlpick" data-v="rollview">🎼 Пиано-ролл и ноты (PNG)</button><button data-act="dlpick" data-v="meldl">♪ Мелодия поля (WAV)</button><button data-act="dlpick" data-v="csv">⬇ Журнал и итоги (CSV)</button>';
+  d.innerHTML='<b>Материалы партии</b><button data-act="dlpick" data-v="melody">▶ Прослушать музыку</button><button data-act="dlpick" data-v="shot">📷 Скриншот поля (PNG)</button><button data-act="dlpick" data-v="rollview">🎼 Пиано-ролл и ноты (PNG)</button><button data-act="dlpick" data-v="video">🎬 Видеоролик с музыкой</button><button data-act="dlpick" data-v="meldl">♪ Мелодия поля (WAV)</button><button data-act="dlpick" data-v="csv">⬇ Журнал и итоги (CSV)</button>';
   d.classList.add('on');
 }
 function stamp(){const d=new Date(),z=n=>String(n).padStart(2,'0');return d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'_'+z(d.getHours())+z(d.getMinutes());}
@@ -1969,6 +2089,7 @@ function pianoRollBlob(){
   if(!tone.length)throw new Error('no notes');
   const W=1800,H=1260,ML=150,MR=30,LEN=m.len,BEAT=m.beat,T0=-.9,ns=m.names.length;
   const X=t=>ML+(t-T0)/(LEN-T0)*(W-ML-MR),PX=(W-ML-MR)/(LEN-T0);
+  ui.rollGeom={W,ML,MR,T0,LEN};
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;
   const c=cv.getContext('2d'),bg='#0b1020',fg='#dfe6f5',grid='#2a3558',SANS='system-ui,"Segoe UI",Roboto,sans-serif';
   c.fillStyle=bg;c.fillRect(0,0,W,H);
@@ -2053,13 +2174,65 @@ async function rollUrl(){
 }
 async function fillRoll(id){
   const el=document.getElementById(id);if(!el)return;
-  try{const url=await rollUrl();const e2=document.getElementById(id);if(e2)e2.innerHTML='<img src="'+url+'" alt="Пиано-ролл мелодии" style="width:100%;border-radius:10px;display:block">';}
+  try{const url=await rollUrl();const e2=document.getElementById(id);if(e2)e2.innerHTML='<div class="rwrap"><img src="'+url+'" alt="Пиано-ролл мелодии"><i class="mph"></i>'+(id==='rollPrev'?'<button class="mplay" data-act="mplay" aria-label="Играть">▶</button>':'')+'</div>';mpSync();mpLoop();}
   catch(e){const e2=document.getElementById(id);if(e2)e2.textContent='Не удалось нарисовать пиано-ролл';}
 }
 function rollModal(){
   if(!G||!G.bodies.length){toast('Поле пусто',true);return;}
   openModal('<h2>Пиано-ролл мелодии</h2><div id="rollView" class="rollv mut">Рисую…</div><div class="row"><button class="btn pri" data-act="rollpng">⬇ Загрузить</button><button class="btn" data-act="melody">▶ Прослушать</button>'+(G.over?'<button class="btn" data-act="endm">К итогам</button>':'')+'<button class="btn" data-act="mclose">Закрыть</button></div>');
   fillRoll('rollView');
+}
+
+/* ---------- видеоролик: картинка + волна + звук (запись в реальном времени) ---------- */
+async function downloadVideo(){
+  if(!G||!G.bodies.length){toast('Поле пусто',true);return;}
+  if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){toast('Браузер не умеет записывать видео',true);return;}
+  if(ui.recBusy)return;
+  ui.recBusy=true;
+  try{
+    const url=await rollUrl(),img=new Image();
+    await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url;});
+    const c=ac();if(!c)throw new Error('audio');
+    if(ui.mp&&ui.mp.state!=='idle')mpStop();
+    ui.mp=null;
+    const m=melodyPlan(),bus=melBus(c),W=1440,H=1160,WH=150,k=W/1800;
+    const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+    const cx=cv.getContext('2d'),wv=document.createElement('canvas');wv.width=W;wv.height=WH;const wx=wv.getContext('2d');
+    wx.fillStyle='#0b1020';wx.fillRect(0,0,W,WH);
+    const dest=c.createMediaStreamDestination(),sg=c.createGain();sg.connect(bus.an);sg.connect(dest);
+    const stream=cv.captureStream(30);dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+    const mimes=['video/mp4;codecs=avc1,mp4a.40.2','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+    const mime=mimes.find(t=>MediaRecorder.isTypeSupported(t))||'';
+    const rec=new MediaRecorder(stream,mime?{mimeType:mime,videoBitsPerSecond:4e6}:{}),chunks=[];
+    rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};
+    const done=new Promise(res=>{rec.onstop=res;});
+    const t0=c.currentTime+.2;m.notes.forEach(n=>melodyVoice(c,n,t0,sg));
+    const mp={m,fl:[],ni:0};ui.mp=mp;mp.c=c;mp.t0=t0;mp.state='rec';mp.sg=sg;
+    const g=ui.rollGeom,buf=bus.buf;
+    toast('Идёт запись видео, около '+Math.ceil(m.len+1)+' с. Не закрывайте вкладку.');
+    rec.start(250);
+    const total=m.len+.6;
+    await new Promise(res=>{
+      const frame=()=>{
+        const tt=Math.max(0,c.currentTime-t0);
+        mpFlashes(tt);
+        drawWave(wx,W,WH,bus.an,buf,mp.fl,tt,.2);
+        cx.fillStyle='#0b1020';cx.fillRect(0,0,W,H);
+        cx.drawImage(wv,0,0);
+        cx.drawImage(img,0,WH,W,1260*k);
+        const x=(g.ML+(Math.min(tt,m.len)-g.T0)/(g.LEN-g.T0)*(g.W-g.ML-g.MR))*k;
+        cx.fillStyle='#ffd34d';cx.shadowColor='#ffd34d';cx.shadowBlur=12;cx.fillRect(x-1,WH,2,1260*k);cx.shadowBlur=0;
+        cx.fillStyle='#ffd34d';cx.font='600 22px system-ui,sans-serif';cx.textAlign='left';cx.fillText('Резонансы · музыка вашей партии',18,32);
+        if(tt>=total)res();else requestAnimationFrame(frame);
+      };frame();
+    });
+    rec.stop();await done;
+    try{sg.disconnect();}catch(e){}
+    ui.mp=null;mpSync();
+    const blob=new Blob(chunks,{type:mime||'video/webm'});
+    saveBlob(blob,'resonance_video_'+stamp()+(mime.startsWith('video/mp4')?'.mp4':'.webm'));
+  }catch(e){toast('Не удалось записать видео',true);console.error(e);ui.mp=null;mpSync();}
+  ui.recBusy=false;
 }
 async function downloadRoll(){
   if(!G||!G.bodies.length){toast('Поле пусто',true);return;}
@@ -2351,7 +2524,7 @@ function endModal(){
   const tied=s.filter(p=>p.score===top.score&&p.quanta===top.quanta);
   const win=cw?G.players[wid].name:tied.map(p=>p.name).join(' и ');
   const isWin=p=>cw?p.id===wid:tied.includes(p);
-  openModal(`<h2>ИГРА ОКОНЧЕНА</h2><p>Победа: <b style="color:var(--gold)">${esc(win)}</b>${cw?'<br><span class="mut">Планетная цепочка 1-2-4-8 простояла два раунда</span>':''}</p><table class="res">${s.map(p=>`<tr${isWin(p)?' class="win"':''}><td><span style="color:${p.color}">●</span> ${esc(p.name)}</td><td style="text-align:right">${p.score} <span class="mut">◈${p.quanta}</span></td></tr>`).join('')}</table><div id="rollPrev" class="rollv mut" data-act="rollview" style="cursor:pointer">Рисую пиано-ролл…</div><p class="mut">Время партии: ${fmtTime((ui.tEnd||Date.now())-ui.t0)} · раундов: ${Math.min(G.round,G.maxRounds||G.round)}</p><div class="row"><button class="btn" data-act="melody" id="melBtn">♪ Мелодия поля</button><button class="btn" data-act="dlmenu">⬇ Загрузки</button><button class="btn" data-act="log">Журнал</button><button class="btn" data-act="shareopen" data-v="game">↗ Поделиться в соц сетях</button><button class="btn pri" data-act="again">Играть снова</button><button class="btn" data-act="mclose">Посмотреть поле</button></div>`,{lock:true});
+  openModal(`<h2>ИГРА ОКОНЧЕНА</h2><p>Победа: <b style="color:var(--gold)">${esc(win)}</b>${cw?'<br><span class="mut">Планетная цепочка 1-2-4-8 простояла два раунда</span>':''}</p><table class="res">${s.map(p=>`<tr${isWin(p)?' class="win"':''}><td><span style="color:${p.color}">●</span> ${esc(p.name)}</td><td style="text-align:right">${p.score} <span class="mut">◈${p.quanta}</span></td></tr>`).join('')}</table><p class="mus-q">Хочешь послушать как звучат резонансы вашей партии?</p><canvas id="mwave" class="mwave" width="900" height="110"></canvas><div id="rollPrev" class="rollv mut" data-act="rollview" style="cursor:pointer">Рисую пиано-ролл…</div><p class="mut">Время партии: ${fmtTime((ui.tEnd||Date.now())-ui.t0)} · раундов: ${Math.min(G.round,G.maxRounds||G.round)}</p><div class="row"><button class="btn" data-act="melody" id="melBtn">♪ Мелодия поля</button><button class="btn" data-act="dlmenu">⬇ Загрузки</button><button class="btn" data-act="log">Журнал</button><button class="btn" data-act="shareopen" data-v="game">↗ Поделиться в соц сетях</button><button class="btn pri" data-act="again">Играть снова</button><button class="btn" data-act="mclose">Посмотреть поле</button></div>`,{lock:true});
   fillRoll('rollPrev');
 }
 /* ---------- подсказки (лёгкий режим) ---------- */
@@ -2643,6 +2816,7 @@ function onAct(el){
     case 'anz':closeModal();humanSpend({kind:'analyze',target:+v});break;
     case 'income':incomeModal();break;
     case 'melody':playMelody();break;
+    case 'mplay':playMelody();break;
     case 'meldl':downloadMelody();break;
     case 'beacon':{
       const bc=me().hand.find(x=>x.id===v);if(!bc)break;
@@ -2658,6 +2832,7 @@ function onAct(el){
     case 'dlpick':dlClose();onAct({dataset:{act:v}});break;
     case 'rollpng':downloadRoll();break;
     case 'rollview':rollModal();break;
+    case 'video':downloadVideo();break;
     case 'shot':downloadShot();break;
     case 'csv':downloadCSV();break;
     case 'endm':endModal();break;
@@ -2816,15 +2991,16 @@ function jupiterRun(){
 }
 
 const DEMO_STEPS=[
-  ()=>({title:'Спутники Юпитера',html:
+  ()=>({title:'Добро пожаловать в игру «Резонансы»',html:
+    '<p>В этой игре вы будете складывать резонансы, зарабатывать кванты и узнавать много интересного о космосе. Играть можно против ИИ или в команде до 4 человек.</p>'+
     '<p>Спутники Юпитера (<b>Ио, Европа и Ганимед</b>) не просто вращаются на своих орбитах, они вращаются <b>в резонансе</b>. Вот как это работает: за 1 оборот Ганимеда Европа делает 2 оборота, а Ио 4. И этот цикл продолжается бесконечно, никогда не сбиваясь. Поэтому и говорят о резонансе. <b>Резонанс — это основа стабильности орбит.</b></p>'+
     '<div id="jv" class="jv">'+jupiterSVG()+'</div>'+
     '<div class="row c">'+dBtn('jpause',demo.jpause?'▶ Продолжить':'⏸ Пауза',{pri:1})+dBtn('jreset','↺ Сначала')+'</div>'+
     dNote('Отношение периодов <b>1 : 2 : 4</b> — тот самый резонанс Лапласа из игры. Белая линия отмечает точку старта: за 1 оборот Ганимеда Европа делает 2 оборота, а Ио 4, и все три снова выстраиваются на линии. После одного такого цикла анимация начинается заново.')}),
-  ()=>({title:'Что такое резонанс',html:
-    '<p>Космические тела притягивают друг друга. Если периоды их обращения относятся как простые числа (2:1, 3:2, 4:3), слабые толчки повторяются в одних и тех же местах и <b>накапливаются</b>. Так три спутника Юпитера держат строй 1:2:4.</p>'+
+  ()=>({title:'Основы игры',html:
+    dNote('<b>Ваша цель:</b> выкладывать карты на общее поле так, чтобы у соседних карт получались простые отношения периодов, и набирать очки. Резонанс бывает не только в космосе: камертоны, качели, бокалы и мосты работают так же.')+
     stageHTML([dB('Ио',0,0,0),dB('Европа',1,0,1),dB('Ганимед',2,0,2)])+
-    dNote('<b>Ваша цель:</b> выкладывать карты на общее поле так, чтобы у соседних карт получались простые отношения периодов, и набирать очки. Резонанс бывает не только в космосе: камертоны, качели, бокалы и мосты работают так же.')}),
+    '<p>Кроме описанного примера со спутниками Юпитера, которые держат строй в резонансе 1:2:4, бывают и другие варианты. Учёные выяснили, что периоды стабильных орбит относятся всегда как простые числа (2:1, 3:2, 4:3). И у этого есть физическое объяснение: Ио, Европа и Ганимед воздействуют друг на друга слабыми гравитационными толчками (колебания), они повторяются в одних и тех же местах и <b>накапливаются</b>. Поэтому в этом положении космическим телам выгодно балансировать.</p>'}),
   ()=>({title:'Почему в игре есть бокалы и мосты',html:
     '<p>Резонанс придумали не звёзды: это <b>общий закон колебаний</b>. У любого колеблющегося тела есть собственный период. Если внешние толчки приходят в такт этому периоду, энергия накапливается, и колебания растут.</p>'+
     stageHTML([dB('Бокал',0,0,0),dB('Голос',1,0,1)],{max:.7})+
@@ -2924,17 +3100,68 @@ const DEMO_STEPS=[
     '<div class="row c"><div class="chip act" style="--c:#f3c24a;background:#2a1f6e;border-color:#c79bf2;padding:8px 16px;font-weight:600"><span style="display:inline-flex;width:18px;height:18px">'+ICON.shift+'</span>Сдвиг фазы <b style="background:#0006;border-radius:10px;padding:1px 8px">'+FREE_SHIFTS+'</b></div></div>'+
     dNote('Нажмите кнопку внизу поля, затем на тело, и выберите поворот ↺ или ↻. Сдвиг помогает убрать опасное сближение до выброса или получить очки за новую фазу.')+
     dNote('<b>Помните о штрафе:</b> если тело вылетает, владелец теряет '+PENALTY+' очка, а карта возвращается в колоду.','red')}),
-  ()=>({title:'Управление и конец игры',html:
-    '<ul><li><b>Поле:</b> тяните пальцем, масштабируйте щипком, колесом мыши или кнопками «+» и «−». Кнопка со скобками показывает всё поле целиком.</li>'+
-    '<li><b>Карта в руке:</b> нажмите, чтобы выбрать; удерживайте, чтобы прочитать описание.</li>'+
-    '<li><b>Карта или значок связи на поле:</b> нажмите, чтобы прочитать пояснение.</li>'+
-    '<li><b>Конец игры:</b> через '+ROUNDS_LIMIT+' раундов в лёгкой и обычной игре. В сложной игре раундов без ограничения: партия идёт, пока не опустеет колода или пока кто-то не удержит планетную цепочку (или вы не нажмёте «Завершить партию» в меню). Побеждает набравший больше очков.</li>'+
-    '<li><b>Несколько игроков:</b> до 3 соперников-людей на одном устройстве (экран передачи хода скрывает чужие карты) и ИИ. Часы вверху показывают время партии.</li>'+
-    '<li><b>Дополнительные возможности:</b> журнал всех событий в верхнем правом углу поможет понять, что происходит. Купите «Анализ», чтобы понять стратегию противника. В меню в верхнем левом углу можно отключить факты, завершить или начать новую игру. В конце игры вы можете сгенерировать мелодию из резонансов на столе, скачать логи игры и скриншот игрового поля. Эти возможности также появятся в меню.</li></ul>'+
+  ()=>({title:'Конец игры',html:
     dNote('<b>Совет новичку:</b> выберите «Лёгкая» (с подсказками). Кнопка с лампочкой вверху подскажет лучший ход и объяснит, почему он хорош.')+
-    '<p>Коротко: простые отношения периодов дают очки, фаза решает, будет резонанс защитой (Δ=2) или ловушкой (Δ=0), а Люки и нагрузка выбрасывают лишних.</p>'})
+    '<p>В конце игры вы сможете скачать поздравительную картинку со скриншотом игрового поля, прослушать музыку ваших резонансов и скачать в аудио или видео. Вот как это выглядит:</p>'+
+    '<p class="mus-q">Хочешь послушать как звучат резонансы вашей партии?</p>'+
+    '<canvas id="dwave" class="mwave" width="900" height="110"></canvas>'+
+    '<div class="rwrap"><img id="dImg" src="resonance_demo_pianoroll.png" alt="Пиано-ролл примера"><i class="dph"></i><button class="mplay" id="dBtn" data-demo="mplay" aria-label="Играть">▶</button></div>'+
+    '<audio id="dAud" preload="auto" src="resonance_demo_music.mp3"></audio>'+
+    '<p id="dMiss" class="mut" style="display:none;margin:6px 0">Чтобы увидеть пример, положите файлы <b>resonance_demo_pianoroll.png</b> и <b>resonance_demo_music.mp3</b> в одну папку с игрой.</p>'+
+    '<p>Дополнительные возможности: журнал всех событий в верхнем правом углу поможет понять, что происходит на каждом раунде. Купите «Анализ» за кванты, чтобы понять стратегию противника. В меню в верхнем левом углу можно отключить факты, завершить или начать новую игру. В конце игры также появится меню для скачивания всех материалов (также журнал игры).</p>'})
 ];
+
+/* ---------- демо: пример музыки из файлов рядом с игрой ---------- */
+const DEMO_INS=['flute','bell','clar','string','pluck','organ'];
+function demoMusicStop(){const a=demo.aud;if(a){try{a.pause();}catch(e){}}demo.aud=null;}
+function demoSync(){
+  const a=demo.aud,b=document.getElementById('dBtn');
+  if(b&&a){b.textContent=a.paused?'▶':'⏸';b.setAttribute('aria-label',a.paused?'Играть':'Пауза');}
+}
+function demoMusicInit(){
+  const a=document.getElementById('dAud'),img=document.getElementById('dImg'),btn=document.getElementById('dBtn');
+  if(!a||!img)return;
+  demo.aud=a;
+  const miss=()=>{const m=document.getElementById('dMiss');if(m)m.style.display='block';if(btn)btn.style.display='none';};
+  a.addEventListener('error',miss);img.addEventListener('error',miss);
+  a.addEventListener('play',demoSync);a.addEventListener('pause',demoSync);a.addEventListener('ended',()=>{demoSync();});
+  const st={ni:0,fl:[],last:0};
+  const buf=new Uint8Array(1024),idle=new Uint8Array(1024);
+  const frame=()=>{
+    const cv=document.getElementById('dwave');
+    if(!cv||demo.aud!==a){try{a.pause();}catch(e){}return;}
+    const tt=a.currentTime||0,playing=!a.paused&&!a.ended;
+    if(tt<st.last-.3){st.ni=0;st.fl=[];}
+    st.last=tt;
+    if(playing||tt>0){
+      while(st.ni<DEMO_NOTES.length&&DEMO_NOTES[st.ni][0]<=tt){
+        const n=DEMO_NOTES[st.ni++];
+        st.fl.push({t:n[0],x:n[4]<0?.5:.06+.88*Math.min(1,Math.max(0,(Math.log2(n[3])-Math.log2(100))/(Math.log2(1400)-Math.log2(100)))),c:n[4]<0?'#ffffff':FL_COL[DEMO_INS[n[4]]]});
+      }
+      st.fl=st.fl.filter(f=>tt-f.t<1);
+    }
+    const cx=cv.getContext('2d');
+    if(playing){
+      buf.fill(128);
+      for(const n of DEMO_NOTES){
+        if(n[4]<0||n[0]>tt||tt>n[0]+n[1])continue;
+        const env=Math.exp(-(tt-n[0])/(n[1]*.35)),k=3+5*Math.log2(n[3]/100),amp=n[2]*.7*env*128;
+        for(let i=0;i<1024;i++)buf[i]+=amp*Math.sin(6.2832*k*i/1024+n[0]*7);
+      }
+      drawWave(cx,cv.width,cv.height,null,buf,st.fl,tt,.2);
+    }else{
+      for(let i=0;i<1024;i++)idle[i]=a.paused&&tt>0?128:128+Math.sin(i/16+performance.now()/900)*4;
+      drawWave(cx,cv.width,cv.height,null,idle,st.fl,tt,.25);
+    }
+    const ph=document.querySelector('.dph');
+    if(ph){const g=DEMO_GEOM;if(tt>0&&!a.ended){ph.style.display='block';ph.style.left=(g.ML+(tt-g.T0)/(g.LEN-g.T0)*(g.W-g.ML-g.MR))/g.W*100+'%';}else ph.style.display='none';}
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+
 function renderDemo(keep){
+  demoMusicStop();
   const old=document.querySelector('#modal .mbox');
   const sc=keep&&old?old.scrollTop:0;
   const st=DEMO_STEPS[demo.step](),n=DEMO_STEPS.length,last=demo.step===n-1,game=demo.from==='game';
@@ -2942,6 +3169,7 @@ function renderDemo(keep){
     `<div class="row" style="justify-content:space-between;margin-top:14px">${dBtn('skip',game?'Закрыть':'Пропустить')}<span class="row" style="margin:0">${demo.step>0?dBtn('prev','← Назад'):''}${dBtn(last?'finish':'next',last?(game?'Закрыть':'К игре →'):'Дальше →',{pri:1})}</span></div>`,
     {lock:!game,keepScroll:sc});
   if(demo.step===0)jupiterRun();
+  if(demo.step===DEMO_STEPS.length-1)demoMusicInit();
 }
 function showDemo(from){
   Object.assign(demo,{jt:0,jpause:false,step:0,from:from||'start',ph:0,loads:0,phB:1,ejected:false,layout:'row',same:false,hatched:false});
@@ -2955,6 +3183,7 @@ function demoAct(a){
     ui.sound=true;const p=a==='hear:ok'?[1,2]:[5,7];
     tone(freqOf(p[0])*2,0,1.2,0.14);tone(freqOf(p[1])*2,0,1.2,0.14);return;
   }
+  if(a==='mplay'){const au=demo.aud;if(au){if(au.paused){if(au.ended)au.currentTime=0;au.play().catch(()=>{});}else au.pause();}return;}
   if(a==='jpause'){demo.jpause=!demo.jpause;renderDemo(true);return;}
   if(a==='jreset'){demo.jt=0;renderDemo(true);return;}
   if(a==='rot')demo.ph=(demo.ph+1)%4;
@@ -2976,6 +3205,10 @@ document.addEventListener('keydown',e=>{
   const b=document.querySelector('#modal.on [data-demo="'+(e.key==='ArrowRight'?'next':'prev')+'"]');
   if(b&&!b.disabled){e.preventDefault();demoAct(e.key==='ArrowRight'?'next':'prev');}
 });
+
+/* ноты примера (для анимации в демо): [старт, длительность, громкость, Гц, инструмент (-1 = барабан)] */
+const DEMO_NOTES=[[0,1.73,0.11,165,3],[0.15,0.77,0.17,660,1],[0.15,0.61,0.2,1320,0],[0.15,0.3,0.3,90,-1],[0.45,0.61,0.2,1320,0],[0.75,0.77,0.17,660,1],[0.75,0.61,0.2,1320,0],[0.75,0.3,0.3,90,-1],[0.9,1.09,0.1,330,2],[1.05,0.61,0.2,1320,0],[1.35,0.77,0.17,660,1],[1.35,0.61,0.2,1320,0],[1.35,0.3,0.3,90,-1],[1.65,0.61,0.2,1320,0],[1.95,0.77,0.17,660,1],[1.95,0.61,0.2,1320,0],[1.95,0.3,0.3,90,-1],[2.1,1.09,0.1,330,2],[2.25,0.61,0.2,1320,0],[2.85,0.77,0.136,660,1],[2.925,0.61,0.16,1320,0],[3.225,0.61,0.16,1320,0],[3.3,1.09,0.08,330,2],[3.45,0.77,0.136,660,1],[3.525,0.61,0.16,1320,0],[3.825,0.61,0.16,1320,0],[4.2,0.93,0.111,440,1],[4.5,0.77,0.13,660,0],[5.1,0.93,0.111,440,1],[5.1,0.77,0.13,660,0],[5.1,0.3,0.3,90,-1],[5.7,0.77,0.13,660,0],[6.3,1.73,0.08,165,2],[6.45,0.77,0.16,660,0],[7.05,0.77,0.16,660,0],[7.2,1.09,0.136,330,1],[7.65,0.77,0.16,660,0],[8.25,0.77,0.16,660,0],[8.4,1.09,0.136,330,1],[9.0,0.93,0.13,440,0],[9.9,0.93,0.13,440,0],[10.2,1.73,0.111,165,1],[10.8,0.93,0.13,440,0],[11.7,2,0.16,110,0],[11.7,0.93,0.08,440,2],[11.7,0.3,0.3,90,-1],[12.6,1.41,0.136,220,1],[12.6,0.93,0.08,440,2],[12.6,0.3,0.3,90,-1],[13.5,0.93,0.08,440,2],[14.4,2,0.096,110,5],[14.4,0.93,0.12,440,0],[14.4,0.3,0.3,90,-1],[14.55,0.61,0.06,1320,2],[14.7,0.77,0.102,660,1],[14.85,0.61,0.06,1320,2],[15.0,0.55,0.12,330,4],[15.15,0.61,0.06,1320,2],[15.3,0.93,0.12,440,0],[15.3,0.77,0.102,660,1],[15.3,0.3,0.3,90,-1],[15.45,0.61,0.06,1320,2],[15.6,1.73,0.066,165,3],[15.75,0.61,0.06,1320,2],[15.9,0.77,0.102,660,1],[16.05,0.61,0.06,1320,2],[16.2,0.55,0.12,330,4],[16.2,0.93,0.12,440,0],[16.2,0.3,0.3,90,-1],[16.35,0.61,0.06,1320,2],[16.5,0.77,0.102,660,1],[16.65,0.61,0.06,1320,2],[16.8,2.4,0.07,440,5],[16.8,2.4,0.07,660,5],[16.8,2.4,0.07,1320,5],[16.8,2.4,0.07,165,5],[16.8,2.4,0.07,330,5],[16.8,2.4,0.07,110,5]];
+const DEMO_GEOM={"W": 1800, "ML": 150, "MR": 30, "T0": -0.9, "LEN": 19.799999999999997};
 
 initUI();
 </script>
