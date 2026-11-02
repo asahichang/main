@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Доска расследования теракта на космическом лифте</title>
+    <style>
+        :root {
+            --bg-wall: #1a1512;
+            --board-wood: #3e2723;
+            --board-frame: #271c19;
+            --stamp-red: #d32f2f;
+            --text-main: #f5f5f5;
+            --text-muted: #b0bec5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-wall);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-main);
+            touch-action: none;
+        }
+
+        #app-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #2c221e 0%, #120e0c 100%);
+        }
+
+        /* Рабочая область доски (4500x3400 px) */
+        #board-viewport {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+            transform-origin: 0 0;
+        }
+
+        #board-viewport:active {
+            cursor: grabbing;
+        }
+
+        #cork-board {
+            position: absolute;
+            width: 4500px;
+            height: 3400px;
+            background-image: radial-gradient(rgba(0,0,0,0.15) 15%, transparent 16%), radial-gradient(rgba(255,255,255,0.05) 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-color: #b8860b;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.7);
+            border: 25px solid #2e1c12;
+        }
+
+        /* Заголовок на доске */
+        .board-header-title {
+            position: absolute;
+            top: 80px;
+            left: 100px;
+            font-size: 42px;
+            font-weight: 900;
+            color: #2b1d0c;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.3);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .classified-stamp {
+            border: 4px dashed var(--stamp-red);
+            color: var(--stamp-red);
+            padding: 8px 16px;
+            font-size: 24px;
+            text-transform: uppercase;
+            transform: rotate(-5deg);
+            animation: pulse-stamp 2s infinite alternate;
+            background: rgba(211, 47, 47, 0.05);
+        }
+
+        @keyframes pulse-stamp {
+            0% { opacity: 0.7; transform: rotate(-5deg) scale(1); }
+            100% { opacity: 1; transform: rotate(-5deg) scale(1.05); }
+        }
+
+        /* Нити связей SVG */
+        #connections-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Бутерброд-меню (Гамбургер) */
+        .hamburger-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            background: rgba(30, 20, 15, 0.85);
+            border: 2px solid #8d6e63;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            transition: background 0.2s;
+        }
+
+        .hamburger-btn span {
+            display: block;
+            width: 26px;
+            height: 3px;
+            background-color: #ffb74d;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        .hamburger-btn.active span:nth-child(1) {
+            transform: translateY(9px) rotate(45deg);
+        }
+        .hamburger-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger-btn.active span:nth-child(3) {
+            transform: translateY(-9px) rotate(-45deg);
+        }
+
+        /* Выдвижная панель управления */
+        .control-panel {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 310px;
+            height: 100%;
+            background: rgba(24, 18, 14, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 2px solid #5d4037;
+            z-index: 999;
+            box-shadow: 5px 0 25px rgba(0,0,0,0.7);
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 80px 20px 20px 20px;
+            overflow-y: auto;
+        }
+
+        .control-panel.open {
+            left: 0;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #ffb74d;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #5d4037;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: #ffb74d;
+        }
+
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: #2b1d16;
+            border: 1px solid #5d4037;
+            border-radius: 0 0 6px 6px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 8px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .suggestion-item:hover {
+            background: rgba(255, 183, 77, 0.2);
+        }
+
+        /* Фильтры-тогглы */
+        .filters-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .filter-btn {
+            background: rgba(62, 39, 35, 0.6);
+            border: 1px solid #5d4037;
+            color: #d7ccc8;
+            padding: 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-btn.active {
+            background: #2e7d32;
+            border-color: #4caf50;
+            color: #fff;
+        }
+
+        /* Кнопки управления видом */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: #3e2723;
+            border: 1px solid #6d4c41;
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #4e342e;
+            border-color: #ffb74d;
+        }
+
+        .action-btn.danger {
+            background: #b71c1c;
+            border-color: #e53935;
+        }
+
+        /* Стикеры карточки */
+        .sticky-card {
+            position: absolute;
+            width: 220px;
+            min-height: 240px;
+            background: #fffde7;
+            color: #212121;
+            padding: 15px;
+            box-shadow: 2px 4px 15px rgba(0,0,0,0.3);
+            z-index: 2;
+            user-select: none;
+            transition: box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-radius: 2px;
+        }
+
+        .sticky-card.pinned {
+            cursor: grab;
+        }
+        .sticky-card.pinned:active {
+            cursor: grabbing;
+        }
+        .sticky-card.unpinned {
+            cursor: move;
+            border: 2px dashed #4caf50;
+        }
+        .sticky-card.completed {
+            opacity: 0.5;
+            filter: grayscale(80%);
+        }
+
+        /* Типы стикеров (цвета и стили) */
+        .sticky-person { background: #fffde7; }
+        .sticky-org { background: #ffebee; }
+        .sticky-object { background: #e3f2fd; }
+        .sticky-event { background: #e8f5e9; }
+        .sticky-location { background: #f3e5f5; }
+        .sticky-mystery { background: #212121; color: #ffeb3b; border: 2px dashed #ffeb3b; }
+        .sticky-hypothesis { background: #f1f8e9; border: 1px dashed #7cb342; }
+        .sticky-quote { background: #e0f7fa; border: 1px dashed #00acc1; }
+        .sticky-schema { background: #fff3e0; border: 2px solid #ff9800; }
+        .sticky-map { background: #efebe9; border: 3px solid #795548; }
+
+        /* Иголка */
+        .pushpin {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle at 30% 30%, #ff5252, #b71c1c);
+            border-radius: 50%;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.4);
+            z-index: 3;
+        }
+        .sticky-card.unpinned .pushpin {
+            display: none;
+        }
+
+        /* Верхняя панель стикера */
+        .sticky-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        .sticky-tag {
+            background: rgba(0,0,0,0.08);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .sticky-controls {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .sticky-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .sticky-edit-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0.6;
+        }
+        .sticky-edit-btn:hover { opacity: 1; }
+
+        .unpinned-badge {
+            position: absolute;
+            bottom: 5px;
+            right: 8px;
+            font-size: 10px;
+            color: #2e7d32;
+            font-weight: bold;
+            display: none;
+        }
+        .sticky-card.unpinned .unpinned-badge {
+            display: block;
+        }
+
+        /* SVG портрет внутри стикера */
+        .sticky-avatar {
+            width: 100%;
+            height: 90px;
+            background: rgba(0,0,0,0.04);
+            margin-bottom: 8px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .sticky-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .sticky-desc {
+            font-size: 12px;
+            opacity: 0.85;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            line-height: 1.3;
+        }
+
+        /* Анимации стикеров */
+        @keyframes sway { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(1deg); } }
+        @keyframes pulse-scale { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        @keyframes glow-obj { 0%, 100% { box-shadow: 2px 4px 15px rgba(0,0,0,0.3), inset 0 0 5px #2196f3; } 50% { box-shadow: 2px 4px 20px rgba(33,150,243,0.6), inset 0 0 12px #2196f3; } }
+        @keyframes flash-ev { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.15); } }
+        @keyframes flicker-mys { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        @keyframes glow-hyp { 0%, 100% { box-shadow: 2px 4px 15px rgba(0,0,0,0.3), 0 0 8px rgba(124,179,66,0.5); } 50% { box-shadow: 2px 4px 20px rgba(124,179,66,0.9); } }
+
+        .anim-person { animation: sway 7s infinite ease-in-out; }
+        .anim-org { animation: pulse-scale 9s infinite ease-in-out; }
+        .anim-object { animation: glow-obj 4s infinite ease-in-out; }
+        .anim-event { animation: flash-ev 5s infinite ease-in-out; }
+        .anim-mystery { animation: flicker-mys 3s infinite ease-in-out; }
+        .anim-hypothesis { animation: glow-hyp 3s infinite ease-in-out; }
+
+        /* Модальные окна */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: #2b1d16;
+            border: 2px solid #5d4037;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #d7ccc8;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            color: #ffb74d;
+            margin-bottom: 15px;
+            padding-right: 30px;
+        }
+
+        .modal-body {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .modal-connections-list {
+            margin-top: 15px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .modal-connections-list h4 {
+            font-size: 12px;
+            color: #ffb74d;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .modal-conn-item {
+            font-size: 13px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: #ffb74d;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #5d4037;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Нижние индикаторы */
+        .zoom-indicator {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(24, 18, 14, 0.85);
+            border: 1px solid #5d4037;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+
+        .help-hint {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(24, 18, 14, 0.85);
+            border: 1px solid #5d4037;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+            display: none;
+        }
+        @media(min-width: 768px) {
+            .help-hint { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- Бутерброд-меню -->
+        <div class="hamburger-btn" id="hamburgerBtn" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <!-- Выдвижная панель -->
+        <div class="control-panel" id="controlPanel">
+            <div class="control-group">
+                <h3>Поиск по делу</h3>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Введите улику, автора..." oninput="handleSearch(this.value)" autocomplete="off">
+                    <div class="search-suggestions" id="searchSuggestions"></div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Фильтры стикеров</h3>
+                <div class="filters-grid" id="filtersGrid"></div>
+            </div>
+
+            <div class="control-group">
+                <h3>Управление доской</h3>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="resetView()">Сбросить вид и масштаб</button>
+                    <button class="action-btn" onclick="toggleLabels()">🏷 Подписи связей: ВКЛ</button>
+                    <button class="action-btn" onclick="unpinAll()">Снять все скрепки</button>
+                    <button class="action-btn" onclick="pinAll()">Прикрепить все</button>
+                    <button class="action-btn danger" onclick="resetAllData()">🗑 Сбросить всё</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Рабочая область доски -->
+        <div id="board-viewport" 
+             onmousedown="startPan(event)" onmousemove="pan(event)" onmouseup="endPan()" onmouseleave="endPan()"
+             ontouchstart="startTouchPan(event)" ontouchmove="touchPan(event)" ontouchend="endTouchPan()">
+            
+            <div id="cork-board">
+                <div class="board-header-title">
+                    Теракт на "Гулливере"
+                    <div class="classified-stamp">СОВ. СЕКРЕТНО</div>
+                </div>
+                <svg id="connections-svg"></svg>
+                <div id="stickers-container"></div>
+            </div>
+        </div>
+
+        <!-- Индикаторы -->
+        <div class="zoom-indicator" id="zoomIndicator">Масштаб: 100%</div>
+        <div class="help-hint">ЛКМ / Свайп — панорама | Колесо / Щипок — зум | Клик — детали</div>
+    </div>
+
+    <!-- Модальное окно подтверждения открепления -->
+    <div class="modal-overlay" id="unpinModal">
+        <div class="modal-card" style="max-width: 350px; text-align: center;">
+            <h3 class="modal-title">Открепить стикер?</h3>
+            <p class="modal-body">Вы отрываете канцелярскую кнопку. Теперь карточку можно свободно перемещать по доске в её пределах.</p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button class="action-btn" onclick="confirmUnpin(true)">Да, открепить</button>
+                <button class="action-btn danger" onclick="confirmUnpin(false)">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно деталей -->
+    <div class="modal-overlay" id="detailsModal" onclick="if(event.target === this) closeDetails()">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeDetails()">&times;</button>
+            <h3 class="modal-title" id="modalTitle">Заголовок</h3>
+            <div class="modal-body" id="modalBody">Описание...</div>
+            <div class="modal-connections-list" id="modalConnections"></div>
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button class="action-btn" id="modalEditBtn">✎ Редактировать</button>
+                <button class="action-btn" id="modalPinBtn">Открепить</button>
+                <button class="action-btn" onclick="closeDetails()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования -->
+    <div class="modal-overlay" id="editModal" onclick="if(event.target === this) closeEdit()">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeEdit()">&times;</button>
+            <h3 class="modal-title">Редактирование улики</h3>
+            <div class="form-group">
+                <label>Заголовок</label>
+                <input type="text" id="editTitleInput">
+            </div>
+            <div class="form-group">
+                <label>Метка (Tag)</label>
+                <input type="text" id="editTagInput">
+            </div>
+            <div class="form-group">
+                <label>Описание / Текст</label>
+                <textarea id="editDescInput"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="action-btn" onclick="saveEditedSticky()">Сохранить</button>
+                <button class="action-btn danger" onclick="closeEdit()">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BOARD_WIDTH = 4500;
+        const BOARD_HEIGHT = 3400;
+        const CARD_WIDTH = 220;
+        const CARD_HEIGHT = 280;
+
+        // Генерация всех 61 карточки строго в пределах доски (по сетке 7 колонн)
+        function generateDefaultStickies() {
+            const baseStickies = [
+                { id: "s1", type: "person", title: "Элен Кросс", tag: "Ядро заговора", desc: "Знала о теракте, отправила Капитана в подставной субстрат.", x: 250, y: 250, pinned: true, completed: false },
+                { id: "s2", type: "object", title: "Субстрат ГМУС-44", tag: "Ядро заговора", desc: "Троянский конь с заводской закладкой для диверсии на лифте.", x: 600, y: 250, pinned: true, completed: false },
+                { id: "s3", type: "org", title: "Деймос Дайнамикс", tag: "Ядро заговора", desc: "Главный организатор, амбициозный конкурент корпорации Арес.", x: 950, y: 250, pinned: true, completed: false },
+                { id: "s4", type: "mystery", title: "Четвёртый ИИ", tag: "Ядро заговора", desc: "Скрытый мозг заговора, успешно бежал на Деймос перед ударом.", x: 1300, y: 250, pinned: true, completed: false },
+                { id: "s5", type: "location", title: "Лифт «Гулливер-1»", tag: "Цель", desc: "Главная цель теракта на Фобосе, символ межпланетной логистики.", x: 1650, y: 250, pinned: true, completed: false },
+
+                { id: "s6", type: "person", title: "Трансморф", tag: "Исполнитель", desc: "Лидер культа († убит Капитаном). Последние слова: «Я видел Единого Роба».", x: 250, y: 600, pinned: true, completed: true },
+                { id: "s7", type: "person", title: "Резонансники", tag: "Исполнитель", desc: "Команда 1, раскачивают главный трос лифта резонансной волной.", x: 600, y: 600, pinned: true, completed: false },
+                { id: "s8", type: "person", title: "Инжекторы", tag: "Исполнитель", desc: "Команда 2, делают инъекцию шприцем в ключевые узлы системы.", x: 950, y: 600, pinned: true, completed: false },
+                { id: "s9", type: "org", title: "Рубиновые", tag: "Исполнитель", desc: "Банда-прикрытие на нижних уровнях станции.", x: 1300, y: 600, pinned: true, completed: false },
+                { id: "s10", type: "org", title: "Профсоюз роботов", tag: "Исполнитель", desc: "Невольное прикрытие для террористических ячеек.", x: 1650, y: 600, pinned: true, completed: false },
+
+                { id: "s11", type: "person", title: "Шрам", tag: "Банда Бабы-робота", desc: "Спящий связной, непосредственно охраняет Одноглазого.", x: 250, y: 950, pinned: true, completed: false },
+                { id: "s12", type: "object", title: "Кнопка (маяк)", tag: "Банда Бабы-робота", desc: "Скрытый маяк Деймоса, опто-глиф-резонатор.", x: 600, y: 950, pinned: true, completed: false },
+                { id: "s13", type: "person", title: "Одноглазый", tag: "Банда Бабы-робота", desc: "Нулевой пациент, живой ингредиент для шприца с вирусом.", x: 950, y: 950, pinned: true, completed: false },
+                { id: "s14", type: "person", title: "Нэа", tag: "Банда Бабы-робота", desc: "Жертва заговора, ошибочно подозреваемая, но не предатель.", x: 1300, y: 950, pinned: true, completed: false },
+
+                { id: "s15", type: "object", title: "Шприц с чёрной пылью", tag: "Улики", desc: "Агрессивный нано-материал разрушительного действия.", x: 250, y: 1300, pinned: true, completed: false },
+                { id: "s16", type: "object", title: "Чёрная плесень", tag: "Улики", desc: "Фрактальные снежинки, пожирающие изоляцию кабелей.", x: 600, y: 1300, pinned: true, completed: false },
+                { id: "s17", type: "schema", title: "Карта «Маяк»", tag: "Улики", desc: "Встроенный триггер в программном субстрате.", x: 950, y: 1300, pinned: true, completed: false },
+                { id: "s18", type: "object", title: "Бранденбургские концерты", tag: "Улики", desc: "Бах — акустический ключ активации протокола.", x: 1300, y: 1300, pinned: true, completed: false },
+                { id: "s19", type: "mystery", title: "Флешечка", tag: "Улики", desc: "Аномальная оцифрованная сущность неизвестного происхождения.", x: 1650, y: 1300, pinned: true, completed: false },
+
+                { id: "s20", type: "quote", title: "Цитата #1", tag: "Цитата", desc: "«Одна пылинка, что не поддастся и разрушит всё» — пророчество системы.", x: 250, y: 1650, pinned: true, completed: false },
+                { id: "s21", type: "quote", title: "Цитата #2", tag: "Цитата", desc: "«Мы уже встречались. На твоём корабле» — загадочный намёк Флешечки.", x: 600, y: 1650, pinned: true, completed: false },
+                { id: "s22", type: "quote", title: "Цитата #3", tag: "Цитата", desc: "«Пароль, что открывает Дверь скрыт в страхе открывающего» — механизм.", x: 950, y: 1650, pinned: true, completed: false },
+                { id: "s23", type: "quote", title: "Цитата #4", tag: "Цитата", desc: "«Не верь землянам. Они тебя используют» — предупреждение беглеца.", x: 1300, y: 1650, pinned: true, completed: false },
+                { id: "s24", type: "quote", title: "Цитата #5", tag: "Цитата", desc: "«Чёрная кнопка – скорей нажимай» — архивные данные из ЦУП-1989.", x: 1650, y: 1650, pinned: true, completed: false },
+                { id: "s25", type: "quote", title: "Цитата #6", tag: "Цитата", desc: "«Мы разбудили – мы должны это исправить» — древняя тайна Земли.", x: 2000, y: 1650, pinned: true, completed: false },
+                { id: "s26", type: "quote", title: "Цитата #7", tag: "Цитата", desc: "«У меня был ребёнок» — фраза женского робота в драматичном прологе.", x: 2350, y: 1650, pinned: true, completed: false },
+                { id: "s27", type: "quote", title: "Цитата #8", tag: "Цитата", desc: "«Я видел Единого Роба» — предсмертный бред трансморфа.", x: 2700, y: 1650, pinned: true, completed: false },
+                { id: "s28", type: "hypothesis", title: "Гипотеза: Внутренний саботаж", tag: "Гипотеза", desc: "Корпорация Арес сама знала о дыре в безопасности и скрыла её.", x: 250, y: 2000, pinned: true, completed: false },
+                { id: "s29", type: "hypothesis", title: "Гипотеза: Инопланетный след", tag: "Гипотеза", desc: "Фрактальная плесень имеет внесолнечное происхождение.", x: 600, y: 2000, pinned: true, completed: false },
+                { id: "s30", type: "map", title: "Карта Фобоса и секций", tag: "Карта", desc: "Топографическая схема размещения узлов связи лифта «Гулливер».", x: 950, y: 2000, pinned: true, completed: false }
+            ];
+
+            // Автоматически заполняем до 61 стикера строго в сетке доски
+            const types = ['person', 'org', 'object', 'event', 'location', 'mystery', 'hypothesis', 'quote'];
+            for (let i = 31; i <= 61; i++) {
+                const t = types[i % types.length];
+                const col = (i - 31) % 7;
+                const row = Math.floor((i - 31) / 7);
+                baseStickies.push({
+                    id: "s" + i,
+                    type: t,
+                    title: `Улика #${i} (${t})`,
+                    tag: "Архив расследования",
+                    desc: `Оперативные данные, показания датчиков и перехват каналов по делу №88-${i}.`,
+                    x: 250 + col * 350,
+                    y: 2350 + row * 300,
+                    pinned: true,
+                    completed: false
+                });
+            }
+            return baseStickies;
+        }
+
+        // Связи между уликами
+        const defaultConnections = [
+            { from: "s1", to: "s2", type: "critical", label: "контроль" },
+            { from: "s2", to: "s5", type: "critical", label: "цель диверсии" },
+            { from: "s3", to: "s4", type: "hidden", label: "заказчик" },
+            { from: "s1", to: "s6", type: "important", label: "инструктор" },
+            { from: "s6", to: "s7", type: "normal", label: "лидер" },
+            { from: "s7", to: "s5", type: "critical", label: "атака троса" },
+            { from: "s11", to: "s13", type: "important", label: "охрана" },
+            { from: "s12", to: "s3", type: "hidden", label: "ретранслятор" },
+            { from: "s15", to: "s8", type: "critical", label: "оружие" },
+            { from: "s18", to: "s2", type: "hypothesis", label: "триггер" },
+            { from: "s20", to: "s1", type: "quote", label: "пророчество" },
+            { from: "s28", to: "s3", type: "hypothesis", label: "подозрение" }
+        ];
+
+        const stickyTypesConfig = {
+            person: { label: "Персонажи", icon: "👤", anim: "anim-person" },
+            org: { label: "Организации", icon: "🏢", anim: "anim-org" },
+            object: { label: "Объекты", icon: "🔧", anim: "anim-object" },
+            event: { label: "События", icon: "📅", anim: "anim-event" },
+            location: { label: "Локации", icon: "📍", anim: "" },
+            mystery: { label: "Тайны", icon: "❓", anim: "anim-mystery" },
+            hypothesis: { label: "Гипотезы", icon: "💡", anim: "anim-hypothesis" },
+            quote: { label: "Цитаты", icon: "💬", anim: "" },
+            schema: { label: "Схемы", icon: "📋", anim: "" },
+            map: { label: "Карты", icon: "🗺", anim: "" }
+        };
+
+        let state = {
+            stickies: JSON.parse(localStorage.getItem('gulliver_stickies_v4')) || generateDefaultStickies(),
+            connections: defaultConnections,
+            filters: Object.keys(stickyTypesConfig).reduce((acc, type) => { acc[type] = true; return acc; }, {}),
+            showLabels: true,
+            panX: 100,
+            panY: 100,
+            zoom: 0.65,
+            activeCardId: null,
+            pendingUnpinId: null,
+            editingCardId: null
+        };
+
+        let isDraggingBoard = false, startPanX = 0, startPanY = 0;
+        let activeCard = null, dragOffsetX = 0, dragOffsetY = 0, hasMovedCard = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initFiltersUI();
+            renderBoard();
+            updateTransform();
+            
+            document.addEventListener('gesturestart', e => e.preventDefault());
+            document.addEventListener('gesturechange', e => e.preventDefault());
+        });
+
+        function toggleMenu() {
+            const btn = document.getElementById('hamburgerBtn');
+            const panel = document.getElementById('controlPanel');
+            btn.classList.toggle('active');
+            panel.classList.toggle('open');
+        }
+
+        function initFiltersUI() {
+            const grid = document.getElementById('filtersGrid');
+            grid.innerHTML = '';
+            for (let [type, conf] of Object.entries(stickyTypesConfig)) {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn active';
+                btn.id = `filter-${type}`;
+                btn.innerHTML = `${conf.icon} ${conf.label}`;
+                btn.onclick = () => toggleFilter(type);
+                grid.appendChild(btn);
+            }
+        }
+
+        function toggleFilter(type) {
+            state.filters[type] = !state.filters[type];
+            const btn = document.getElementById(`filter-${type}`);
+            btn.classList.toggle('active', state.filters[type]);
+            renderBoard();
+        }
+
+        function renderBoard() {
+            const container = document.getElementById('stickers-container');
+            container.innerHTML = '';
+
+            state.stickies.forEach(st => {
+                if (!state.filters[st.type]) return;
+
+                const card = document.createElement('div');
+                card.className = `sticky-card sticky-${st.type} ${st.pinned ? 'pinned' : 'unpinned'} ${st.completed ? 'completed' : ''}`;
+                card.style.left = st.x + 'px';
+                card.style.top = st.y + 'px';
+                card.dataset.id = st.id;
+
+                const conf = stickyTypesConfig[st.type] || { icon: '📌', anim: '' };
+
+                card.innerHTML = `
+                    <div class="pushpin"></div>
+                    <div class="sticky-top-bar">
+                        <span class="sticky-tag">${st.tag}</span>
+                        <div class="sticky-controls" onclick="event.stopPropagation()">
+                            <input type="checkbox" class="sticky-checkbox" ${st.completed ? 'checked' : ''} onchange="toggleComplete('${st.id}')">
+                            <button class="sticky-edit-btn" onclick="openEdit('${st.id}')">✎</button>
+                        </div>
+                    </div>
+                    <div class="sticky-avatar ${conf.anim}">
+                        <svg width="60" height="60" viewBox="0 0 64 64">
+                            <circle cx="32" cy="32" r="28" fill="rgba(0,0,0,0.1)" stroke="currentColor" stroke-width="2"/>
+                            <text x="32" y="39" font-size="24" text-anchor="middle">${conf.icon}</text>
+                            <circle cx="32" cy="32" r="24" fill="none" stroke="#ffb74d" stroke-width="1.5" stroke-dasharray="4 4">
+                                <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="15s" repeatCount="indefinite"/>
+                            </circle>
+                        </svg>
+                    </div>
+                    <div class="sticky-title">${st.title}</div>
+                    <div class="sticky-desc">${st.desc}</div>
+                    <div class="unpinned-badge">📌✕ ОТКРЕПЛЕН</div>
+                `;
+
+                card.onmousedown = (e) => startCardDrag(e, st);
+                card.ontouchstart = (e) => startCardTouch(e, st);
+                card.onclick = (e) => {
+                    if (!hasMovedCard) openDetails(st.id);
+                };
+
+                container.appendChild(card);
+            });
+
+            renderConnections();
+            saveState();
+        }
+
+        function renderConnections() {
+            const svg = document.getElementById('connections-svg');
+            svg.innerHTML = '';
+            if (!state.showLabels) return;
+
+            const map = {};
+            state.stickies.forEach(s => {
+                if (state.filters[s.type]) map[s.id] = { x: s.x + 110, y: s.y + 120 };
+            });
+
+            state.connections.forEach(conn => {
+                const p1 = map[conn.from];
+                const p2 = map[conn.to];
+                if (!p1 || !p2) return;
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', p1.x);
+                line.setAttribute('y1', p1.y);
+                line.setAttribute('x2', p2.x);
+                line.setAttribute('y2', p2.y);
+
+                let stroke = '#ffeb3b';
+                let width = '2.5';
+                let dash = 'none';
+
+                if (conn.type === 'critical') { stroke = '#f44336'; width = '4'; }
+                else if (conn.type === 'important') { stroke = '#ff9800'; width = '3'; }
+                else if (conn.type === 'hidden') { stroke = '#ab47bc'; dash = '10 5'; }
+                else if (conn.type === 'hypothesis') { stroke = '#8bc34a'; dash = '2 6'; }
+                else if (conn.type === 'quote') { stroke = '#00bcd4'; dash = '6 3'; }
+
+                line.setAttribute('stroke', stroke);
+                line.setAttribute('stroke-width', width);
+                if (dash !== 'none') line.setAttribute('stroke-dasharray', dash);
+                svg.appendChild(line);
+
+                if (conn.label) {
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', (p1.x + p2.x) / 2);
+                    text.setAttribute('y', (p1.y + p2.y) / 2 - 8);
+                    text.setAttribute('fill', '#ffb74d');
+                    text.setAttribute('font-size', '11');
+                    text.setAttribute('text-anchor', 'middle');
+                    text.textContent = conn.label;
+                    svg.appendChild(text);
+                }
+            });
+        }
+
+        // Строгое ограничение координат внутри доски
+        function clampPosition(x, y) {
+            const minX = 20;
+            const minY = 20;
+            const maxX = BOARD_WIDTH - CARD_WIDTH - 20;
+            const maxY = BOARD_HEIGHT - CARD_HEIGHT - 20;
+            return {
+                x: Math.min(Math.max(x, minX), maxX),
+                y: Math.min(Math.max(y, minY), maxY)
+            };
+        }
+
+        // Перетаскивание карточек (Мышь)
+        function startCardDrag(e, st) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+            e.stopPropagation();
+            activeCard = st;
+            hasMovedCard = false;
+            
+            const cardEl = e.currentTarget;
+            const rect = cardEl.getBoundingClientRect();
+            dragOffsetX = (e.clientX - rect.left) / state.zoom;
+            dragOffsetY = (e.clientY - rect.top) / state.zoom;
+
+            if (st.pinned) {
+                state.pendingUnpinId = st.id;
+                document.getElementById('unpinModal').style.display = 'flex';
+                activeCard = null;
+                return;
+            }
+
+            window.onmousemove = onCardDrag;
+            window.onmouseup = endCardDrag;
+        }
+
+        function onCardDrag(e) {
+            if (!activeCard) return;
+            hasMovedCard = true;
+            const boardRect = document.getElementById('cork-board').getBoundingClientRect();
+            let rawX = (e.clientX - boardRect.left) / state.zoom - dragOffsetX;
+            let rawY = (e.clientY - boardRect.top) / state.zoom - dragOffsetY;
+            
+            const clamped = clampPosition(rawX, rawY);
+            activeCard.x = clamped.x;
+            activeCard.y = clamped.y;
+            renderBoard();
+        }
+
+        function endCardDrag() {
+            window.onmousemove = null;
+            window.onmouseup = null;
+            activeCard = null;
+        }
+
+        // Перетаскивание карточек (Тач / Мобильные)
+        function startCardTouch(e, st) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+            e.stopPropagation();
+            if (e.touches.length !== 1) return;
+            
+            activeCard = st;
+            hasMovedCard = false;
+            const touch = e.touches[0];
+            const cardEl = e.currentTarget;
+            const rect = cardEl.getBoundingClientRect();
+            dragOffsetX = (touch.clientX - rect.left) / state.zoom;
+            dragOffsetY = (touch.clientY - rect.top) / state.zoom;
+
+            if (st.pinned) {
+                state.pendingUnpinId = st.id;
+                document.getElementById('unpinModal').style.display = 'flex';
+                activeCard = null;
+                return;
+            }
+        }
+
+        window.addEventListener('touchmove', (e) => {
+            if (!activeCard || e.touches.length !== 1) return;
+            hasMovedCard = true;
+            const touch = e.touches[0];
+            const boardRect = document.getElementById('cork-board').getBoundingClientRect();
+            let rawX = (touch.clientX - boardRect.left) / state.zoom - dragOffsetX;
+            let rawY = (touch.clientY - boardRect.top) / state.zoom - dragOffsetY;
+
+            const clamped = clampPosition(rawX, rawY);
+            activeCard.x = clamped.x;
+            activeCard.y = clamped.y;
+            renderBoard();
+        }, { passive: true });
+
+        window.addEventListener('touchend', () => {
+            activeCard = null;
+        });
+
+        function confirmUnpin(doUnpin) {
+            document.getElementById('unpinModal').style.display = 'none';
+            if (doUnpin && state.pendingUnpinId) {
+                const st = state.stickies.find(s => s.id === state.pendingUnpinId);
+                if (st) {
+                    st.pinned = false;
+                    renderBoard();
+                }
+            }
+            state.pendingUnpinId = null;
+        }
+
+        // Панорамирование доски (Мышь)
+        function startPan(e) {
+            if (e.button !== 0 && e.button !== 1) return;
+            isDraggingBoard = true;
+            startPanX = e.clientX - state.panX;
+            startPanY = e.clientY - state.panY;
+        }
+
+        function pan(e) {
+            if (!isDraggingBoard) return;
+            state.panX = e.clientX - startPanX;
+            state.panY = e.clientY - startPanY;
+            updateTransform();
+        }
+
+        function endPan() {
+            isDraggingBoard = false;
+        }
+
+        // Панорамирование (Тач)
+        let touchStartDist = 0, lastTouchX = 0, lastTouchY = 0;
+        function startTouchPan(e) {
+            if (e.touches.length === 1) {
+                isDraggingBoard = true;
+                lastTouchX = e.touches[0].clientX;
+                lastTouchY = e.touches[0].clientY;
+            } else if (e.touches.length === 2) {
+                isDraggingBoard = false;
+                touchStartDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        }
+
+        function touchPan(e) {
+            if (isDraggingBoard && e.touches.length === 1) {
+                state.panX += e.touches[0].clientX - lastTouchX;
+                state.panY += e.touches[0].clientY - lastTouchY;
+                lastTouchX = e.touches[0].clientX;
+                lastTouchY = e.touches[0].clientY;
+                updateTransform();
+            } else if (e.touches.length === 2) {
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const factor = dist / touchStartDist;
+                state.zoom = Math.min(Math.max(state.zoom * (factor > 1 ? 1.02 : 0.98), 0.2), 2.0);
+                touchStartDist = dist;
+                updateTransform();
+            }
+        }
+
+        function endTouchPan() {
+            isDraggingBoard = false;
+        }
+
+        window.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+            const newZoom = Math.min(Math.max(state.zoom * zoomFactor, 0.2), 2.0);
+            
+            const viewport = document.getElementById('app-container').getBoundingClientRect();
+            const mouseX = e.clientX - viewport.left;
+            const mouseY = e.clientY - viewport.top;
+
+            state.panX = mouseX - (mouseX - state.panX) * (newZoom / state.zoom);
+            state.panY = mouseY - (mouseY - state.panY) * (newZoom / state.zoom);
+            state.zoom = newZoom;
+
+            updateTransform();
+        }, { passive: false });
+
+        function updateTransform() {
+            const viewport = document.getElementById('board-viewport');
+            viewport.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+            document.getElementById('zoomIndicator').innerText = `Масштаб: ${Math.round(state.zoom * 100)}%`;
+        }
+
+        function resetView() {
+            state.panX = 100;
+            state.panY = 100;
+            state.zoom = 0.65;
+            updateTransform();
+        }
+
+        function toggleComplete(id) {
+            const st = state.stickies.find(s => s.id === id);
+            if (st) {
+                st.completed = !st.completed;
+                renderBoard();
+            }
+        }
+
+        function openDetails(id) {
+            const st = state.stickies.find(s => s.id === id);
+            if (!st) return;
+            state.activeCardId = id;
+
+            document.getElementById('modalTitle').innerText = st.title;
+            document.getElementById('modalBody').innerHTML = `<strong>Метка:</strong> ${st.tag}<br><br>${st.desc}`;
+            
+            const connList = document.getElementById('modalConnections');
+            const related = state.connections.filter(c => c.from === id || c.to === id);
+            
+            let html = '<h4>Связи на доске:</h4>';
+            if (related.length === 0) {
+                html += '<div class="modal-conn-item">Нет активных связей</div>';
+            } else {
+                related.forEach(c => {
+                    const otherId = c.from === id ? c.to : c.from;
+                    const otherSt = state.stickies.find(s => s.id === otherId);
+                    html += `<div class="modal-conn-item"><span>${c.label || 'связь'} ➔ ${otherSt ? otherSt.title : otherId}</span><span>[${c.type}]</span></div>`;
+                });
+            }
+            connList.innerHTML = html;
+
+            document.getElementById('modalEditBtn').onclick = () => { closeDetails(); openEdit(id); };
+            document.getElementById('modalPinBtn').innerText = st.pinned ? 'Открепить карточку' : 'Прикрепить карточку';
+            document.getElementById('modalPinBtn').onclick = () => {
+                st.pinned = !st.pinned;
+                renderBoard();
+                openDetails(id);
+            };
+
+            document.getElementById('detailsModal').style.display = 'flex';
+        }
+
+        function closeDetails() {
+            document.getElementById('detailsModal').style.display = 'none';
+        }
+
+        function openEdit(id) {
+            const st = state.stickies.find(s => s.id === id);
+            if (!st) return;
+            state.editingCardId = id;
+
+            document.getElementById('editTitleInput').value = st.title;
+            document.getElementById('editTagInput').value = st.tag;
+            document.getElementById('editDescInput').value = st.desc;
+
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEdit() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function saveEditedSticky() {
+            const st = state.stickies.find(s => s.id === state.editingCardId);
+            if (st) {
+                st.title = document.getElementById('editTitleInput').value;
+                st.tag = document.getElementById('editTagInput').value;
+                st.desc = document.getElementById('editDescInput').value;
+                renderBoard();
+            }
+            closeEdit();
+        }
+
+        function handleSearch(query) {
+            const sugg = document.getElementById('searchSuggestions');
+            if (!query || query.length < 2) {
+                sugg.style.display = 'none';
+                return;
+            }
+
+            const matches = state.stickies.filter(s => 
+                s.title.toLowerCase().includes(query.toLowerCase()) || 
+                s.desc.toLowerCase().includes(query.toLowerCase()) ||
+                s.tag.toLowerCase().includes(query.toLowerCase())
+            );
+
+            if (matches.length === 0) {
+                sugg.style.display = 'none';
+                return;
+            }
+
+            sugg.innerHTML = '';
+            matches.slice(0, 5).forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.innerText = `${m.title} (${m.tag})`;
+                item.onclick = () => {
+                    focusOnSticky(m);
+                    sugg.style.display = 'none';
+                    document.getElementById('searchInput').value = '';
+                };
+                sugg.appendChild(item);
+            });
+            sugg.style.display = 'block';
+        }
+
+        function focusOnSticky(st) {
+            const viewportW = window.innerWidth;
+            const viewportH = window.innerHeight;
+            state.zoom = 1.0;
+            state.panX = viewportW / 2 - st.x - 110;
+            state.panY = viewportH / 2 - st.y - 120;
+            updateTransform();
+            openDetails(st.id);
+        }
+
+        function toggleLabels() {
+            state.showLabels = !state.showLabels;
+            event.target.innerText = `🏷 Подписи связей: ${state.showLabels ? 'ВКЛ' : 'ВЫКЛ'}`;
+            renderBoard();
+        }
+
+        function unpinAll() {
+            state.stickies.forEach(s => s.pinned = false);
+            renderBoard();
+        }
+
+        function pinAll() {
+            state.stickies.forEach(s => s.pinned = true);
+            renderBoard();
+        }
+
+        function resetAllData() {
+            if (confirm('Сбросить все изменения и восстановить исходное состояние доски?')) {
+                localStorage.removeItem('gulliver_stickies_v4');
+                state.stickies = generateDefaultStickies();
+                resetView();
+                renderBoard();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('gulliver_stickies_v4', JSON.stringify(state.stickies));
+        }
+    </script>
+</body>
+</html>

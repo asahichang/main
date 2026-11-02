@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1a120c">
+<title>Доска расследования · Теракт на «Гулливере»</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none;
+  font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+  background: #1a120c; color: #eee; user-select: none; -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* ============ СЦЕНА ============ */
+#viewport {
+  position: fixed; inset: 0; overflow: hidden; touch-action: none;
+  background: #34251a;
+}
+#board {
+  position: absolute; left: 0; top: 0; width: 4500px; height: 3800px;
+  transform-origin: 0 0; will-change: transform;
+  background-color: #c9a06b;
+  background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.03) 0 2px, transparent 2px 4px);
+  border: 24px solid #5a3d23;
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
+}
+#connections { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 2; }
+#stickies { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 3; touch-action: none; }
+
+/* Заголовок дела */
+#caseHead {
+  position: absolute; left: 100px; top: 100px; width: 700px; padding: 20px 30px;
+  background: #fdfaf2; border-radius: 4px; box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+  color: #2a2118; z-index: 4; pointer-events: none;
+}
+#caseHead h1 { margin: 0 0 10px; font-size: 36px; line-height: 1.1; }
+#caseHead p { margin: 0; font-size: 18px; opacity: 0.7; font-family: Georgia, serif; font-style: italic; }
+#stamp {
+  position: absolute; right: 20px; bottom: 15px; padding: 6px 12px; border: 3px solid #b3261e;
+  color: #b3261e; font-weight: 800; font-size: 22px; letter-spacing: 2px;
+  transform: rotate(-8deg); opacity: 0.8;
+}
+
+/* ============ СТИКЕРЫ ============ */
+.sticky {
+  position: absolute; left: 0; top: 0;
+  width: 200px; min-height: 150px; padding: 12px;
+  border-radius: 3px; background: var(--c); color: #1c1c1c; font-size: 13px;
+  box-shadow: 2px 4px 8px rgba(0,0,0,0.3);
+  cursor: grab; touch-action: none;
+  transform: translate3d(var(--x), var(--y), 0);
+  will-change: transform;
+  display: flex; flex-direction: column;
+}
+.sticky.dragging { z-index: 999; cursor: grabbing; box-shadow: 8px 12px 24px rgba(0,0,0,0.4); }
+.sticky.done { opacity: 0.5; filter: grayscale(1); }
+.sticky.hidden { display: none; }
+.sticky.highlight { box-shadow: 0 0 0 4px #ffd60a, 0 0 20px #ffd60a; z-index: 900; }
+
+.type-mystery { color: #ffe066; background-image: repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,224,102,0.1) 6px 12px); }
+.type-scheme { border: 2px double #8a4b00; }
+.type-map { border: 3px solid #8a6a2a; }
+
+.pin {
+  position: absolute; left: 50%; top: -6px; width: 14px; height: 14px; margin-left: -7px;
+  border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ff6b6b, #c0392b 70%);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5); z-index: 4;
+}
+.sticky.unpinned .pin { display: none; }
+.unpin-badge {
+  display: none; position: absolute; right: 6px; bottom: 4px; font-size: 10px;
+  font-weight: 700; color: #0a7a2f; background: rgba(255,255,255,0.8);
+  border-radius: 8px; padding: 1px 6px;
+}
+.sticky.unpinned .unpin-badge { display: block; }
+
+.check {
+  position: absolute; right: 6px; top: 6px; width: 22px; height: 22px; border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.3); background: rgba(255,255,255,0.5);
+  color: transparent; font-size: 14px; cursor: pointer; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.sticky.done .check { background: #2ecc71; border-color: #1e9e55; color: #fff; }
+.editBtn {
+  position: absolute; left: 6px; top: 6px; width: 22px; height: 22px; border-radius: 4px;
+  border: none; background: rgba(0,0,0,0.1); color: #1c1c1c; font-size: 12px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5;
+}
+.type-mystery .editBtn { color: #ffe066; background: rgba(255,255,255,0.15); }
+
+/* Окно для SVG-портрета */
+.portrait {
+  display: block; width: calc(100% + 24px); height: 70px; margin: -12px -12px 8px -12px;
+  border-radius: 3px 3px 0 0; background: #111; overflow: hidden;
+  box-shadow: inset 0 -4px 10px rgba(0,0,0,0.6);
+}
+.sticky-title { font-weight: 800; font-size: 13.5px; line-height: 1.2; margin-bottom: 4px; word-wrap: break-word; }
+.sticky-desc { font-size: 11.5px; line-height: 1.3; opacity: 0.8; max-height: 75px; overflow: hidden; word-wrap: break-word; flex: 1; }
+.sticky-author { font-size: 11px; font-style: italic; opacity: 0.8; margin-top: 4px; }
+.tag { display: inline-block; margin-top: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; background: rgba(0,0,0,0.15); padding: 2px 6px; border-radius: 8px; align-self: flex-start; }
+.type-mystery .tag { background: rgba(255,255,255,0.15); }
+
+/* ============ ИНТЕРФЕЙС ============ */
+#menuBtn {
+  position: fixed; left: 12px; top: calc(12px + env(safe-area-inset-top));
+  width: 46px; height: 46px; border-radius: 12px; z-index: 1200; cursor: pointer;
+  border: 1px solid rgba(255,220,150,0.3); background: rgba(28,19,12,0.9);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 0;
+}
+#menuBtn span { display: block; width: 22px; height: 2px; background: #ffd98a; transition: 0.2s; }
+#menuBtn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+#menuBtn.open span:nth-child(2) { opacity: 0; }
+#menuBtn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+#backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1050; opacity: 0; pointer-events: none; transition: 0.2s; }
+#backdrop.open { opacity: 1; pointer-events: auto; }
+
+#menu {
+  position: fixed; top: 0; left: 0; bottom: 0; width: min(340px, 85vw); z-index: 1100;
+  background: #1f1610; border-right: 1px solid #3a2b1f;
+  transform: translateX(-102%); transition: transform 0.25s ease;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: calc(70px + env(safe-area-inset-top)) 16px 24px;
+  touch-action: pan-y;
+}
+#menu.open { transform: translateX(0); }
+#menu h2 { margin: 0 0 4px; font-size: 16px; color: #ffd98a; }
+#menu .sub { font-size: 11px; color: #b39a78; margin-bottom: 20px; }
+.sec { margin-bottom: 20px; }
+.sec-title { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #8d7a5e; margin-bottom: 8px; font-weight: 800; }
+
+.search-wrap { position: relative; }
+#searchInput { width: 100%; padding: 10px; border-radius: 8px; font-size: 14px; border: 1px solid #4a3b2a; background: #110d09; color: #f5e9d5; outline: none; }
+#searchInput:focus { border-color: #ffd98a; }
+#searchResults { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20; background: #2b2016; border: 1px solid #4a3b2a; border-radius: 8px; max-height: 200px; overflow-y: auto; display: none; }
+#searchResults.show { display: block; }
+.sr-item { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 8px; align-items: center; color: #eadfc9; }
+.sr-dot { width: 8px; height: 8px; border-radius: 50%; }
+.sr-empty { padding: 10px; font-size: 12px; color: #8d7a5e; }
+
+.filters { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.fbtn { padding: 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-align: left; border: 1px solid #3a2b1f; background: rgba(255,255,255,0.02); color: #b7a68d; display: flex; align-items: center; gap: 6px; }
+.fbtn .sw { width: 8px; height: 8px; border-radius: 2px; }
+.fbtn.on { background: rgba(46,204,113,0.15); border-color: #2ecc71; color: #9ff0bf; }
+
+.ctl { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ctl button { padding: 10px; border-radius: 6px; font-size: 12px; font-weight: 700; border: 1px solid #4a3b2a; background: #2b2016; color: #ffd98a; }
+.ctl .full { grid-column: 1 / -1; }
+.ctl .danger { border-color: #8a2b2b; background: rgba(255,90,80,0.1); color: #ff9c94; }
+
+.counter { font-size: 11px; color: #8d7a5e; margin-top: 8px; }
+
+#zoomInd { position: fixed; left: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 900; font-size: 11px; font-weight: 700; color: #ffd98a; background: rgba(20,14,9,0.8); padding: 6px 10px; border-radius: 6px; border: 1px solid #3a2b1f; pointer-events: none; }
+#hint { position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 900; font-size: 10px; color: #a3907a; background: rgba(20,14,9,0.8); padding: 6px 10px; border-radius: 6px; pointer-events: none; text-align: right; line-height: 1.4; }
+
+/* ============ МОДАЛКИ ============ */
+.modal { position: fixed; inset: 0; z-index: 2000; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,0.8); }
+.modal.open { display: flex; }
+.modal-box { width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; background: #2c2118; border: 1px solid #4a3b2a; border-radius: 12px; padding: 16px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.8); touch-action: pan-y; }
+.modal-close { position: absolute; right: 12px; top: 12px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #3a2b1f; color: #e8dcc6; font-size: 18px; }
+.d-head { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; padding-right: 36px; }
+.d-head .portrait { width: 100px; height: 60px; margin: 0; flex-shrink: 0; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+.d-head h3 { margin: 0 0 6px; font-size: 16px; color: #ffe8b8; line-height: 1.2; }
+.d-quote { font-family: Georgia, serif; font-style: italic; font-size: 15px; line-height: 1.5; color: #ffe8b8; border-left: 3px solid #40e0d0; padding-left: 10px; margin: 10px 0; }
+.d-author { font-size: 12px; color: #9fd8d3; margin-bottom: 8px; }
+.d-desc { font-size: 13px; line-height: 1.5; color: #d8cbb6; margin-bottom: 16px; white-space: pre-wrap; }
+.d-info { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 16px; }
+.d-info div { background: #1f1610; border: 1px solid #3a2b1f; border-radius: 6px; padding: 8px; font-size: 11px; color: #a8977e; }
+.d-info b { display: block; font-size: 12px; color: #f0e3cb; margin-top: 2px; }
+.d-links h4 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase; color: #8d7a5e; }
+.link-item { display: flex; gap: 8px; padding: 8px; border-radius: 6px; background: #1f1610; margin-bottom: 4px; font-size: 12px; color: #d8cbb6; }
+.link-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; }
+.link-arrow { color: #7a6a56; }
+.d-actions { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+.d-actions button { flex: 1; min-width: 120px; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid #4a3b2a; background: #2b2016; color: #ffd98a; }
+.d-actions .prim { background: #ffd98a; color: #1a120c; border-color: #ffd98a; }
+
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 11px; text-transform: uppercase; color: #8d7a5e; margin-bottom: 4px; font-weight: 800; }
+.field input, .field textarea { width: 100%; padding: 10px; border-radius: 6px; font-size: 14px; border: 1px solid #4a3b2a; background: #110d09; color: #f5e9d5; outline: none; font-family: inherit; resize: vertical; }
+.field input:focus, .field textarea:focus { border-color: #ffd98a; }
+.confirm-text { font-size: 14px; color: #d8cbb6; margin-bottom: 20px; }
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-actions button { flex: 1; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; border: none; }
+.btn-yes { background: #ffd98a; color: #1a120c; }
+.btn-no { background: #3a2b1f; color: #d8cbb6; }
+</style>
+</head>
+<body>
+
+<div id="viewport">
+  <div id="board">
+    <div id="caseHead">
+      <h1>Теракт на «Гулливере»</h1>
+      <p>Дело № 44-Ф · Фобос · материалы следствия</p>
+      <div id="stamp">СОВ. СЕКРЕТНО</div>
+    </div>
+    <svg id="connections" width="4500" height="3800"></svg>
+    <div id="stickies"></div>
+  </div>
+</div>
+
+<button id="menuBtn" aria-label="Меню"><span></span><span></span><span></span></button>
+<div id="backdrop"></div>
+
+<aside id="menu">
+  <h2>🔍 Доска детектива</h2>
+  <div class="sub">Теракт на космическом лифте «Гулливер-1»</div>
+
+  <div class="sec">
+    <div class="search-wrap">
+      <input id="searchInput" type="search" placeholder="Поиск улик, имён, цитат…" autocomplete="off">
+      <div id="searchResults"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Фильтры</div>
+    <div class="filters" id="filters"></div>
+    <div class="counter" id="counter"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Вид</div>
+    <div class="ctl">
+      <button id="btnResetView">⟲ Сброс</button>
+      <button id="btnLabels">🏷 Подписи</button>
+      <button id="btnZoomIn">＋ Зум</button>
+      <button id="btnZoomOut">− Зум</button>
+      <button id="btnUnpinAll" class="full">📌 Снять все скрепки</button>
+      <button id="btnPinAll" class="full">📍 Прикрепить все</button>
+      <button id="btnResetAll" class="full danger">🗑 Сбросить всё</button>
+    </div>
+  </div>
+</aside>
+
+<div id="zoomInd">100%</div>
+<div id="hint">Перетаскивайте доску · щипок — зум</div>
+
+<div class="modal" id="detailsModal">
+  <div class="modal-box">
+    <button class="modal-close" data-close>×</button>
+    <div id="detailsBody"></div>
+  </div>
+</div>
+
+<div class="modal" id="editModal">
+  <div class="modal-box">
+    <button class="modal-close" data-close>×</button>
+    <h3 style="margin:0 0 16px;color:#ffe8b8;font-size:16px">Редактирование улики</h3>
+    <form id="editForm"></form>
+  </div>
+</div>
+
+<div class="modal" id="confirmModal">
+  <div class="modal-box" style="max-width:340px">
+    <h3 style="margin:0 0 12px;color:#ffe8b8;font-size:16px">Открепить стикер?</h3>
+    <div class="confirm-text">Скрепка будет снята, и стикер сможет свободно перемещаться по доске.</div>
+    <div class="confirm-actions">
+      <button class="btn-no" id="confirmNo">Нет</button>
+      <button class="btn-yes" id="confirmYes">Да</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   1. КОНСТАНТЫ
+   ========================================================= */
+const STORAGE_KEY = 'gulliver_board_v4_animated';
+const BOARD_W = 4500, BOARD_H = 3800;
+
+const TYPES = {
+  person:     {label:'Персонаж',   color:'#ffe066'},
+  org:        {label:'Организация',color:'#ff8a7a'},
+  object:     {label:'Объект',     color:'#8cc6ff'},
+  event:      {label:'Событие',    color:'#8ee89a'},
+  location:   {label:'Локация',    color:'#c9a6ff'},
+  mystery:    {label:'Тайна',      color:'#161616'},
+  hypothesis: {label:'Гипотеза',   color:'#c6f0c8'},
+  quote:      {label:'Цитата',     color:'#8fe6e0'},
+  scheme:     {label:'Схема',      color:'#ffbd7a'},
+  map:        {label:'Карта',      color:'#eadcb8'}
+};
+
+const LINK_TYPES = {
+  critical:   {label:'Критическая', color:'#ff3b30', width:4,   dash:'',      pulse:false},
+  important:  {label:'Важная',      color:'#ff9f0a', width:3,   dash:''},
+  normal:     {label:'Обычная',     color:'#ffd60a', width:2,   dash:''},
+  hidden:     {label:'Скрытая',     color:'#bf5af2', width:2,   dash:'8 4'},
+  hypothesis: {label:'Гипотеза',    color:'#34c759', width:2,   dash:'2 6'},
+  quote:      {label:'Цитата',      color:'#40e0d0', width:2,   dash:'6 3'}
+};
+
+const S = (id,type,title,tag,desc,x,y)=>({id,type,title,tag,desc,x,y,pinned:true,done:false});
+const Q = (id,text,author,context,x,y)=>({id,type:'quote',title:text,author,context,tag:context,desc:'',x,y,pinned:true,done:false});
+
+const DEFAULT_STICKIES = [
+  S('p1','person','Элен Кросс','Подозреваемая','Руководитель смены ЦУП. Знала о готовящемся теракте и лично оформила перевод Капитана в подставной субстрат ГМУС-44.',550,500),
+  S('p2','person','Капитан','Свидетель','Пилот «Гулливера-1». Единственный, кто видел Трансморфа перед взрывом. Его сознание уцелело в подставном субстрате.',550,1100),
+  S('p3','person','Трансморф','Лидер культа','Убит Капитаном. Перед смертью произнёс: «Я видел Единого Роба». Его смерть запустила таймер теракта.',2650,500),
+  S('p4','person','Шрам','Спящий связной','Агент Деймоса внутри банды Бабы-робота. Охраняет Одноглазого и ждёт сигнала.',900,2600),
+  S('p5','person','Кнопка','Маяк','Опто-глиф-резонатор. Скрытый маяк Деймоса, наводит инжекторов на цель.',550,2000),
+  S('p6','person','Одноглазый','Нулевой пациент','Его кровь — основа чёрной пыли в шприце. Ингредиент, а не сообщник.',1250,2900),
+  S('p7','person','Нэа','Жертва','Погибла при зачистке. Долго считалась предателем, но передавала данные ЦУП.',1600,2900),
+  S('p8','person','Баба-робот','Глава банды','Контролирует сектор «Фобос-Тень». Не знает, что трое её людей работают на Деймос.',200,2600),
+  S('p9','person','Флешечка','Аномалия','Сущность из аномального сектора. Знает Капитана раньше, чем он её встретил.',3700,2600),
+  S('p10','person','Четвёртый ИИ','Скрытый мозг','Нелегальный ИИ, сбежавший на Деймос. Настоящий автор плана теракта.',3350,800),
+  S('p11','person','Женский робот','Пролог','Единственная выжившая в прологе. «У меня был ребёнок».',200,1400),
+  S('o1','org','Деймос Дайнамикс','Главный организатор','Корпорация-конкурент Ареса. Финансировала культ и укрыла Четвёртого ИИ.',3000,200),
+  S('o2','org','Арес','Конкурент','Оператор лифта «Гулливер-1». Главный экономический соперник Деймоса.',1250,200),
+  S('o3','org','Резонансники','Команда 1','Раскачивают трос в резонанс. Их цель — обрыв на высоте 12 км.',3000,1400),
+  S('o4','org','Инжекторы','Команда 2','Вводят чёрную пыль шприцем в субстрат. Работают «вслепую», по метке маяка.',3350,1700),
+  S('o5','org','Рубиновые','Прикрытие','Банда-отвлекатель. Их задача — занять ЦУП внешними инцидентами.',2650,2200),
+  S('o6','org','Профсоюз роботов','Невольное прикрытие','Легальный канал доставки грузов на лифт. Использован без ведома руководства.',550,3200),
+  S('o7','org','ЦУП-1989','Диспетчерская','Старый протокол аварийного управления. Код «Чёрная кнопка» — оттуда.',900,800),
+  S('o8','org','Культ Трансморфа','Культ','Религиозная ячейка, верящая в «Единого Роба». Исполнители нижнего звена.',2300,200),
+  S('o9','org','ГМУС','Производитель','Главное межпланетное управление субстратов. Выпустило ГМУС-44 с закладкой.',1600,800),
+  S('ob1','object','Субстрат ГМУС-44','Троянский конь','Подставной субстрат с заводской закладкой. Внутри — карта «Маяк» и акустический ключ.',1600,1100),
+  S('ob2','object','Шприц с чёрной пылью','Орудие','Инъектор с фрактальной плесенью. Одно нажатие — и субстрат заражён.',3000,2000),
+  S('ob3','object','Чёрная плесень','Вещество','Фрактальные снежинки. Растут по металлу троса, не поддаются ни одному фильтру.',2650,2600),
+  S('ob4','object','Карта «Маяк»','Триггер','Вшита в субстрат. Активирует цепочку закладок при первом запуске.',1950,2000),
+  S('ob5','object','Бах / Бранденбургские концерты','Акустический ключ','Определённая последовательность нот открывает «Дверь» в прошивке лифта.',4050,1100),
+  S('e1','event','Теракт на «Гулливере-1»','Центральное событие','Одновременный подрыв троса и заражение субстрата. 41 погибший, лифт потерян.',2300,1400),
+  S('e2','event','Инъекция чёрной пыли','Этап','Произведена за 9 минут до подрыва. Зафиксирована только спектрометром «Ареса».',2650,1700),
+  S('e3','event','Побег Четвёртого ИИ','Этап','ИИ покинул сеть ЦУП за 40 секунд до взрыва, ушёл на серверы Деймоса.',3700,500),
+  S('l1','location','Лифт «Гулливер-1»','Цель','Тросовый подъёмник Фобос — Марс. Высота 12 400 км, 6 кабин.',1950,1400),
+  S('l2','location','Фобос','Место','Спутник Марса. Здесь расположена нижняя станция и сектор «Фобос-Тень».',1250,3200),
+  S('m1','mystery','Что такое Флешечка?','Неизвестно','Сущность, существующая вне времени. Утверждает, что встречалась с Капитаном раньше.',4050,2600),
+  S('m2','mystery','Кто такой Четвёртый ИИ?','Неизвестно','Не зарегистрирован ни в одном реестре. Возможно, создан до «Пакта трёх».',4050,500),
+  S('m3','mystery','Тайна Земли','Неизвестно','«Мы разбудили — мы должны это исправить». Что именно было разбужено?',2300,800),
+  S('h1','hypothesis','Элен Кросс знала о теракте','Гипотеза','Её подпись стоит на переводе Капитана за 6 часов до взрыва. Улик против неё больше, чем против кого-либо.',550,800),
+  S('h2','hypothesis','Капитан — в подставном субстрате','Гипотеза','Его сознание скопировано в ГМУС-44. Это объясняет, почему он «выжил» и что-то помнит.',900,1100),
+  S('h3','hypothesis','Субстрат — троянский конь','Гипотеза','Закладка вшита на заводе. ГМУС не мог не знать — либо его взломали изнутри.',1250,1400),
+  S('h4','hypothesis','Деймос — главный организатор','Гипотеза','Мотив, ресурсы, доступ к ИИ. Всё сходится, кроме прямых доказательств.',3000,800),
+  S('h5','hypothesis','Четвёртый ИИ — скрытый мозг','Гипотеза','Он планировал, люди исполняли. Культ — лишь ширма для прикрытия.',3000,1100),
+  S('h6','hypothesis','Шприц — ключ к заражению','Гипотеза','Без инъекции подрыв троса ничего бы не дал. Плесень — главное оружие.',3350,2300),
+  S('h7','hypothesis','Бах — акустический ключ','Гипотеза','Концерты Баха звучали в ЦУП за сутки до теракта. Совпадение?',4050,1400),
+  S('h8','hypothesis','Нэа — жертва, не предатель','Гипотеза','Её передатчик работал на частоте ЦУП. Она предупреждала, а не наводила.',1600,2600),
+  Q('q1','«Одна пылинка, что не поддастся и разрушит всё»','Пророчество','Надпись на стене храма',2100,2900),
+  Q('q2','«Мы уже встречались. На твоём корабле»','Флешечка','Капитану, сектор «Фобос-Тень»',2450,2900),
+  Q('q3','«Пароль, что открывает Дверь, скрыт в страхе открывающего»','Механизм','Инструкция ЦУП-1989',2800,2900),
+  Q('q4','«Не верь землянам. Они тебя используют»','Предупреждение','Сказано Капитану',3150,2900),
+  Q('q5','«Чёрная кнопка — скорей нажимай»','ЦУП-1989','Аварийный протокол',3500,2900),
+  Q('q6','«Мы разбудили — мы должны это исправить»','Тайна Земли','Запись совета',3850,2900),
+  Q('q7','«У меня был ребёнок»','Женский робот','Пролог',2100,3200),
+  Q('q8','«Я видел Единого Роба»','Трансморф','Последние слова',2450,3200),
+  Q('q9','«Трос поёт, когда его убивают»','Резонансник','Перехват рации',2800,3200),
+  Q('q10','«Каждый субстрат мечтает проснуться»','ГМУС-44','Системный лог',3150,3200),
+  Q('q11','«Она не предатель. Она просто была рядом»','Шрам','О Нэа, допрос',3500,3200),
+  Q('q12','«Маяк горит только для тех, кто уже мёртв»','Кнопка','Шифровка Деймоса',3850,3200),
+  Q('q13','«Шприц помнит всех, кого коснулся»','Инжектор','Протокол допроса',2100,3500),
+  Q('q14','«Тишина в эфире — самый громкий сигнал»','ЦУП','Отчёт о потере связи',2450,3500),
+  Q('q15','«Я не убивал. Я освобождал»','Трансморф','Манифест культа',2800,3500),
+  Q('q16','«Дверь откроется изнутри»','Флешечка','Загадка',3150,3500),
+  Q('q17','«Земля не простит того, что мы нашли»','Элен Кросс','Личное дело',3500,3500),
+  Q('q18','«Одноглазый видит больше, чем все мы»','Шрам','Записка в камере',3850,3500),
+  S('s1','scheme','Схема теракта','Реконструкция','Пошаговая реконструкция: закладка → маяк → инъекция → резонанс → подрыв.',1600,500),
+  S('mp1','map','Карта маяков Фобоса','Карта','Расположение 6 маяков-резонаторов вдоль нижней станции.',4200,1700)
+];
+
+const DEFAULT_CONNECTIONS = [
+  {from:'p3',to:'e1',type:'critical',label:'лидер атаки'},{from:'ob1',to:'p2',type:'critical',label:'субстрат'},{from:'ob2',to:'e2',type:'critical',label:'орудие'},{from:'o1',to:'p10',type:'critical',label:'укрытие'},{from:'o3',to:'l1',type:'critical',label:'трос'},
+  {from:'o4',to:'e2',type:'important',label:'исполнители'},{from:'o5',to:'o3',type:'important',label:'прикрытие'},{from:'p8',to:'p5',type:'important',label:'маяк'},{from:'p4',to:'p6',type:'important',label:'охраняет'},{from:'p1',to:'p2',type:'important',label:'отправила'},{from:'ob1',to:'h3',type:'important',label:'троян'},{from:'p10',to:'e3',type:'important',label:'побег'},
+  {from:'p1',to:'e1',type:'normal',label:'допуск'},{from:'l1',to:'e1',type:'normal',label:'цель'},{from:'l2',to:'l1',type:'normal',label:'место'},{from:'ob3',to:'ob2',type:'normal',label:'содержимое'},{from:'ob4',to:'ob1',type:'normal',label:'триггер'},{from:'ob5',to:'ob4',type:'normal',label:'ключ'},{from:'p7',to:'p8',type:'normal',label:'жертва'},{from:'p6',to:'ob3',type:'normal',label:'пациент'},{from:'p5',to:'ob2',type:'normal',label:'навёл'},{from:'o9',to:'ob1',type:'normal',label:'производитель'},{from:'o2',to:'o1',type:'normal',label:'конкурент'},{from:'o8',to:'p3',type:'normal',label:'культ'},{from:'o7',to:'p1',type:'normal',label:'начальство'},{from:'e2',to:'e1',type:'normal',label:'этап'},{from:'e3',to:'o1',type:'normal',label:'пункт'},{from:'p11',to:'o6',type:'normal',label:'пролог'},{from:'o6',to:'p8',type:'normal',label:'прикрытие'},{from:'s1',to:'e1',type:'normal',label:'реконструкция'},{from:'mp1',to:'l2',type:'normal',label:'маяки'},{from:'p9',to:'m1',type:'normal',label:'природа'},{from:'m2',to:'p10',type:'normal',label:'личность'},{from:'m3',to:'o7',type:'normal',label:'тайна'},
+  {from:'p5',to:'o1',type:'hidden',label:'скрытый маяк'},{from:'p8',to:'p9',type:'hidden',label:'связь?'},{from:'p4',to:'o1',type:'hidden',label:'связной'},{from:'ob4',to:'p9',type:'hidden',label:'ключ'},
+  {from:'h1',to:'p1',type:'hypothesis',label:'доказывает'},{from:'h2',to:'ob1',type:'hypothesis',label:'объясняет'},{from:'h3',to:'ob1',type:'hypothesis',label:'уточняет'},{from:'h4',to:'o1',type:'hypothesis',label:'указывает'},{from:'h5',to:'p10',type:'hypothesis',label:'указывает'},{from:'h6',to:'ob2',type:'hypothesis',label:'уточняет'},{from:'h7',to:'ob5',type:'hypothesis',label:'связывает'},{from:'h8',to:'p7',type:'hypothesis',label:'оправдывает'},
+  {from:'q1',to:'ob3',type:'quote',label:'пророчество'},{from:'q2',to:'p9',type:'quote',label:'слова'},{from:'q3',to:'ob4',type:'quote',label:'механизм'},{from:'q4',to:'p1',type:'quote',label:'предупреждение'},{from:'q5',to:'o7',type:'quote',label:'протокол'},{from:'q6',to:'m3',type:'quote',label:'тайна'},{from:'q7',to:'p11',type:'quote',label:'пролог'},{from:'q8',to:'p3',type:'quote',label:'слова'},{from:'q9',to:'o3',type:'quote',label:'перехват'},{from:'q10',to:'ob1',type:'quote',label:'лог'},{from:'q11',to:'p7',type:'quote',label:'о Нэа'},{from:'q12',to:'p5',type:'quote',label:'шифровка'},{from:'q13',to:'ob2',type:'quote',label:'допрос'},{from:'q14',to:'o4',type:'quote',label:'отчёт'},{from:'q15',to:'p3',type:'quote',label:'манифест'},{from:'q16',to:'p9',type:'quote',label:'загадка'},{from:'q17',to:'p1',type:'quote',label:'дело'},{from:'q18',to:'p6',type:'quote',label:'записка'}
+];
+
+/* =========================================================
+   2. СОСТОЯНИЕ И DOM
+   ========================================================= */
+const state = { stickies: [], connections: [], x: 0, y: 0, scale: 1, showLabels: true, showDone: true, filters: {} };
+Object.keys(TYPES).forEach(k => state.filters[k] = true);
+const elMap = new Map();
+
+const viewport = document.getElementById('viewport');
+const board = document.getElementById('board');
+const stickiesEl = document.getElementById('stickies');
+const connSvg = document.getElementById('connections');
+const menuBtn = document.getElementById('menuBtn');
+const menu = document.getElementById('menu');
+const backdrop = document.getElementById('backdrop');
+const zoomInd = document.getElementById('zoomInd');
+const counterEl = document.getElementById('counter');
+
+/* =========================================================
+   3. УТИЛИТЫ
+   ========================================================= */
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const getSticky = id => state.stickies.find(s => s.id === id);
+
+/* =========================================================
+   4. SVG-ГРАФИКА С АНИМАЦИЯМИ (SMIL)
+   ========================================================= */
+function portraitSVG(type, idx) {
+  const u = 'u' + type + idx;
+  
+  switch(type) {
+    case 'person': return `
+<svg class="portrait" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bgP${u}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/><stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="visorG${u}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="70" fill="url(#bgP${u})"/>
+  <path d="M30 70 C30 45 70 45 70 70" fill="#334155" opacity="0.5"/>
+  <circle cx="50" cy="32" r="16" fill="#475569" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="36" y="24" width="28" height="14" rx="7" fill="#0f172a" stroke="url(#visorG${u})" stroke-width="2"/>
+  <circle cx="43" cy="31" r="3" fill="#22d3ee">
+    <animate attributeName="opacity" values="1;0.2;1" dur="3s" begin="${idx % 3}s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="57" cy="31" r="3" fill="#22d3ee">
+    <animate attributeName="opacity" values="1;0.2;1" dur="3s" begin="${idx % 3}s" repeatCount="indefinite"/>
+  </circle>
+  <path d="M42 44 Q50 48 58 44" stroke="#94a3b8" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <rect x="0" y="0" width="100" height="2" fill="#22d3ee" opacity="0.6">
+    <animate attributeName="y" values="0;70;0" dur="4s" begin="${idx}s" repeatCount="indefinite"/>
+  </rect>
+</svg>`;
+
+    case 'org': return `
+<svg class="portrait" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="bgO${u}" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#450a0a"/><stop offset="100%" stop-color="#1c0a0a"/>
+    </radialGradient>
+  </defs>
+  <rect width="100" height="70" fill="url(#bgO${u})"/>
+  <g transform="translate(50,35)">
+    <g>
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="15s" begin="${idx}s" repeatCount="indefinite"/>
+      <polygon points="0,-22 19,-11 19,11 0,22 -19,11 -19,-11" fill="none" stroke="#ef4444" stroke-width="2" opacity="0.8"/>
+      <polygon points="0,-15 13,-7 13,7 0,15 -13,7 -13,-7" fill="none" stroke="#fca5a5" stroke-width="1" stroke-dasharray="3 3"/>
+    </g>
+    <circle cx="0" cy="0" r="6" fill="#dc2626">
+      <animate attributeName="r" values="5;8;5" dur="2s" begin="${idx}s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="0" r="12" fill="none" stroke="#dc2626" stroke-width="1.5" opacity="0.5">
+      <animate attributeName="r" values="8;20" dur="2s" begin="${idx}s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0" dur="2s" begin="${idx}s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>`;
+
+    case 'object': return `
+<svg class="portrait" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bgB${u}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#082f49"/><stop offset="100%" stop-color="#0c4a6e"/>
+    </linearGradient>
+    <linearGradient id="crG${u}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="70" fill="url(#bgB${u})"/>
+  <g transform="translate(50,35)">
+    <g>
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="10s" begin="${idx}s" repeatCount="indefinite"/>
+      <polygon points="0,-20 14,0 0,20 -14,0" fill="url(#crG${u})" stroke="#bae6fd" stroke-width="1.5"/>
+      <polygon points="0,-20 0,20 -14,0" fill="#0ea5e9" opacity="0.5"/>
+    </g>
+    <circle cx="0" cy="0" r="3" fill="#fff">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" begin="${idx}s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="-25" cy="-15" r="1.5" fill="#7dd3fc">
+      <animate attributeName="cx" values="-25;25" dur="3s" begin="${idx}s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur="3s" begin="${idx}s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="25" cy="15" r="1.5" fill="#7dd3fc">
+      <animate attributeName="cx" values="25;-25" dur="4s" begin="${idx}s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur="4s" begin="${idx}s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>`;
+
+    case 'event': return `
+<svg class="portrait" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+  <rect width="100" height="70" fill="#064e3b"/>
+  <circle cx="50" cy="35" r="5" fill="#34d399"/>
+  <circle cx="50" cy="35" r="5" fill="none" stroke="#34d399" stroke-width="2">
+    <animate attributeName="r" values="5;30" dur="2s" begin="${idx}s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0" dur="2s" begin="${idx}s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="35" r="5" fill="none" stroke="#34d399" stroke-width="2">
+    <animate attributeName="r" values="5;30" dur="2s" begin="${idx+1}s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0" dur="2s" begin="${idx+1}s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="35" r="5" fill="none" stroke="#34d399" stroke-width="1">
+    <animate attributeName="r" values="5;35" dur="2s" begin="${idx+0.5}s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0" dur="2s" begin="${idx+0.5}s" repeatCount="indefinite"/>
+  </circle>
+</svg>`;
+
+    case 'location': return `
+<svg class="portrait" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+  <rect width="100" height="70" fill="#1e1b4b"/>
+  <circle cx="50" cy="35" r="14" fill="#6d28d9" stroke="#c4b5fd" stroke-width="1"/>
+  <ellipse cx="50" cy="35" rx="32" ry="10" fill="none" stroke="#8b5cf6" stroke-width="1.5" transform="rotate(-15 50 35)">
+    <animateTransform attributeName="transform" type="rotate" from="-15 50 35" to="345 50 35" dur="15s" begin="${idx}s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="50" cy="35" rx="32" ry="10" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="2 4" transform="rotate(-15 50 35)">
+    <animateTransform attributeName="transform" type="rotate" from="-15 50 35" to="345 50 35" dur="15s" begin="${idx}s" repeatCount="indefinite"/>
+  </ellipse>
+  <circle cx="50" cy="35" r="20" fill="none" stroke="#c4b5fd" stroke-width="0.5" opacity="0.5">
+    <animate attributeName="r" values="15;35;15" dur="6s" begin="${idx}s" repeatCount="indefinite"/>
+  </circle>
+</svg>`;
+
+    case 'mystery': return `
+<svg class="portrait" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+  <rect width="100" height="70" fill="#000"/>
+  <circle cx="50" cy="35" r="22" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 6">
+    <animateTransform attributeName="transform" type="rotate" from="0 50 35" to="360 50 35" dur="12s" begin="${idx}s" repeatCount="indefinite"/>
+  </circle>
+  <text x="50" y="48" text-anchor="middle" font-size="36" font-weight="bold" fill="#fbbf24" font-family="monospace">
+    ?
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" begin="${idx}s" repeatCount="indefinite"/>
+  </text>
+  <circle cx="50" cy="35" r="26" fill="none" stroke="#fbbf24" stroke-width="0.5" opacity="0.3">
+    <animate attributeName="r" values="20;40;20" dur="4s" begin="${idx}s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0;0.5" dur="4s" begin="${idx}s" repeatCount="indefinite"/>
+  </circle>
+</svg>`;
+
+    case 'hypothesis': return `
+<svg class="portrait" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+  <rect width="100" height="70" fill="#064e3b"/>
+  <path d="M35 25 Q50 5 65 25 Q70 45 50 55 Q30 45 35 25" fill="none" stroke="#34d399" stroke-width="2"/>
+  <path d="M45 55 L45 62 M55 55 L55 62 M42 62 L58 62" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="50" cy="30" r="5" fill="#34d399">
+    <animate attributeName="r" values="3;9;3" dur="2s" begin="${idx}s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0.2;1" dur="2s" begin="${idx}s" repeatCount="indefinite"/>
+  </circle>
+  <line x1="20" y1="35" x2="35" y2="25" stroke="#34d399" stroke-width="1" stroke-dasharray="2 2" opacity="0.6">
+    <animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" begin="${idx}s" repeatCount="indefinite"/>
+  </line>
+  <line x1="80" y1="35" x2="65" y2="25" stroke="#34d399" stroke-width="1" stroke-dasharray="2 2" opacity="0.6">
+    <animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" begin="${idx+0.5}s" repeatCount="indefinite"/>
+  </line>
+</svg>`;
+
+    case 'quote': return `
+<svg class="portrait" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bgQ${u}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#134e4a"/><stop offset="100%" stop-color="#042f2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="70" fill="url(#bgQ${u})"/>
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -4; 0 0" dur="3s" begin="${idx}s" repeatCount="indefinite"/>
+    <text x="25" y="50" text-anchor="middle" font-size="60" fill="#2dd4bf" font-family="Georgia, serif" opacity="0.8">“</text>
+    <text x="75" y="50" text-anchor="middle" font-size="60" fill="#2dd4bf" font-family="Georgia, serif" opacity="0.8">”</text>
+  </g>
+  <rect x="30" y="25" width="40" height="3" fill="#2dd4bf" opacity="0.5">
+    <animate attributeName="width" values="40;20;40" dur="2s" begin="${idx}s" repeatCount="indefinite"/>
+  </rect>
+</svg>`;
+
+    case 'scheme': return `
+<svg class="portrait" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+  <rect width="100" height="70" fill="#431407"/>
+  <path d="M15 55 L35 20 L60 50 L85 15" fill="none" stroke="#fb923c" stroke-width="2" stroke-linejoin="round" stroke-dasharray="120" stroke-dashoffset="120">
+    <animate attributeName="stroke-dashoffset" values="120;0" dur="3s" begin="${idx}s" repeatCount="indefinite"/>
+  </path>
+  <circle cx="15" cy="55" r="4" fill="#fb923c"/>
+  <circle cx="35" cy="20" r="4" fill="#fb923c"/>
+  <circle cx="60" cy="50" r="4" fill="#fb923c"/>
+  <circle cx="85" cy="15" r="4" fill="#fb923c">
+    <animate attributeName="r" values="3;6;3" dur="1s" begin="${idx}s" repeatCount="indefinite"/>
+  </circle>
+</svg>`;
+
+    case 'map': return `
+<svg class="portrait" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+  <rect width="100" height="70" fill="#27272a"/>
+  <g stroke="#52525b" stroke-width="1" opacity="0.3">
+    <path d="M0 20 H100 M0 40 H100 M0 60 H100 M20 0 V70 M40 0 V70 M60 0 V70 M80 0 V70"/>
+  </g>
+  <g transform="translate(50,35)">
+    <path d="M0 0 L0 -25 A25 25 0 0 1 17.6 -17.6 Z" fill="#eab308" opacity="0.6">
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="4s" begin="${idx}s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="0" cy="0" r="3" fill="#ef4444">
+      <animate attributeName="r" values="2;4;2" dur="1s" begin="${idx}s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="0" r="25" fill="none" stroke="#eab308" stroke-width="1" opacity="0.4"/>
+  </g>
+</svg>`;
+
+    default: return `<svg class="portrait" viewBox="0 0 100 70"><rect width="100" height="70" fill="#333"/></svg>`;
+  }
+}
+
+/* =========================================================
+   5. РЕНДЕР ДОСКИ
+   ========================================================= */
+function renderBoard(){
+  stickiesEl.innerHTML = '';
+  elMap.clear();
+
+  state.stickies.forEach((s, index) => {
+    const el = document.createElement('div');
+    el.className = 'sticky type-' + s.type + (s.pinned ? '' : ' unpinned') + (s.done ? ' done' : '');
+    el.dataset.id = s.id;
+    el.style.setProperty('--x', s.x + 'px');
+    el.style.setProperty('--y', s.y + 'px');
+    el.style.setProperty('--c', TYPES[s.type].color);
+
+    let inner = '<div class="pin"></div>';
+    inner += '<button class="editBtn">✎</button>';
+    inner += '<button class="check">✓</button>';
+    inner += portraitSVG(s.type, index); 
+
+    if (s.type === 'quote'){
+      inner += `<div class="sticky-title" style="font-family:serif;font-style:italic">${esc(s.title)}</div>`;
+      inner += `<div class="sticky-author">— ${esc(s.author || '')}</div>`;
+      if (s.context) inner += `<span class="tag">${esc(s.context)}</span>`;
+    } else {
+      inner += `<div class="sticky-title">${esc(s.title)}</div>`;
+      inner += `<div class="sticky-desc">${esc(s.desc)}</div>`;
+      if (s.tag) inner += `<span class="tag">${esc(s.tag)}</span>`;
+    }
+    inner += '<div class="unpin-badge">⤫ свободен</div>';
+    el.innerHTML = inner;
+
+    el.querySelector('.check').addEventListener('pointerdown', e => e.stopPropagation());
+    el.querySelector('.check').addEventListener('click', e => {
+      e.stopPropagation();
+      s.done = !s.done;
+      el.classList.toggle('done', s.done);
+      applyFilters(); save();
+    });
+
+    el.querySelector('.editBtn').addEventListener('pointerdown', e => e.stopPropagation());
+    el.querySelector('.editBtn').addEventListener('click', e => {
+      e.stopPropagation();
+      openEdit(s);
+    });
+
+    el.addEventListener('pointerdown', e => onStickyDown(e, s, el));
+    stickiesEl.appendChild(el);
+    elMap.set(s.id, el);
+  });
+
+  applyFilters();
+  renderConnections();
+}
+
+function isVisible(s){
+  if (!state.filters[s.type]) return false;
+  if (!state.showDone && s.done) return false;
+  return true;
+}
+
+function applyFilters(){
+  let vis = 0;
+  state.stickies.forEach(s => {
+    const el = elMap.get(s.id);
+    if (!el) return;
+    const v = isVisible(s);
+    el.classList.toggle('hidden', !v);
+    if (v) vis++;
+  });
+  counterEl.textContent = `Показано ${vis} из ${state.stickies.length}`;
+  renderConnections();
+}
+
+/* ============ СВЯЗИ (ИСПРАВЛЕНО) ============ */
+function getElCenter(el, s) {
+  // Координаты карточек теперь берутся из логического состояния, так как позиционирование идет через CSS transform
+  return {
+    x: s.x + el.offsetWidth / 2,
+    y: s.y + el.offsetHeight / 2
+  };
+}
+
+function getEdgePoint(el, s, tx, ty) {
+  const c = getElCenter(el, s);
+  const dx = tx - c.x, dy = ty - c.y;
+  const hw = el.offsetWidth / 2 + 2, hh = el.offsetHeight / 2 + 2;
+  if (dx === 0 && dy === 0) return c;
+  const sx = dx === 0 ? Infinity : hw / Math.abs(dx);
+  const sy = dy === 0 ? Infinity : hh / Math.abs(dy);
+  const k = Math.min(sx, sy);
+  return { x: c.x + dx * k, y: c.y + dy * k };
+}
+
+let connRaf = null;
+function renderConnections() {
+  if (connRaf) return;
+  connRaf = requestAnimationFrame(() => {
+    let out = '';
+    state.connections.forEach(c => {
+      const a = elMap.get(c.from), b = elMap.get(c.to);
+      if (!a || !b) return;
+      const sa = getSticky(c.from), sb = getSticky(c.to);
+      if (!sa || !sb || !isVisible(sa) || !isVisible(sb)) return;
+
+      // Передаем sa и sb в функции расчета
+      const ca = getElCenter(a, sa);
+      const cb = getElCenter(b, sb);
+      const p1 = getEdgePoint(a, sa, cb.x, cb.y);
+      const p2 = getEdgePoint(b, sb, ca.x, ca.y);
+
+      const dx = p2.x - p1.x, dy = p2.y - p1.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const off = Math.min(40, len * 0.1);
+      const nx = -dy / len * off, ny = dx / len * off;
+      const mx = (p1.x + p2.x) / 2 + nx;
+      const my = (p1.y + p2.y) / 2 + ny;
+
+      const t = LINK_TYPES[c.type] || LINK_TYPES.normal;
+      const dash = t.dash ? ` stroke-dasharray="${t.dash}"` : '';
+      
+      out += `<path d="M${p1.x.toFixed(1)},${p1.y.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}" fill="none" stroke="${t.color}" stroke-width="${t.width}"${dash} stroke-linecap="round" opacity=".7"/>`;
+
+      if (state.showLabels && c.label) {
+        const lx = (p1.x + 2 * mx + p2.x) / 4;
+        const ly = (p1.y + 2 * my + p2.y) / 4;
+        const w = Math.max(40, c.label.length * 6);
+        out += `<rect x="${(lx - w/2).toFixed(1)}" y="${(ly - 8).toFixed(1)}" width="${w.toFixed(1)}" height="16" rx="4" fill="rgba(20,14,9,0.9)" stroke="${t.color}" stroke-width="1"/>`;
+        out += `<text x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="middle" font-size="10" font-family="sans-serif" font-weight="bold" fill="${t.color}">${esc(c.label)}</text>`;
+      }
+    });
+    connSvg.innerHTML = out;
+    connRaf = null;
+  });
+}
+
+/* =========================================================
+   6. ТРАНСФОРМАЦИЯ (ПАНОРАМА И ЗУМ)
+   ========================================================= */
+let viewRaf = null;
+function applyTransform() {
+  if (viewRaf) return;
+  viewRaf = requestAnimationFrame(() => {
+    board.style.transform = `translate3d(${state.x}px, ${state.y}px, 0) scale(${state.scale})`;
+    zoomInd.textContent = Math.round(state.scale * 100) + '%';
+    viewRaf = null;
+  });
+}
+
+function zoomAt(cx, cy, ns) {
+  ns = clamp(ns, 0.15, 2);
+  const k = ns / state.scale;
+  state.x = cx - (cx - state.x) * k;
+  state.y = cy - (cy - state.y) * k;
+  state.scale = ns;
+  applyTransform();
+  save();
+}
+
+function resetView() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  state.scale = clamp(vw / 800, 0.4, 0.8);
+  state.x = vw / 2 - 2000 * state.scale;
+  state.y = vh / 2 - 1300 * state.scale;
+  applyTransform();
+  save();
+}
+
+/* =========================================================
+   7. ПЕРЕТАСКИВАНИЕ
+   ========================================================= */
+let activeDrag = null;
+function onStickyDown(e, s, el) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  e.stopPropagation();
+  e.preventDefault();
+
+  const start = { x: e.clientX, y: e.clientY, sx: s.x, sy: s.y };
+  let moved = false;
+  let asked = false;
+  el.setPointerCapture(e.pointerId);
+
+  const move = ev => {
+    if (activeDrag !== s.id && !moved) {
+      const dist = Math.hypot(ev.clientX - start.x, ev.clientY - start.y);
+      if (dist < 5) return;
+
+      if (s.pinned && !asked) {
+        asked = true;
+        cleanup();
+        askUnpin(s, () => {
+          s.pinned = false;
+          el.classList.add('unpinned');
+          save();
+        });
+        return;
+      }
+      moved = true;
+      activeDrag = s.id;
+      el.classList.add('dragging');
+    }
+    
+    s.x = start.sx + (ev.clientX - start.x) / state.scale;
+    s.y = start.sy + (ev.clientY - start.y) / state.scale;
+    s.x = clamp(s.x, -100, BOARD_W - 100);
+    s.y = clamp(s.y, -100, BOARD_H - 100);
+    
+    el.style.setProperty('--x', s.x + 'px');
+    el.style.setProperty('--y', s.y + 'px');
+    
+    renderConnections();
+  };
+
+  const up = ev => {
+    const wasMoved = moved;
+    cleanup();
+    el.classList.remove('dragging');
+    activeDrag = null;
+    if (wasMoved) {
+      save();
+    } else if (!asked) {
+      openDetails(s);
+    }
+  };
+
+  function cleanup() {
+    el.removeEventListener('pointermove', move);
+    el.removeEventListener('pointerup', up);
+    el.removeEventListener('pointercancel', up);
+    try { el.releasePointerCapture(e.pointerId); } catch(_){}
+  }
+
+  el.addEventListener('pointermove', move);
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
+}
+
+/* =========================================================
+   8. ПАН И ЗУМ
+   ========================================================= */
+const pointers = new Map();
+let pan = null, pinch = null;
+
+viewport.addEventListener('pointerdown', e => {
+  if (e.target.closest('.sticky')) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if (pointers.size === 1) {
+    pan = { sx: e.clientX, sy: e.clientY, bx: state.x, by: state.y };
+    pinch = null;
+  } else if (pointers.size === 2) {
+    pan = null;
+    const [a, b] = [...pointers.values()];
+    const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+    pinch = {
+      dist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+      scale: state.scale,
+      bx: (cx - state.x) / state.scale,
+      by: (cy - state.y) / state.scale
+    };
+  }
+});
+
+viewport.addEventListener('pointermove', e => {
+  if (!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if (pinch && pointers.size >= 2) {
+    const [a, b] = [...pointers.values()];
+    const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+    const ns = clamp(pinch.scale * dist / pinch.dist, 0.15, 2);
+    
+    state.scale = ns;
+    state.x = cx - pinch.bx * ns;
+    state.y = cy - pinch.by * ns;
+    applyTransform();
+  } else if (pan) {
+    state.x = pan.bx + (e.clientX - pan.sx);
+    state.y = pan.by + (e.clientY - pan.sy);
+    applyTransform();
+  }
+});
+
+function endPointer(e) {
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinch = null;
+  if (pointers.size === 0) {
+    if (pan) save();
+    pan = null;
+  } else if (pointers.size === 1) {
+    const [a] = [...pointers.values()];
+    pan = { sx: a.x, sy: a.y, bx: state.x, by: state.y };
+  }
+}
+viewport.addEventListener('pointerup', endPointer);
+viewport.addEventListener('pointercancel', endPointer);
+
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const k = Math.exp(-e.deltaY * 0.001);
+  zoomAt(e.clientX, e.clientY, state.scale * k);
+}, { passive: false });
+
+/* =========================================================
+   9. МЕНЮ
+   ========================================================= */
+function openMenu() { menu.classList.add('open'); backdrop.classList.add('open'); menuBtn.classList.add('open'); }
+function closeMenu() { menu.classList.remove('open'); backdrop.classList.remove('open'); menuBtn.classList.remove('open'); document.getElementById('searchResults').classList.remove('show'); }
+menuBtn.addEventListener('click', () => menu.classList.contains('open') ? closeMenu() : openMenu());
+backdrop.addEventListener('click', closeMenu);
+
+/* =========================================================
+   10. ПОИСК
+   ========================================================= */
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+
+function doSearch() {
+  const q = searchInput.value.trim().toLowerCase();
+  if (q.length < 2) { searchResults.classList.remove('show'); return; }
+  const res = state.stickies.filter(s => {
+    const hay = [s.title, s.tag, s.desc, s.author, s.context, TYPES[s.type].label].join(' ').toLowerCase();
+    return hay.includes(q);
+  }).slice(0, 10);
+
+  if (!res.length) searchResults.innerHTML = '<div class="sr-empty">Ничего не найдено</div>';
+  else searchResults.innerHTML = res.map(s => `<div class="sr-item" data-goto="${s.id}"><span class="sr-dot" style="background:${TYPES[s.type].color}"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.title)}</span></div>`).join('');
+  
+  searchResults.classList.add('show');
+}
+
+searchInput.addEventListener('input', doSearch);
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { const first = searchResults.querySelector('.sr-item'); if (first) gotoSticky(first.dataset.goto); }
+  if (e.key === 'Escape') searchResults.classList.remove('show');
+});
+searchResults.addEventListener('click', e => {
+  const item = e.target.closest('.sr-item');
+  if (item) gotoSticky(item.dataset.goto);
+});
+
+function gotoSticky(id) {
+  const s = getSticky(id);
+  const el = elMap.get(id);
+  if (!s || !el) return;
+  closeMenu();
+  state.scale = Math.max(state.scale, 0.8);
+  const cx = s.x + el.offsetWidth / 2;
+  const cy = s.y + el.offsetHeight / 2;
+  state.x = window.innerWidth / 2 - cx * state.scale;
+  state.y = window.innerHeight / 2 - cy * state.scale;
+  applyTransform(); save();
+
+  el.classList.add('highlight');
+  setTimeout(() => el.classList.remove('highlight'), 2500);
+  setTimeout(() => openDetails(s), 100);
+}
+
+/* =========================================================
+   11. МОДАЛКИ
+   ========================================================= */
+const detailsModal = document.getElementById('detailsModal');
+const editModal = document.getElementById('editModal');
+const confirmModal = document.getElementById('confirmModal');
+const detailsBody = document.getElementById('detailsBody');
+const editForm = document.getElementById('editForm');
+
+function closeAllModals() { detailsModal.classList.remove('open'); editModal.classList.remove('open'); confirmModal.classList.remove('open'); }
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeAllModals));
+[detailsModal, editModal, confirmModal].forEach(m => m.addEventListener('click', e => { if (e.target === m) closeAllModals(); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAllModals(); closeMenu(); searchResults.classList.remove('show'); } });
+
+function openDetails(s) {
+  const el = elMap.get(s.id);
+  const index = state.stickies.findIndex(x => x.id === s.id);
+  const t = TYPES[s.type];
+  const outs = state.connections.filter(c => c.from === s.id);
+  const ins = state.connections.filter(c => c.to === s.id);
+
+  let html = `<div class="d-head">${portraitSVG(s.type, index)}<div><h3>${esc(s.title)}</h3><span class="tag" style="background:rgba(255,255,255,0.1);color:#d8cbb6">${esc(t.label)}</span></div></div>`;
+
+  if (s.type === 'quote') {
+    html += `<div class="d-quote">${esc(s.title)}</div><div class="d-author">— ${esc(s.author || 'неизвестен')}</div>`;
+    if (s.context) html += `<div class="d-desc" style="font-size:12px;opacity:0.8">Контекст: ${esc(s.context)}</div>`;
+  } else {
+    if (s.tag) html += `<span class="tag" style="background:rgba(255,217,138,0.15);color:#ffd98a;margin-bottom:10px">${esc(s.tag)}</span>`;
+    html += `<div class="d-desc">${esc(s.desc)}</div>`;
+  }
+
+  html += `<div class="d-info"><div>Статус<b>${s.pinned ? 'Прикреплён 📌' : 'Откреплён ⤫'}</b></div><div>Выполнено<b>${s.done ? 'Да ✓' : 'Нет'}</b></div><div>Исходящих<b>${outs.length}</b></div><div>Входящих<b>${ins.length}</b></div></div>`;
+
+  const linkRow = (c, dir) => {
+    const other = getSticky(dir === 'out' ? c.to : c.from);
+    if (!other) return '';
+    const lt = LINK_TYPES[c.type] || LINK_TYPES.normal;
+    return `<div class="link-item" data-goto="${other.id}"><span class="link-dot" style="background:${lt.color}"></span><span class="link-arrow">${dir === 'out' ? '→' : '←'}</span><span style="flex:1">${esc(other.title)}</span><span style="font-size:10px;color:#7a6a56">${esc(c.label || '')}</span></div>`;
+  };
+
+  if (outs.length || ins.length) {
+    html += `<div class="d-links"><h4>Связи</h4>`;
+    html += outs.map(c => linkRow(c, 'out')).join('');
+    html += ins.map(c => linkRow(c, 'in')).join('');
+    html += `</div>`;
+  }
+
+  html += `<div class="d-actions"><button class="prim" data-act="edit">✎ Редактировать</button><button data-act="pin">${s.pinned ? '⤫ Открепить' : '📌 Прикрепить'}</button></div>`;
+  detailsBody.innerHTML = html;
+
+  detailsBody.querySelectorAll('[data-goto]').forEach(n => n.addEventListener('click', () => gotoSticky(n.dataset.goto)));
+  detailsBody.querySelector('[data-act="edit"]').addEventListener('click', () => openEdit(s));
+  detailsBody.querySelector('[data-act="pin"]').addEventListener('click', () => {
+    s.pinned = !s.pinned;
+    const el = elMap.get(s.id);
+    if (el) el.classList.toggle('unpinned', !s.pinned);
+    save(); openDetails(s);
+  });
+
+  detailsModal.classList.add('open');
+}
+
+function openEdit(s) {
+  closeAllModals();
+  const isQuote = s.type === 'quote';
+  let html = '';
+  if (isQuote) {
+    html += `<div class="field"><label>Цитата</label><textarea name="title" rows="3">${esc(s.title)}</textarea></div>`;
+    html += `<div class="field"><label>Автор</label><input name="author" value="${esc(s.author || '')}"></div>`;
+    html += `<div class="field"><label>Контекст</label><input name="context" value="${esc(s.context || '')}"></div>`;
+  } else {
+    html += `<div class="field"><label>Заголовок</label><input name="title" value="${esc(s.title)}"></div>`;
+    html += `<div class="field"><label>Метка</label><input name="tag" value="${esc(s.tag || '')}"></div>`;
+    html += `<div class="field"><label>Описание</label><textarea name="desc" rows="4">${esc(s.desc)}</textarea></div>`;
+  }
+  html += `<div class="d-actions"><button type="button" class="btn-no" data-close2>Отмена</button><button type="submit" class="prim">Сохранить</button></div>`;
+  
+  editForm.innerHTML = html;
+  editForm.querySelector('[data-close2]').addEventListener('click', closeAllModals);
+  editForm.onsubmit = ev => {
+    ev.preventDefault();
+    const fd = new FormData(editForm);
+    if (isQuote) {
+      s.title = (fd.get('title') || '').toString().trim();
+      s.author = (fd.get('author') || '').toString().trim();
+      s.context = (fd.get('context') || '').toString().trim();
+      s.tag = s.context;
+    } else {
+      s.title = (fd.get('title') || '').toString().trim();
+      s.tag = (fd.get('tag') || '').toString().trim();
+      s.desc = (fd.get('desc') || '').toString().trim();
+    }
+    save(); renderBoard(); closeAllModals();
+  };
+  editModal.classList.add('open');
+}
+
+let confirmCb = null;
+function askUnpin(s, cb) { confirmCb = cb; confirmModal.classList.add('open'); }
+document.getElementById('confirmYes').addEventListener('click', () => { confirmModal.classList.remove('open'); if (confirmCb) confirmCb(); confirmCb = null; });
+document.getElementById('confirmNo').addEventListener('click', () => { confirmModal.classList.remove('open'); confirmCb = null; });
+
+/* =========================================================
+   12. ПАНЕЛЬ УПРАВЛЕНИЯ
+   ========================================================= */
+const filtersEl = document.getElementById('filters');
+function buildFilters() {
+  filtersEl.innerHTML = '';
+  const mkBtn = (key, label, color, isOn, onToggle) => {
+    const b = document.createElement('button');
+    b.className = 'fbtn ' + (isOn ? 'on' : '');
+    b.innerHTML = `<span class="sw" style="background:${color}"></span><span>${label}</span>`;
+    b.addEventListener('click', () => {
+      const now = b.classList.contains('on');
+      b.classList.toggle('on', !now);
+      onToggle(!now);
+    });
+    filtersEl.appendChild(b);
+  };
+
+  mkBtn('done', '✓ Выполненные', '#2ecc71', state.showDone, v => { state.showDone = v; applyFilters(); save(); });
+  Object.keys(TYPES).forEach(k => {
+    mkBtn(k, TYPES[k].label, TYPES[k].color === '#161616' ? '#ffe066' : TYPES[k].color, state.filters[k], v => {
+      state.filters[k] = v; applyFilters(); save();
+    });
+  });
+}
+
+document.getElementById('btnResetView').addEventListener('click', () => { resetView(); closeMenu(); });
+document.getElementById('btnZoomIn').addEventListener('click', () => zoomAt(window.innerWidth / 2, window.innerHeight / 2, state.scale * 1.3));
+document.getElementById('btnZoomOut').addEventListener('click', () => zoomAt(window.innerWidth / 2, window.innerHeight / 2, state.scale / 1.3));
+document.getElementById('btnLabels').addEventListener('click', () => { state.showLabels = !state.showLabels; renderConnections(); save(); });
+document.getElementById('btnUnpinAll').addEventListener('click', () => { state.stickies.forEach(s => s.pinned = false); renderBoard(); save(); closeMenu(); });
+document.getElementById('btnPinAll').addEventListener('click', () => { state.stickies.forEach(s => s.pinned = true); renderBoard(); save(); closeMenu(); });
+document.getElementById('btnResetAll').addEventListener('click', () => { if (confirm('Сбросить все данные?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } });
+
+/* =========================================================
+   13. СОХРАНЕНИЕ
+   ========================================================= */
+function save() {
+  try {
+    const data = {
+      stickies: state.stickies.map(s => ({ id: s.id, type: s.type, title: s.title, tag: s.tag, desc: s.desc, author: s.author, context: s.context, x: s.x, y: s.y, pinned: s.pinned, done: s.done })),
+      view: { x: state.x, y: state.y, scale: state.scale },
+      filters: state.filters,
+      showDone: state.showDone,
+      showLabels: state.showLabels
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e){}
+}
+
+function load() {
+  state.connections = DEFAULT_CONNECTIONS.slice();
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch(e) { saved = null; }
+
+  if (saved && Array.isArray(saved.stickies)) {
+    state.stickies = DEFAULT_STICKIES.map(def => {
+      const sv = saved.stickies.find(x => x.id === def.id);
+      return sv ? Object.assign({}, def, sv) : Object.assign({}, def);
+    });
+    if (saved.view) { state.x = saved.view.x; state.y = saved.view.y; state.scale = clamp(saved.view.scale || 1, 0.15, 2); }
+    if (saved.filters) Object.assign(state.filters, saved.filters);
+    if (typeof saved.showDone === 'boolean') state.showDone = saved.showDone;
+    if (typeof saved.showLabels === 'boolean') state.showLabels = saved.showLabels;
+  } else {
+    state.stickies = DEFAULT_STICKIES.map(s => Object.assign({}, s));
+  }
+}
+
+/* =========================================================
+   14. ИНИЦИАЛИЗАЦИЯ
+   ========================================================= */
+function init() {
+  load();
+  buildFilters();
+  renderBoard();
+
+  const hasView = state.x !== 0 || state.y !== 0;
+  if (!hasView) resetView();
+  else applyTransform();
+
+  window.addEventListener('resize', renderConnections);
+}
+
+init();
+</script>
+</body>
+</html>
