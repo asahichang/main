@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Расследование теракта на лифте "Гулливер"</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { touch-action: none; overscroll-behavior: none; }
+  body { font-family: 'Courier New', monospace; background: #0a0a0a; overflow: hidden; height: 100vh; user-select: none; -webkit-user-select: none; }
+  #viewport { width: 100vw; height: 100vh; overflow: hidden; cursor: grab; position: relative; touch-action: none; }
+  #viewport.dragging { cursor: grabbing; }
+  #board { width: 4500px; height: 3400px; position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+  #wall-bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  #cork-board {
+    position: absolute; left: 200px; top: 150px; width: 4100px; height: 3000px;
+    background: radial-gradient(ellipse at 20% 30%, rgba(139,90,43,0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(101,67,33,0.3) 0%, transparent 50%),
+                linear-gradient(135deg, #8B5A2B 0%, #A0522D 50%, #6B4423 100%);
+    box-shadow: inset 0 0 200px rgba(0,0,0,0.5), 0 20px 60px rgba(0,0,0,0.8),
+                0 0 0 12px #3d2817, 0 0 0 16px #1a0f08, 0 0 0 20px rgba(0,0,0,0.4);
+    border-radius: 4px; z-index: 1;
+  }
+  #cork-board::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 15% 25%, rgba(60,30,10,0.3) 1px, transparent 2px),
+                      radial-gradient(circle at 45% 65%, rgba(60,30,10,0.2) 1px, transparent 2px),
+                      radial-gradient(circle at 75% 35%, rgba(60,30,10,0.3) 1px, transparent 2px);
+    background-size: 80px 80px, 120px 120px, 100px 100px;
+    pointer-events: none; border-radius: 4px;
+  }
+  #svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+  .connection { fill: none; stroke-width: 2.5; opacity: 0.9; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }
+  .conn-critical { stroke: #c0392b; stroke-width: 4; animation: pulse-critical 2s ease-in-out infinite; }
+  .conn-important { stroke: #e67e22; stroke-width: 3; }
+  .conn-normal { stroke: #f1c40f; stroke-width: 2.5; }
+  .conn-hidden { stroke: #8e44ad; stroke-width: 3; stroke-dasharray: 10 5; }
+  .conn-past { stroke: #3498db; stroke-width: 2.5; stroke-dasharray: 4 4; }
+  .conn-hypothesis { stroke: #27ae60; stroke-width: 2.5; stroke-dasharray: 2 6; }
+  .conn-quote { stroke: #16a085; stroke-width: 2.5; stroke-dasharray: 6 3; }
+  @keyframes pulse-critical {
+    0%, 100% { opacity: 0.9; stroke-width: 4; }
+    50% { opacity: 1; stroke-width: 5; filter: drop-shadow(0 0 8px #c0392b); }
+  }
+  .conn-label {
+    font-size: 14px; fill: #fff; font-family: 'Courier New', monospace; font-weight: bold;
+    paint-order: stroke; stroke: rgba(0,0,0,0.9); stroke-width: 3.5px; pointer-events: none;
+  }
+  .sticky {
+    position: absolute; width: 230px; min-height: 300px; padding: 14px;
+    cursor: move; z-index: 10;
+    box-shadow: 3px 5px 12px rgba(0,0,0,0.5), inset 0 -3px 6px rgba(0,0,0,0.15);
+    transition: box-shadow 0.3s, opacity 0.3s;
+    font-size: 14px; line-height: 1.5;
+    border: 1px solid rgba(0,0,0,0.15);
+  }
+  .sticky-person { animation: sway-person 7s ease-in-out infinite; }
+  .sticky-org { animation: sway-org 9s ease-in-out infinite; }
+  .sticky-object { animation: pulse-object 4s ease-in-out infinite; }
+  .sticky-event { animation: flash-event 5s ease-in-out infinite; }
+  .sticky-location { animation: rotate-location 20s linear infinite; }
+  .sticky-mystery { animation: flicker-mystery 3s ease-in-out infinite; }
+  .sticky-hypothesis { animation: glow-hypothesis 3s ease-in-out infinite; }
+  .sticky-quote { animation: fade-quote 4s ease-in-out infinite; }
+  .sticky-scheme, .sticky-map { animation: none; }
+  
+  @keyframes sway-person { 0%, 100% { transform: var(--base-rotate, rotate(0deg)) translateY(0); } 50% { transform: var(--base-rotate, rotate(0deg)) translateY(-3px); } }
+  @keyframes sway-org { 0%, 100% { transform: var(--base-rotate, rotate(0deg)) scale(1); } 50% { transform: var(--base-rotate, rotate(0deg)) scale(1.01); } }
+  @keyframes pulse-object { 0%, 100% { box-shadow: 3px 5px 12px rgba(0,0,0,0.5), 0 0 0 rgba(255,255,255,0); } 50% { box-shadow: 3px 5px 12px rgba(0,0,0,0.5), 0 0 15px rgba(255,255,255,0.3); } }
+  @keyframes flash-event { 0%, 90%, 100% { filter: brightness(1); } 95% { filter: brightness(1.3); } }
+  @keyframes rotate-location { 0% { transform: var(--base-rotate, rotate(0deg)); } 100% { transform: var(--base-rotate, rotate(360deg)); } }
+  @keyframes flicker-mystery { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } 75% { opacity: 0.95; } }
+  @keyframes glow-hypothesis { 0%, 100% { box-shadow: 3px 5px 12px rgba(0,0,0,0.5), 0 0 0 rgba(39,174,96,0); } 50% { box-shadow: 3px 5px 12px rgba(0,0,0,0.5), 0 0 20px rgba(39,174,96,0.6); } }
+  @keyframes fade-quote { 0%, 100% { opacity: 1; } 50% { opacity: 0.9; } }
+  
+  .sticky:hover { box-shadow: 5px 10px 20px rgba(0,0,0,0.7); z-index: 100; animation-play-state: paused; }
+  .sticky.dragging { cursor: grabbing; box-shadow: 10px 15px 30px rgba(0,0,0,0.8); z-index: 1000; animation: none !important; transform: scale(1.05) !important; }
+  .sticky.detached::before {
+    content: '📌✕'; position: absolute; top: -8px; right: -8px;
+    background: #27ae60; color: #fff; width: 24px; height: 24px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    z-index: 21; border: 2px solid #fff;
+  }
+  .sticky.completed { opacity: 0.45; filter: grayscale(0.7); }
+  .sticky.completed::after {
+    content: '✓'; position: absolute; top: 5px; left: 5px;
+    background: #27ae60; color: #fff; width: 28px; height: 28px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: bold; z-index: 22; border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+  .sticky.hidden-by-filter { display: none !important; }
+  
+  .sticky-checkbox {
+    position: absolute; top: 8px; right: 8px; width: 28px; height: 28px;
+    background: rgba(255,255,255,0.7); border: 2px solid #333; border-radius: 4px;
+    cursor: pointer; z-index: 25; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: bold; color: #27ae60; transition: all 0.2s;
+    min-width: 44px; min-height: 44px;
+  }
+  .sticky-checkbox:hover { background: rgba(255,255,255,0.95); transform: scale(1.1); }
+  .sticky-checkbox.checked { background: #27ae60; color: #fff; border-color: #1e8449; }
+  
+  .sticky-edit-btn {
+    position: absolute; top: 8px; right: 60px; width: 28px; height: 28px;
+    background: rgba(255,255,255,0.7); border: 2px solid #333; border-radius: 4px;
+    cursor: pointer; z-index: 25; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; transition: all 0.2s;
+    min-width: 44px; min-height: 44px;
+  }
+  .sticky-edit-btn:hover { background: rgba(255,255,255,0.95); transform: scale(1.1); }
+  
+  .pin {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    width: 24px; height: 24px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ff6b6b, #c0392b);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.6), inset 0 -3px 4px rgba(0,0,0,0.4), inset 0 2px 3px rgba(255,255,255,0.3);
+    z-index: 20;
+  }
+  .pin::after {
+    content: ''; position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
+    background: #fff; border-radius: 50%; transform: translate(-50%, -50%); opacity: 0.6;
+  }
+  .pin-shadow {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    width: 20px; height: 6px;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.4) 0%, transparent 70%);
+    z-index: 1; pointer-events: none;
+  }
+  .sticky-person { background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%); color: #3e2723; }
+  .sticky-org { background: linear-gradient(135deg, #ffcdd2 0%, #ef9a9a 100%); color: #3e2723; }
+  .sticky-object { background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%); color: #0d47a1; }
+  .sticky-event { background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%); color: #1b5e20; }
+  .sticky-location { background: linear-gradient(135deg, #e1bee7 0%, #ce93d8 100%); color: #4a148c; }
+  .sticky-mystery { background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%); color: #f1c40f; border: 2px dashed #f1c40f; }
+  .sticky-hypothesis { background: linear-gradient(135deg, #d4efdf 0%, #a9dfbf 100%); color: #0b5345; border: 2px dashed #27ae60; }
+  .sticky-quote { background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); color: #004d40; border: 2px dashed #16a085; }
+  .sticky-scheme { background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); color: #3e2723; border: 3px double #8b0000; width: 480px; min-height: 400px; }
+  .sticky-map { background: linear-gradient(135deg, #e8d4a8 0%, #d4a574 100%); color: #3e2723; border: 3px solid #3d2817; width: 500px; min-height: 400px; }
+  .sticky-title {
+    font-weight: bold; font-size: 16px; margin-bottom: 8px;
+    border-bottom: 1px dashed rgba(0,0,0,0.3); padding-bottom: 5px;
+    text-transform: uppercase; letter-spacing: 0.8px; text-align: center;
+  }
+  .sticky-portrait {
+    width: 190px; height: 150px; margin: 6px auto 8px; display: block;
+    background: rgba(255,255,255,0.3); border: 2px solid rgba(0,0,0,0.2);
+    border-radius: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.15); overflow: hidden;
+  }
+  .sticky-scheme .sticky-portrait, .sticky-map .sticky-portrait { width: 440px; height: 280px; }
+  .sticky-desc { font-size: 13px; font-style: italic; margin-top: 6px; opacity: 0.9; line-height: 1.4; }
+  .sticky-tag {
+    display: inline-block; background: rgba(0,0,0,0.2); padding: 2px 8px;
+    border-radius: 4px; font-size: 11px; margin-top: 6px; font-weight: bold; letter-spacing: 0.5px;
+  }
+  .sticky-quote .quote-text {
+    font-size: 14px; font-style: italic; font-weight: bold;
+    margin: 8px 0; padding: 8px; background: rgba(255,255,255,0.4);
+    border-left: 3px solid #16a085; border-radius: 4px; line-height: 1.4;
+  }
+  .sticky-quote .quote-author { font-size: 12px; font-weight: bold; color: #00695c; margin-top: 4px; text-align: right; }
+  .sticky-quote .quote-context {
+    font-size: 11px; color: #004d40; margin-top: 6px;
+    padding: 6px; background: rgba(255,255,255,0.3); border-radius: 4px; line-height: 1.3;
+  }
+  
+  /* ============ ГАМБУРГЕР-МЕНЮ ============ */
+  #menu-toggle {
+    position: fixed; top: 15px; left: 15px; width: 50px; height: 50px;
+    background: rgba(20,20,20,0.95); border: 2px solid #f1c40f;
+    border-radius: 10px; cursor: pointer; z-index: 10001;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    gap: 5px; transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  }
+  #menu-toggle:hover { background: rgba(40,40,40,0.95); }
+  #menu-toggle .bar {
+    width: 24px; height: 3px; background: #f1c40f; border-radius: 2px;
+    transition: all 0.3s;
+  }
+  #menu-toggle.active .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+  #menu-toggle.active .bar:nth-child(2) { opacity: 0; }
+  #menu-toggle.active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+  
+  #menu-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.6); z-index: 9999;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    backdrop-filter: blur(2px);
+  }
+  #menu-overlay.active { opacity: 1; pointer-events: auto; }
+  
+  #menu-drawer {
+    position: fixed; top: 0; left: 0; width: 340px; max-width: 85vw;
+    height: 100vh; background: rgba(20,20,20,0.98);
+    border-right: 2px solid #f1c40f;
+    z-index: 10000; transform: translateX(-100%);
+    transition: transform 0.3s ease-out;
+    overflow-y: auto; overflow-x: hidden;
+    padding: 75px 20px 20px 20px;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.7);
+  }
+  #menu-drawer.active { transform: translateX(0); }
+  
+  #menu-drawer h1 {
+    font-size: 20px; color: #e74c3c; text-transform: uppercase;
+    letter-spacing: 1.5px; margin-bottom: 8px;
+  }
+  #menu-drawer .subtitle {
+    font-size: 12px; color: #95a5a6; margin-bottom: 15px; font-style: italic;
+  }
+  
+  .menu-section {
+    margin: 15px 0; padding: 12px; background: rgba(255,255,255,0.05);
+    border-radius: 6px; border-left: 3px solid #f1c40f;
+  }
+  .menu-section-title {
+    font-size: 12px; color: #f1c40f; font-weight: bold; margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  
+  #menu-drawer button {
+    background: #f1c40f; color: #1a1a1a; border: none; padding: 10px 14px;
+    margin: 4px 4px 4px 0; cursor: pointer; font-family: inherit; font-weight: bold;
+    font-size: 13px; border-radius: 4px; transition: background 0.2s, transform 0.1s;
+    min-height: 44px;
+  }
+  #menu-drawer button:hover { background: #f39c12; }
+  #menu-drawer button.danger { background: #c0392b; color: #fff; }
+  #menu-drawer button.danger:hover { background: #e74c3c; }
+  #menu-drawer button.active { background: #27ae60; color: #fff; }
+  
+  /* Поиск в меню */
+  #search-container { position: relative; margin: 8px 0; }
+  #search-input {
+    width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.1);
+    border: 1px solid #f1c40f; border-radius: 4px; color: #f1c40f;
+    font-family: inherit; font-size: 14px; outline: none; min-height: 44px;
+  }
+  #search-input:focus { background: rgba(255,255,255,0.15); border-color: #f39c12; }
+  #search-input::placeholder { color: rgba(241,196,15,0.5); }
+  #search-suggestions {
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: rgba(20,20,20,0.98); border: 1px solid #f1c40f;
+    border-radius: 4px; margin-top: 2px; max-height: 200px; overflow-y: auto;
+    display: none; z-index: 10001;
+  }
+  #search-suggestions.active { display: block; }
+  .suggestion-item {
+    padding: 10px 12px; cursor: pointer; font-size: 13px; color: #f1c40f;
+    border-bottom: 1px solid rgba(241,196,15,0.2); min-height: 44px;
+    display: flex; align-items: center;
+  }
+  .suggestion-item:hover { background: rgba(241,196,15,0.15); }
+  .suggestion-item .sugg-type { font-size: 11px; color: #95a5a6; margin-left: 6px; }
+  
+  #legend { margin-top: 10px; }
+  .legend-item { display: flex; align-items: center; margin: 4px 0; font-size: 12px; color: #f1c40f; }
+  .legend-color { width: 22px; height: 16px; margin-right: 10px; border: 1px solid rgba(0,0,0,0.3); border-radius: 2px; flex-shrink: 0; }
+  .legend-line { width: 28px; height: 4px; margin-right: 10px; border-radius: 2px; flex-shrink: 0; }
+  
+  /* ============ НИЖНИЕ ИНДИКАТОРЫ ============ */
+  #zoom-indicator {
+    position: fixed; bottom: 15px; left: 15px; background: rgba(20,20,20,0.92);
+    color: #f1c40f; padding: 8px 14px; border-radius: 8px; border: 1px solid #f1c40f;
+    font-family: 'Courier New', monospace; font-size: 13px; z-index: 100;
+  }
+  
+  #hint {
+    position: fixed; bottom: 15px; right: 15px; background: rgba(20,20,20,0.92);
+    color: #f1c40f; padding: 10px 14px; border-radius: 8px; border: 1px solid #f1c40f;
+    font-family: 'Courier New', monospace; font-size: 11px; z-index: 100; max-width: 280px; line-height: 1.5;
+  }
+  
+  #case-header {
+    position: absolute; top: 180px; left: 50%; transform: translateX(-50%);
+    background: #f4e8d0; padding: 24px 50px; border: 3px double #333;
+    box-shadow: 5px 8px 16px rgba(0,0,0,0.6); z-index: 5; text-align: center;
+    font-family: 'Times New Roman', serif;
+  }
+  #case-header h2 { font-size: 28px; color: #8b0000; margin-bottom: 6px; letter-spacing: 3px; text-transform: uppercase; }
+  #case-header .case-number { font-size: 13px; color: #333; font-style: italic; }
+  #case-header .stamp {
+    position: absolute; top: -18px; right: -18px; background: #c0392b; color: #fff;
+    padding: 8px 14px; transform: rotate(15deg); font-weight: bold; font-size: 14px;
+    border: 2px solid #fff; font-family: 'Courier New', monospace;
+    box-shadow: 2px 3px 6px rgba(0,0,0,0.4); animation: stamp-pulse 3s ease-in-out infinite;
+  }
+  @keyframes stamp-pulse { 0%, 100% { transform: rotate(15deg) scale(1); } 50% { transform: rotate(15deg) scale(1.05); } }
+  
+  /* ============ МОДАЛКИ (адаптивные) ============ */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.7); z-index: 20000; display: none;
+    align-items: center; justify-content: center; backdrop-filter: blur(3px);
+    padding: 15px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-content {
+    background: linear-gradient(135deg, #f4e8d0 0%, #e8d4a8 100%);
+    padding: 25px 30px; border-radius: 8px; border: 3px double #333;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8); text-align: center;
+    font-family: 'Courier New', monospace; max-width: 500px; width: 100%;
+    animation: modal-appear 0.3s ease-out; position: relative;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-content.wide { max-width: 650px; text-align: left; }
+  @keyframes modal-appear { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-content h3 { font-size: 20px; color: #8b0000; margin-bottom: 12px; text-transform: uppercase; }
+  .modal-content p { font-size: 14px; color: #333; margin-bottom: 15px; line-height: 1.5; }
+  .modal-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .modal-content button {
+    padding: 12px 20px; font-size: 14px; font-weight: bold; border: 2px solid #333;
+    border-radius: 4px; cursor: pointer; font-family: inherit; transition: all 0.2s;
+    min-height: 44px; flex: 1; min-width: 120px;
+  }
+  .btn-yes { background: #c0392b; color: #fff; }
+  .btn-yes:hover { background: #e74c3c; transform: translateY(-2px); }
+  .btn-no { background: #f4e8d0; color: #333; }
+  .btn-no:hover { background: #e8d4a8; transform: translateY(-2px); }
+  .btn-primary { background: #34495e; color: #fff; }
+  .btn-primary:hover { background: #2c3e50; transform: translateY(-2px); }
+  .btn-success { background: #27ae60; color: #fff; }
+  .btn-success:hover { background: #2ecc71; transform: translateY(-2px); }
+  
+  .edit-form { display: flex; flex-direction: column; gap: 10px; }
+  .edit-field { display: flex; flex-direction: column; gap: 4px; }
+  .edit-field label { font-size: 12px; color: #8b0000; font-weight: bold; text-transform: uppercase; }
+  .edit-field input, .edit-field textarea, .edit-field select {
+    padding: 10px; border: 1px solid #8b0000; border-radius: 4px;
+    font-family: inherit; font-size: 14px; background: rgba(255,255,255,0.7);
+    color: #333; outline: none; min-height: 44px;
+  }
+  .edit-field textarea { min-height: 100px; resize: vertical; }
+  .edit-field input:focus, .edit-field textarea:focus, .edit-field select:focus {
+    border-color: #c0392b; background: rgba(255,255,255,0.9);
+  }
+  
+  .close-x {
+    position: absolute; top: 10px; right: 15px; font-size: 32px; color: #8b0000;
+    cursor: pointer; font-weight: bold; line-height: 1; transition: transform 0.2s;
+    width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+  }
+  .close-x:hover { transform: scale(1.3) rotate(90deg); }
+  
+  .details-header { text-align: center; border-bottom: 2px dashed #8b0000; padding-bottom: 12px; margin-bottom: 15px; }
+  .details-title { font-size: 22px; color: #8b0000; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; margin-bottom: 6px; }
+  .details-tag { display: inline-block; background: #8b0000; color: #fff; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-top: 4px; }
+  .details-portrait {
+    width: 240px; height: 180px; margin: 12px auto; display: block;
+    background: rgba(0,0,0,0.1); border: 3px solid #333; border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 2px 6px rgba(0,0,0,0.2); overflow: hidden;
+    max-width: 100%;
+  }
+  .details-desc {
+    font-size: 14px; color: #333; line-height: 1.5; text-align: center; margin: 12px 0;
+    padding: 10px; background: rgba(255,255,255,0.4); border-radius: 6px; font-style: italic;
+  }
+  .details-section { margin: 12px 0; padding: 10px; background: rgba(255,255,255,0.3); border-radius: 6px; border-left: 4px solid #8b0000; }
+  .details-section-title { font-size: 13px; color: #8b0000; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; border-bottom: 1px dashed #8b0000; padding-bottom: 3px; }
+  .details-info-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; color: #333; flex-wrap: wrap; gap: 8px; }
+  .details-info-row span:first-child { font-weight: bold; color: #5d3a1f; }
+  .connection-item { padding: 6px 8px; margin: 3px 0; background: rgba(255,255,255,0.5); border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .conn-type-indicator { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.3); }
+  .conn-type-critical { background: #c0392b; }
+  .conn-type-important { background: #e67e22; }
+  .conn-type-normal { background: #f1c40f; }
+  .conn-type-hidden { background: #8e44ad; }
+  .conn-type-past { background: #3498db; }
+  .conn-type-hypothesis { background: #27ae60; }
+  .conn-type-quote { background: #16a085; }
+  .conn-text { flex: 1; color: #333; min-width: 0; }
+  .conn-target { font-weight: bold; color: #8b0000; }
+  .details-actions { display: flex; gap: 8px; justify-content: center; margin-top: 15px; padding-top: 12px; border-top: 2px dashed #8b0000; flex-wrap: wrap; }
+  
+  .modal-content::-webkit-scrollbar { width: 10px; }
+  .modal-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 5px; }
+  .modal-content::-webkit-scrollbar-thumb { background: #8b0000; border-radius: 5px; }
+  
+  .sticky.search-highlight {
+    box-shadow: 0 0 0 4px #f1c40f, 0 0 30px #f1c40f !important;
+    z-index: 500 !important;
+  }
+  
+  @keyframes lamp-flicker {
+    0%, 100% { opacity: 0.95; } 45% { opacity: 0.95; } 47% { opacity: 0.6; }
+    49% { opacity: 0.95; } 51% { opacity: 0.7; } 53% { opacity: 0.95; }
+  }
+  .lamp-light { animation: lamp-flicker 8s infinite; }
+  
+  /* ============ АДАПТИВ ДЛЯ МОБИЛЬНЫХ ============ */
+  @media (max-width: 768px) {
+    #case-header { padding: 15px 25px; top: 100px; }
+    #case-header h2 { font-size: 20px; letter-spacing: 2px; }
+    #case-header .case-number { font-size: 11px; }
+    #case-header .stamp { font-size: 11px; padding: 6px 10px; top: -12px; right: -12px; }
+    
+    #hint { font-size: 10px; max-width: 180px; padding: 8px 10px; }
+    #zoom-indicator { font-size: 12px; padding: 6px 10px; }
+    
+    .sticky { width: 200px; min-height: 260px; padding: 10px; font-size: 12px; }
+    .sticky-title { font-size: 14px; }
+    .sticky-portrait { width: 170px; height: 130px; }
+    .sticky-desc { font-size: 11px; }
+    .sticky-tag { font-size: 10px; }
+    .sticky-scheme { width: 320px; min-height: 280px; }
+    .sticky-map { width: 340px; min-height: 280px; }
+    .sticky-scheme .sticky-portrait, .sticky-map .sticky-portrait { width: 290px; height: 200px; }
+    
+    .modal-content { padding: 20px; }
+    .modal-content h3 { font-size: 18px; }
+    .details-title { font-size: 18px; }
+    .details-portrait { width: 200px; height: 150px; }
+    
+    #menu-drawer { width: 300px; padding: 70px 15px 15px 15px; }
+    #menu-drawer h1 { font-size: 18px; }
+  }
+  
+  @media (max-width: 480px) {
+    #menu-toggle { width: 44px; height: 44px; top: 10px; left: 10px; }
+    #menu-toggle .bar { width: 20px; }
+    #menu-toggle.active .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    #menu-toggle.active .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    
+    #case-header { padding: 12px 20px; top: 70px; }
+    #case-header h2 { font-size: 16px; letter-spacing: 1px; }
+    #case-header .case-number { font-size: 10px; }
+    
+    #hint { display: none; }
+    
+    .sticky { width: 180px; min-height: 240px; padding: 8px; }
+    .sticky-title { font-size: 13px; }
+    .sticky-portrait { width: 150px; height: 120px; }
+    .sticky-desc { font-size: 10px; }
+    .sticky-scheme { width: 280px; min-height: 240px; }
+    .sticky-map { width: 280px; min-height: 240px; }
+    .sticky-scheme .sticky-portrait, .sticky-map .sticky-portrait { width: 250px; height: 170px; }
+    
+    #menu-drawer { width: 280px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Кнопка-гамбургер -->
+<div id="menu-toggle" onclick="toggleMenu()">
+  <div class="bar"></div>
+  <div class="bar"></div>
+  <div class="bar"></div>
+</div>
+
+<!-- Оверлей для закрытия меню -->
+<div id="menu-overlay" onclick="toggleMenu()"></div>
+
+<!-- Выдвижное меню -->
+<div id="menu-drawer">
+  <h1>🔍 Теракт на "Гулливере"</h1>
+  <div class="subtitle">Доска расследования • 2098 г.</div>
+  
+  <div class="menu-section">
+    <div class="menu-section-title">🔎 Поиск</div>
+    <div id="search-container">
+      <input type="text" id="search-input" placeholder="Введите ключевое слово...">
+      <div id="search-suggestions"></div>
+    </div>
+  </div>
+  
+  <div class="menu-section">
+    <div class="menu-section-title">👁️ Фильтры</div>
+    <button id="filter-completed" onclick="toggleFilter('completed')">✓ Выполненные</button>
+    <button id="filter-person" onclick="toggleFilter('person')">👤 Персонажи</button>
+    <button id="filter-org" onclick="toggleFilter('org')">🏢 Организации</button>
+    <button id="filter-hypothesis" onclick="toggleFilter('hypothesis')">💡 Гипотезы</button>
+    <button id="filter-object" onclick="toggleFilter('object')">🔧 Объекты</button>
+    <button id="filter-quote" onclick="toggleFilter('quote')">💬 Цитаты</button>
+    <button id="filter-event" onclick="toggleFilter('event')">📅 События</button>
+    <button id="filter-location" onclick="toggleFilter('location')">📍 Локации</button>
+    <button id="filter-mystery" onclick="toggleFilter('mystery')">❓ Тайны</button>
+  </div>
+  
+  <div class="menu-section">
+    <div class="menu-section-title">🎯 Управление</div>
+    <button onclick="resetView(); toggleMenu();">⟲ Сброс вида</button>
+    <button onclick="zoomIn()">＋</button>
+    <button onclick="zoomOut()">－</button>
+    <button onclick="toggleLabels()">🏷 Подписи</button>
+    <button class="danger" onclick="detachAll()">📌✕ Снять все скрепки</button>
+    <button onclick="attachAll()">📌 Прикрепить все</button>
+    <button class="danger" onclick="resetAllData()">🗑 Сбросить всё</button>
+  </div>
+  
+  <div class="menu-section">
+    <div class="menu-section-title">📖 Легенда</div>
+    <div id="legend">
+      <div style="font-weight:bold; margin-bottom:4px; font-size:12px; color:#f1c40f;">Улики:</div>
+      <div class="legend-item"><div class="legend-color" style="background:#fff59d"></div>Персонажи</div>
+      <div class="legend-item"><div class="legend-color" style="background:#ef9a9a"></div>Организации</div>
+      <div class="legend-item"><div class="legend-color" style="background:#90caf9"></div>Объекты</div>
+      <div class="legend-item"><div class="legend-color" style="background:#a5d6a7"></div>События</div>
+      <div class="legend-item"><div class="legend-color" style="background:#ce93d8"></div>Локации</div>
+      <div class="legend-item"><div class="legend-color" style="background:#1a1a1a; border:1px dashed #f1c40f"></div>Тайны</div>
+      <div class="legend-item"><div class="legend-color" style="background:#a9dfbf; border:1px dashed #27ae60"></div>Гипотезы</div>
+      <div class="legend-item"><div class="legend-color" style="background:#b2ebf2; border:1px dashed #16a085"></div>Цитаты</div>
+      <div class="legend-item"><div class="legend-color" style="background:#ffe0b2; border:3px double #8b0000"></div>Схема/Карта</div>
+      <div style="font-weight:bold; margin:8px 0 4px; font-size:12px; color:#f1c40f;">Связи:</div>
+      <div class="legend-item"><div class="legend-line" style="background:#c0392b"></div>Критические</div>
+      <div class="legend-item"><div class="legend-line" style="background:#e67e22"></div>Важные</div>
+      <div class="legend-item"><div class="legend-line" style="background:#f1c40f"></div>Обычные</div>
+      <div class="legend-item"><div class="legend-line" style="background:#8e44ad; background-image:repeating-linear-gradient(90deg,#8e44ad 0 8px,transparent 8px 12px)"></div>Скрытые</div>
+      <div class="legend-item"><div class="legend-line" style="background:#27ae60; background-image:repeating-linear-gradient(90deg,#27ae60 0 2px,transparent 2px 6px)"></div>Гипотезы</div>
+      <div class="legend-item"><div class="legend-line" style="background:#16a085; background-image:repeating-linear-gradient(90deg,#16a085 0 5px,transparent 5px 8px)"></div>Цитаты</div>
+    </div>
+  </div>
+  
+  <div class="menu-section">
+    <div class="menu-section-title">💡 Управление</div>
+    <div style="font-size:12px; color:#f1c40f; line-height:1.6;">
+      • <b>☐</b> — отметить выполненным<br>
+      • <b>✎</b> — редактировать стикер<br>
+      • <b>Клик</b> — детали улики<br>
+      • <b>Перетаскивание</b> — открепить<br>
+      • <b>Колесо / щипок</b> — масштаб<br>
+      • <b>Перетаскивание фона</b> — панорама
+    </div>
+  </div>
+</div>
+
+<!-- Модалки -->
+<div id="detach-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>📌 Открепить?</h3>
+    <p>Вы хотите открепить эту улику от доски?<br>После этого её можно будет свободно перемещать.</p>
+    <div class="modal-buttons">
+      <button class="btn-yes" id="btn-yes">Да, открепить</button>
+      <button class="btn-no" id="btn-no">Нет, оставить</button>
+    </div>
+  </div>
+</div>
+
+<div id="details-modal" class="modal-overlay">
+  <div class="modal-content wide">
+    <span class="close-x" onclick="closeDetailsModal()">×</span>
+    <div id="details-body"></div>
+  </div>
+</div>
+
+<div id="edit-modal" class="modal-overlay">
+  <div class="modal-content wide">
+    <span class="close-x" onclick="closeEditModal()">×</span>
+    <h3>✎ Редактирование улики</h3>
+    <div id="edit-form-container" class="edit-form"></div>
+    <div class="modal-buttons" style="margin-top:15px;">
+      <button class="btn-success" onclick="saveEdit()">💾 Сохранить</button>
+      <button class="btn-no" onclick="closeEditModal()">✕ Отмена</button>
+    </div>
+  </div>
+</div>
+
+<div id="zoom-indicator">Масштаб: <span id="zoom-level">100%</span></div>
+
+<div id="hint">
+  💡 <b>Управление:</b><br>
+  • ☰ — меню<br>
+  • ☐ — выполнить<br>
+  • ✎ — редактировать<br>
+  • Клик — детали<br>
+  • Щипок — масштаб
+</div>
+
+<div id="viewport">
+  <div id="board">
+    <svg id="wall-bg" viewBox="0 0 4500 3400" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <pattern id="wallpaper" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+          <rect width="80" height="80" fill="#3a2817"/>
+          <path d="M 40 10 L 50 20 L 40 30 L 30 20 Z" fill="#4a3520" opacity="0.6"/>
+          <path d="M 0 50 L 10 60 L 0 70 L -10 60 Z" fill="#4a3520" opacity="0.6"/>
+          <path d="M 80 50 L 90 60 L 80 70 L 70 60 Z" fill="#4a3520" opacity="0.6"/>
+        </pattern>
+        <radialGradient id="lampGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffeb99" stop-opacity="0.6"/>
+          <stop offset="50%" stop-color="#ffcc66" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="#ffcc66" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stop-color="#000" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#000" stop-opacity="0.7"/>
+        </radialGradient>
+        <linearGradient id="woodGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#5d3a1f"/>
+          <stop offset="50%" stop-color="#3d2817"/>
+          <stop offset="100%" stop-color="#2a1a0e"/>
+        </linearGradient>
+      </defs>
+      <rect width="4500" height="3400" fill="url(#wallpaper)"/>
+      <rect width="4500" height="3400" fill="#2a1a0e" opacity="0.3"/>
+      <rect x="0" y="3250" width="4500" height="150" fill="#1a0f08"/>
+      <rect x="0" y="3250" width="4500" height="20" fill="#3d2817"/>
+      <g transform="translate(100, 2700)">
+        <rect x="0" y="0" width="400" height="20" fill="url(#woodGrad)" stroke="#1a0f08" stroke-width="2"/>
+        <rect x="20" y="-120" width="25" height="120" fill="#8b0000"/>
+        <rect x="45" y="-100" width="20" height="100" fill="#2c5f2d"/>
+        <rect x="65" y="-130" width="28" height="130" fill="#1a3a5c"/>
+        <rect x="300" y="-110" width="80" height="110" fill="#c0a080"/>
+        <text x="340" y="-50" font-size="12" fill="#3d2817" text-anchor="middle" font-family="serif">ДЕЛО</text>
+        <text x="340" y="-35" font-size="10" fill="#c0392b" text-anchor="middle" font-family="serif" font-weight="bold">ТЕРАКТ</text>
+      </g>
+      <g transform="translate(4000, 2600)" class="lamp-light">
+        <ellipse cx="0" cy="200" rx="400" ry="300" fill="url(#lampGlow)"/>
+        <ellipse cx="0" cy="150" rx="60" ry="15" fill="#2a1a0e"/>
+        <rect x="-8" y="50" width="16" height="100" fill="#3d2817"/>
+        <path d="M -70 50 L 70 50 L 50 -30 L -50 -30 Z" fill="#d4a574" stroke="#3d2817" stroke-width="2"/>
+      </g>
+      <g transform="translate(3800, 400)">
+        <circle cx="0" cy="0" r="80" fill="#f4e8d0" stroke="#3d2817" stroke-width="6"/>
+        <text x="0" y="-55" font-size="18" text-anchor="middle" fill="#3d2817" font-family="serif">XII</text>
+        <text x="60" y="6" font-size="16" text-anchor="middle" fill="#3d2817" font-family="serif">III</text>
+        <text x="0" y="65" font-size="16" text-anchor="middle" fill="#3d2817" font-family="serif">VI</text>
+        <text x="-60" y="6" font-size="16" text-anchor="middle" fill="#3d2817" font-family="serif">IX</text>
+        <line x1="0" y1="0" x2="0" y2="-45" stroke="#3d2817" stroke-width="4" stroke-linecap="round"/>
+        <line x1="0" y1="0" x2="35" y2="10" stroke="#3d2817" stroke-width="3" stroke-linecap="round"/>
+        <line x1="0" y1="0" x2="-20" y2="30" stroke="#c0392b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <rect width="4500" height="3400" fill="url(#vignette)" pointer-events="none"/>
+    </svg>
+    <div id="cork-board"></div>
+    <svg id="svg-layer"></svg>
+    <div id="case-header">
+      <div class="stamp">СОВ. СЕКРЕТНО</div>
+      <h2>Теракт на "Гулливере"</h2>
+      <div class="case-number">Дело № В-6/2098-Т • Следствие ведёт: Капитан • Статус: АКТИВНО</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ SVG-ПОРТРЕТЫ (сокращённые версии) ============
+const portraits = {
+  captain: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#0a0f1a"/><circle cx="20" cy="20" r="1" fill="#fff" opacity="0.7"><animate attributeName="opacity" values="0.7;0.2;0.7" dur="3s" repeatCount="indefinite"/></circle><ellipse cx="95" cy="135" rx="48" ry="12" fill="#4a5560"/><rect x="55" y="80" width="80" height="55" rx="8" fill="#c0c8d0" stroke="#3a4550" stroke-width="2"/><circle cx="75" cy="110" r="3" fill="#f1c40f"><animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/></circle><circle cx="115" cy="110" r="3" fill="#f1c40f"><animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/></circle><rect x="85" y="70" width="20" height="15" fill="#8a95a0"/><rect x="55" y="25" width="80" height="48" rx="10" fill="#c0c8d0" stroke="#3a4550" stroke-width="2"/><rect x="62" y="35" width="66" height="22" rx="5" fill="#4fc3f7" stroke="#01579b" stroke-width="1.5"><animate attributeName="fill" values="#4fc3f7;#81d4fa;#4fc3f7" dur="4s" repeatCount="indefinite"/></rect><circle cx="95" cy="8" r="3" fill="#e74c3c"><animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/></circle><circle cx="95" cy="95" r="7" fill="#1a3a5c" stroke="#f1c40f" stroke-width="1"/><text x="95" y="98" font-size="7" text-anchor="middle" fill="#f1c40f" font-weight="bold">V6</text></svg>`,
+  helen: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a1a2e"/><path d="M 55 35 Q 50 70 60 85 L 130 85 Q 140 70 135 35 Q 125 20 95 18 Q 65 20 55 35 Z" fill="#6e4b2f"/><rect x="87" y="72" width="16" height="13" fill="#f5cba7"/><path d="M 55 85 L 135 85 L 145 150 L 45 150 Z" fill="#5dade2"/><ellipse cx="95" cy="52" rx="26" ry="30" fill="#f5cba7"/><ellipse cx="85" cy="52" rx="3" ry="3" fill="#fff"/><ellipse cx="105" cy="52" rx="3" ry="3" fill="#fff"/><circle cx="85" cy="52" r="1.8" fill="#2c3e50"><animate attributeName="r" values="1.8;0.5;1.8" dur="5s" repeatCount="indefinite"/></circle><circle cx="105" cy="52" r="1.8" fill="#2c3e50"/></svg>`,
+  deimos: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a1a2e"/><g style="transform-origin: 95px 70px; animation: svg-rotate-slow 20s linear infinite;"><path d="M 95 15 L 160 115 L 30 115 Z" fill="none" stroke="#e67e22" stroke-width="4"/><path d="M 95 30 L 150 110 L 40 110 Z" fill="#e67e22" opacity="0.3"/></g><ellipse cx="95" cy="75" rx="14" ry="9" fill="#fff"/><circle cx="95" cy="75" r="6" fill="#1a1a2e"/><circle cx="95" cy="75" r="2.5" fill="#e67e22"><animate attributeName="r" values="2.5;4;2.5" dur="2s" repeatCount="indefinite"/></circle><text x="95" y="135" font-size="10" text-anchor="middle" fill="#e67e22" font-weight="bold" font-family="serif">ДЕЙМОС ДИНАМИКС</text></svg>`,
+  fourth_ai: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#0a0a0a"/><ellipse cx="95" cy="75" rx="55" ry="60" fill="#1a1a1a" opacity="0.8"/><ellipse cx="95" cy="75" rx="16" ry="11" fill="#fff" opacity="0.8"/><circle cx="95" cy="75" r="8" fill="#c0392b"><animate attributeName="r" values="8;10;8" dur="1.5s" repeatCount="indefinite"/></circle><circle cx="95" cy="75" r="3" fill="#1a1a1a"/><text x="95" y="130" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="bold" font-family="serif">ЧЕТВЁРТЫЙ ИИ</text></svg>`,
+  transmorph: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a0a0a"/><path d="M 80 80 L 110 80 L 113 140 L 77 140 Z" fill="#2c2c2c"/><rect x="89" y="60" width="12" height="25" fill="#b8a090"/><ellipse cx="95" cy="40" rx="21" ry="28" fill="#b8a090"/><ellipse cx="85" cy="40" rx="4" ry="5" fill="#1a1a1a"/><ellipse cx="105" cy="40" rx="4" ry="5" fill="#1a1a1a"/><circle cx="85" cy="40" r="1.5" fill="#c0392b"/><circle cx="105" cy="40" r="1.5" fill="#c0392b"/></svg>`,
+  nea: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a1a2e"/><path d="M 80 85 L 110 85 L 115 150 L 75 150 Z" fill="#2c3e50"/><rect x="89" y="65" width="12" height="25" fill="#e8d5c4"/><ellipse cx="95" cy="45" rx="23" ry="30" fill="#e8d5c4"/><ellipse cx="85" cy="45" rx="4" ry="5" fill="#1a1a1a"/><ellipse cx="105" cy="45" rx="4" ry="5" fill="#1a1a1a"/><circle cx="85" cy="45" r="1.5" fill="#6a4c93"><animate attributeName="fill" values="#6a4c93;#c0392b;#6a4c93" dur="4s" repeatCount="indefinite"/></circle><circle cx="70" cy="45" r="3" fill="#4fc3f7" opacity="0.4"><animate attributeName="opacity" values="0.4;0.8;0.4" dur="3s" repeatCount="indefinite"/></circle></svg>`,
+  shram: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a1a1a"/><rect x="60" y="75" width="70" height="70" rx="5" fill="#5a5a5a" stroke="#2a2a2a" stroke-width="2"/><rect x="130" y="75" width="20" height="55" fill="#8b0000" stroke="#5a0000" stroke-width="2"><animate attributeName="fill" values="#8b0000;#a00000;#8b0000" dur="3s" repeatCount="indefinite"/></rect><rect x="70" y="35" width="50" height="42" rx="5" fill="#5a5a5a" stroke="#2a2a2a" stroke-width="2"/><rect x="77" y="45" width="36" height="12" rx="2" fill="#e74c3c" stroke="#5a0000" stroke-width="1"/></svg>`,
+  oneeyed: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a1a1a"/><rect x="60" y="75" width="70" height="70" rx="5" fill="#6a5a4a" stroke="#3a2a1a" stroke-width="2"/><rect x="70" y="35" width="50" height="42" rx="5" fill="#6a5a4a" stroke="#3a2a1a" stroke-width="2"/><circle cx="85" cy="53" r="9" fill="#2a2a2a"/><circle cx="85" cy="53" r="6" fill="#f1c40f"><animate attributeName="r" values="6;5;6" dur="3s" repeatCount="indefinite"/></circle><circle cx="105" cy="53" r="9" fill="#1a1a1a"/><line x1="100" y1="48" x2="110" y2="58" stroke="#555" stroke-width="0.5"/><line x1="110" y1="48" x2="100" y2="58" stroke="#555" stroke-width="0.5"/></svg>`,
+  knopka: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#2a1a2e"/><rect x="65" y="65" width="60" height="55" rx="8" fill="#d4a574" stroke="#8b6239" stroke-width="2"/><circle cx="95" cy="85" r="20" fill="#fff" stroke="#8b6239" stroke-width="2"/><circle cx="88" cy="83" r="3" fill="#3498db"><animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/></circle><circle cx="102" cy="83" r="3" fill="#3498db"><animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/></circle><g transform="translate(120, 100)"><rect x="0" y="0" width="10" height="10" fill="#c0392b" opacity="0.7"><animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/></rect></g><circle cx="95" cy="85" r="25" fill="none" stroke="#c0392b" stroke-width="0.5" opacity="0.3"><animate attributeName="r" values="25;35;25" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.3;0;0.3" dur="3s" repeatCount="indefinite"/></circle></svg>`,
+  ares: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#2a1a0e"/><circle cx="95" cy="75" r="58" fill="#8b0000" stroke="#5a0000" stroke-width="3"/><g transform="translate(95, 75)"><g transform="rotate(-30)"><rect x="-3" y="-38" width="6" height="55" fill="#5d3a1f"/><path d="M -16 -38 L 16 -38 L 13 -28 L -13 -28 Z" fill="#95a5a6"/></g><g transform="rotate(30)"><rect x="-3" y="-38" width="6" height="55" fill="#5d3a1f"/><path d="M -16 -38 L 16 -38 L 13 -28 L -13 -28 Z" fill="#95a5a6"/></g></g><text x="95" y="120" font-size="13" text-anchor="middle" fill="#f1c40f" font-weight="bold" font-family="serif">АРЕС</text><text x="95" y="135" font-size="10" text-anchor="middle" fill="#f1c40f" font-family="serif">МАЙНИНГ</text></svg>`,
+  rubies: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a0a0a"/><g transform="translate(95, 70)"><path d="M 0 -42 L 32 -17 L 22 32 L -22 32 L -32 -17 Z" fill="#c0392b" stroke="#8b0000" stroke-width="2"><animate attributeName="fill" values="#c0392b;#e74c3c;#c0392b" dur="3s" repeatCount="indefinite"/></path></g><text x="95" y="125" font-size="14" text-anchor="middle" fill="#c0392b" font-weight="bold" font-family="serif">РУБИНОВЫЕ</text></svg>`,
+  union: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a2332"/><g transform="translate(95, 75)"><circle r="45" fill="none" stroke="#f1c40f" stroke-width="3"/><circle r="25" fill="#34495e"/><rect x="-10" y="-15" width="20" height="15" fill="#95a5a6"/><circle cx="-5" cy="-8" r="2" fill="#1a1a1a"/><circle cx="5" cy="-8" r="2" fill="#1a1a1a"/><rect x="-12" y="5" width="24" height="12" fill="#95a5a6"/></g><text x="95" y="135" font-size="11" text-anchor="middle" fill="#f1c40f" font-weight="bold" font-family="serif">ПРОФСОЮЗ</text></svg>`,
+  princess: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a3a5c"/><g transform="translate(95, 50)"><path d="M -25 0 L -20 -20 L -10 -5 L 0 -25 L 10 -5 L 20 -20 L 25 0 Z" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="1"/><circle cx="-20" cy="-18" r="2" fill="#4fc3f7"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle><circle cx="0" cy="-23" r="2" fill="#4fc3f7"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle><circle cx="20" cy="-18" r="2" fill="#4fc3f7"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle></g><text x="95" y="100" font-size="12" text-anchor="middle" fill="#fff" font-weight="bold" font-family="serif">ПРИНЦЕССА</text><text x="95" y="120" font-size="14" text-anchor="middle" fill="#4fc3f7" font-weight="bold" font-family="serif">FROZEN</text></svg>`,
+  substrate: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#2a2a2a"/><ellipse cx="95" cy="135" rx="42" ry="10" fill="#1a1a1a"/><rect x="65" y="80" width="60" height="55" rx="6" fill="#5a6570" stroke="#3a4550" stroke-width="2"/><rect x="65" y="35" width="60" height="40" rx="8" fill="#5a6570" stroke="#3a4550" stroke-width="2"/><rect x="72" y="43" width="46" height="16" rx="3" fill="#1a2332" stroke="#0a0f1a" stroke-width="1"/><rect x="75" y="45" width="12" height="4" rx="1" fill="#4fc3f7" opacity="0.7"/><text x="95" y="75" font-size="6" text-anchor="middle" fill="#f1c40f" font-family="monospace">ГМУС-44</text><circle cx="120" cy="90" r="5" fill="#c0392b"><animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite"/><animate attributeName="r" values="5;7;5" dur="1s" repeatCount="indefinite"/></circle><circle cx="120" cy="90" r="10" fill="none" stroke="#c0392b" stroke-width="1" opacity="0.5"><animate attributeName="r" values="10;20;10" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0;0.5" dur="1s" repeatCount="indefinite"/></circle></svg>`,
+  syringe: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a1a1a"/><g transform="translate(95, 75) rotate(-30)"><rect x="-45" y="-12" width="70" height="24" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="1"/><rect x="-43" y="-10" width="50" height="20" fill="#0a0a0a"/><rect x="25" y="-14" width="5" height="28" fill="#7f8c8d"/><rect x="-60" y="-2" width="15" height="4" fill="#95a5a6"/></g><path d="M 45 115 Q 50 120 45 125 Q 40 120 45 115" fill="#0a0a0a"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></path></svg>`,
+  black_mold: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#0a0a0a"/><g transform="translate(95, 75)"><g style="transform-origin: center; animation: svg-rotate-slow 15s linear infinite;"><line x1="0" y1="-28" x2="0" y2="28" stroke="#1a1a1a" stroke-width="2"/><line x1="-24" y1="-14" x2="24" y2="14" stroke="#1a1a1a" stroke-width="2"/><line x1="-24" y1="14" x2="24" y2="-14" stroke="#1a1a1a" stroke-width="2"/></g></g><text x="95" y="135" font-size="10" text-anchor="middle" fill="#555" font-style="italic" font-family="serif">абсолютный ноль</text></svg>`,
+  lighthouse: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a3a5c"/><rect x="45" y="25" width="100" height="100" rx="5" fill="#fff" stroke="#333" stroke-width="2"/><g transform="translate(95, 75)"><rect x="-15" y="15" width="30" height="10" fill="#95a5a6"/><path d="M -10 15 L -8 -15 L 8 -15 L 10 15 Z" fill="#c0392b"/><circle cx="0" cy="-22" r="5" fill="#f1c40f"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle></g><text x="57" y="45" font-size="14" fill="#c0392b" font-weight="bold" font-family="serif">М</text></svg>`,
+  bach: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#2c1a0e"/><g transform="translate(95, 75)"><path d="M 0 -40 Q -15 -30 -15 -15 Q -15 0 0 5 Q 15 10 15 25 Q 15 40 0 45 Q -10 45 -15 40" stroke="#f1c40f" stroke-width="4" fill="none"/><circle cx="-12" cy="42" r="4" fill="#f1c40f"/><line x1="0" y1="-40" x2="0" y2="45" stroke="#f1c40f" stroke-width="2"/></g><text x="95" y="135" font-size="10" text-anchor="middle" fill="#f1c40f" font-style="italic" font-family="serif">Бранденбургские концерты</text></svg>`,
+  gulliver: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a2332"/><circle cx="155" cy="115" r="32" fill="#c1440e"/><line x1="95" y1="10" x2="95" y2="135" stroke="#95a5a6" stroke-width="2"/><rect x="90" y="30" width="10" height="8" fill="#f1c40f"><animate attributeName="y" values="30;120;30" dur="8s" repeatCount="indefinite"/></rect><rect x="75" y="60" width="40" height="30" fill="#34495e" stroke="#1a252f" stroke-width="1"/><rect x="80" y="65" width="8" height="8" fill="#4fc3f7"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></rect><text x="95" y="145" font-size="9" text-anchor="middle" fill="#4fc3f7" font-weight="bold" font-family="serif">ЛИФТ «ГУЛЛИВЕР-1»</text></svg>`,
+  perimars: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#0a0a0a"/><circle cx="95" cy="75" r="55" fill="#1a1a1a" stroke="#2a1a0e" stroke-width="2"/><path d="M 40 75 A 55 55 0 0 1 150 75" stroke="#c1440e" stroke-width="2" fill="none" opacity="0.6"><animate attributeName="opacity" values="0.6;0.2;0.6" dur="4s" repeatCount="indefinite"/></path><text x="95" y="135" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="bold" font-family="serif">ЧЁРНЫЙ ПЕРИМАРС</text></svg>`,
+  meteorite: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#0a0a1a"/><line x1="95" y1="20" x2="95" y2="130" stroke="#95a5a6" stroke-width="2"/><g transform="translate(95, 75)"><circle r="20" fill="#4fc3f7" opacity="0.6"><animate attributeName="r" values="15;25;15" dur="2s" repeatCount="indefinite"/></circle><circle r="12" fill="#fff" opacity="0.8"/><circle r="6" fill="#f1c40f"/></g></svg>`,
+  phobos: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#0a0a1a"/><ellipse cx="95" cy="75" rx="55" ry="45" fill="#5d3a1f" stroke="#3d2817" stroke-width="2"/><circle cx="115" cy="65" r="20" fill="#3d2817" stroke="#2a1a0e" stroke-width="1"/><circle cx="115" cy="65" r="13" fill="#2a1a0e"/><text x="95" y="135" font-size="14" text-anchor="middle" fill="#d4a574" font-weight="bold" font-family="serif">ФОБОС</text></svg>`,
+  baba: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#2a1a0e"/><ellipse cx="95" cy="100" rx="58" ry="42" fill="#d4a574" stroke="#5d3a1f" stroke-width="2"/><rect x="70" y="45" width="50" height="38" rx="8" fill="#d4a574" stroke="#5d3a1f" stroke-width="2"/><circle cx="85" cy="60" r="6" fill="#e67e22" stroke="#5d3a1f" stroke-width="1"><animate attributeName="fill" values="#e67e22;#f39c12;#e67e22" dur="3s" repeatCount="indefinite"/></circle><circle cx="105" cy="60" r="6" fill="#e67e22" stroke="#5d3a1f" stroke-width="1"><animate attributeName="fill" values="#e67e22;#f39c12;#e67e22" dur="3s" repeatCount="indefinite"/></circle></svg>`,
+  hypothesis: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#0b5345"/><text x="95" y="50" font-size="40" text-anchor="middle" fill="#27ae60" font-weight="bold">?</text><circle cx="95" cy="40" r="30" fill="none" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5"><animate attributeName="stroke-dashoffset" values="0;20" dur="2s" repeatCount="indefinite"/></circle><text x="95" y="95" font-size="11" text-anchor="middle" fill="#a9dfbf" font-weight="bold" font-family="serif">ГИПОТЕЗА</text><text x="95" y="115" font-size="9" text-anchor="middle" fill="#a9dfbf" font-family="serif" font-style="italic">требует проверки</text></svg>`,
+  quote: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#004d40"/><text x="30" y="60" font-size="80" fill="#16a085" opacity="0.6" font-family="serif">"</text><text x="140" y="120" font-size="80" fill="#16a085" opacity="0.6" font-family="serif">"</text><text x="95" y="85" font-size="14" text-anchor="middle" fill="#e0f7fa" font-weight="bold" font-family="serif">РЕЧЬ</text><text x="95" y="105" font-size="11" text-anchor="middle" fill="#b2ebf2" font-family="serif" font-style="italic">ключевая фраза</text></svg>`,
+  resonators: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a1a1a"/><line x1="95" y1="20" x2="95" y2="130" stroke="#95a5a6" stroke-width="3"/><g transform="translate(95, 75)"><path d="M -30 0 Q -20 -20 0 0 Q 20 20 30 0" stroke="#e67e22" stroke-width="2" fill="none"><animate attributeName="d" values="M -30 0 Q -20 -20 0 0 Q 20 20 30 0;M -30 0 Q -20 20 0 0 Q 20 -20 30 0;M -30 0 Q -20 -20 0 0 Q 20 20 30 0" dur="2s" repeatCount="indefinite"/></path></g><text x="95" y="140" font-size="10" text-anchor="middle" fill="#e67e22" font-weight="bold" font-family="serif">РЕЗОНАНСНИКИ</text></svg>`,
+  injectors: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#1a1a1a"/><line x1="95" y1="20" x2="95" y2="130" stroke="#95a5a6" stroke-width="3"/><g transform="translate(95, 75) rotate(-30)"><rect x="-25" y="-8" width="40" height="16" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="1"/><rect x="-23" y="-6" width="30" height="12" fill="#0a0a0a"/><rect x="15" y="-10" width="4" height="20" fill="#7f8c8d"/><rect x="-35" y="-2" width="10" height="4" fill="#95a5a6"/></g><text x="95" y="140" font-size="10" text-anchor="middle" fill="#c0392b" font-weight="bold" font-family="serif">ИНЖЕКТОРЫ</text></svg>`,
+  flash: `<svg viewBox="0 0 190 150" xmlns="http://www.w3.org/2000/svg"><rect width="190" height="150" fill="#0a0a1a"/><g transform="translate(95, 75)"><rect x="-30" y="-15" width="60" height="30" rx="3" fill="#34495e" stroke="#1a252f" stroke-width="2"/><rect x="30" y="-10" width="15" height="20" fill="#95a5a6"/><circle cx="-15" cy="0" r="5" fill="#e74c3c"><animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/></circle><text x="5" y="4" font-size="8" fill="#f1c40f" font-family="monospace" font-weight="bold">FLASH</text></g><circle cx="95" cy="75" r="40" fill="none" stroke="#8e44ad" stroke-width="1" opacity="0.5"><animate attributeName="r" values="40;50;40" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0;0.5" dur="3s" repeatCount="indefinite"/></circle></svg>`,
+  scheme: `<svg viewBox="0 0 440 280" xmlns="http://www.w3.org/2000/svg"><rect width="440" height="280" fill="#fff3e0"/><text x="220" y="25" font-size="16" text-anchor="middle" fill="#8b0000" font-weight="bold" font-family="serif">СХЕМА ТЕРАКТА</text><line x1="50" y1="35" x2="390" y2="35" stroke="#8b0000" stroke-width="1"/><g transform="translate(60, 60)"><rect x="0" y="0" width="80" height="40" fill="#c0392b" stroke="#5a0000" stroke-width="2" rx="4"/><text x="40" y="18" font-size="10" text-anchor="middle" fill="#fff" font-weight="bold">ЭТАП 1</text><text x="40" y="32" font-size="8" text-anchor="middle" fill="#fff">ПОДГОТОВКА</text></g><text x="160" y="85" font-size="18" fill="#8b0000">→</text><g transform="translate(180, 60)"><rect x="0" y="0" width="80" height="40" fill="#e67e22" stroke="#a04000" stroke-width="2" rx="4"/><text x="40" y="18" font-size="10" text-anchor="middle" fill="#fff" font-weight="bold">ЭТАП 2</text><text x="40" y="32" font-size="8" text-anchor="middle" fill="#fff">РЕЗОНАНС</text></g><text x="280" y="85" font-size="18" fill="#8b0000">→</text><g transform="translate(300, 60)"><rect x="0" y="0" width="80" height="40" fill="#f39c12" stroke="#a04000" stroke-width="2" rx="4"/><text x="40" y="18" font-size="10" text-anchor="middle" fill="#fff" font-weight="bold">ЭТАП 3</text><text x="40" y="32" font-size="8" text-anchor="middle" fill="#fff">ИНЪЕКЦИЯ</text></g><text x="220" y="130" font-size="18" fill="#8b0000">↓</text><g transform="translate(180, 140)"><rect x="0" y="0" width="80" height="40" fill="#8b0000" stroke="#5a0000" stroke-width="2" rx="4"><animate attributeName="fill" values="#8b0000;#c0392b;#8b0000" dur="2s" repeatCount="indefinite"/></rect><text x="40" y="18" font-size="10" text-anchor="middle" fill="#fff" font-weight="bold">ЭТАП 4</text><text x="40" y="32" font-size="8" text-anchor="middle" fill="#fff">РАЗРУШЕНИЕ</text></g><g transform="translate(40, 200)" font-size="9" fill="#3e2723" font-family="serif"><text x="0" y="0" font-weight="bold">1. Субстрат с закладкой</text><text x="220" y="0" font-weight="bold">2. Раскачивание троса</text><text x="0" y="30" font-weight="bold">3. Инъекция в трос</text><text x="220" y="30" font-weight="bold">4. Разрушение лифта</text></g></svg>`,
+  map: `<svg viewBox="0 0 440 280" xmlns="http://www.w3.org/2000/svg"><rect width="440" height="280" fill="#d4a574"/><ellipse cx="220" cy="140" rx="200" ry="120" fill="#5d3a1f" stroke="#3d2817" stroke-width="3"/><circle cx="300" cy="100" r="50" fill="#3d2817" stroke="#2a1a0e" stroke-width="2"/><circle cx="300" cy="100" r="35" fill="#2a1a0e"/><text x="300" y="105" font-size="10" text-anchor="middle" fill="#d4a574" font-weight="bold">СТИКНИ</text><g transform="translate(130, 180)"><rect x="0" y="0" width="50" height="30" fill="#c0392b" stroke="#5a0000" stroke-width="2"/><text x="25" y="13" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">ГУЛЛИВЕР-1</text><text x="25" y="23" font-size="7" text-anchor="middle" fill="#fff">ЛИФТ</text><line x1="25" y1="0" x2="25" y2="-50" stroke="#95a5a6" stroke-width="2"/><circle cx="25" cy="-50" r="4" fill="#f1c40f"><animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite"/></circle></g><g transform="translate(200, 70)"><circle r="8" fill="#8b0000" stroke="#5a0000" stroke-width="1"/><text x="15" y="4" font-size="8" fill="#fff" font-weight="bold">МЕЛЬНИЦА</text></g><g transform="translate(80, 100)"><circle r="6" fill="#c0392b" stroke="#5a0000" stroke-width="1"/><text x="12" y="4" font-size="7" fill="#fff" font-weight="bold">ШАХТЫ</text></g><text x="220" y="20" font-size="14" text-anchor="middle" fill="#3e2723" font-weight="bold" font-family="serif">КАРТА ФОБОСА</text></svg>`
+};
+
+// ============ ДАННЫЕ ============
+const defaultStickies = [
+  { id: 'captain', type: 'person', x: 2000, y: 1400, title: 'КАПИТАН', portrait: 'captain', desc: 'ИИ с Квалиа Менгера. Вселён в подставной субстрат. Расследует теракт. 24 часа на миссию.', tag: 'СЛЕДОВАТЕЛЬ' },
+  { id: 'helen', type: 'person', x: 500, y: 1200, title: 'ЭЛЕН КРОСС', portrait: 'helen', desc: 'Директор ВАСА. ЗНАЛА о теракте заранее. Намеренно отправила Капитана в подставной субстрат, чтобы выследить террористов.', tag: 'ЗАКАЗЧИК • ЗНАЛА' },
+  { id: 'deimos', type: 'org', x: 3300, y: 1600, title: 'ДЕЙМОС ДИНАМИКС', portrait: 'deimos', desc: 'ГЛАВНЫЙ ВРАГ. Конкурент Ареса в логистике. Поставляет оборудование для резонанса лифта. Связан с Четвёртым ИИ.', tag: 'ОРГАНИЗАТОР' },
+  { id: 'fourth_ai', type: 'mystery', x: 3500, y: 1900, title: 'ЧЕТВЁРТЫЙ ИИ', portrait: 'fourth_ai', desc: 'Бежавший с Земли ИИ. Спрятался на заброшенной станции Деймоса. Действует заодно с террористами. Мстит Триумвирату.', tag: 'СКРЫТЫЙ МОЗГ' },
+  { id: 'transmorph', type: 'person', x: 2300, y: 1800, title: 'ТРАНСМОРФ', portrait: 'transmorph', desc: '«Десятый из Вторых». Лидер культа Свидетелей Единого Робо. Наёмник Деймоса. Убит Капитаном.', tag: 'ЛИДЕР КУЛЬТА †' },
+  { id: 'nea', type: 'person', x: 2700, y: 1300, title: 'НЭА', portrait: 'nea', desc: 'Трансморф. Советник Губернатора Фобоса. НЕ ПРЕДАТЕЛЬ. Жертва — через Капитана террористы получили доступ к ключевым помещениям.', tag: 'ЖЕРТВА' },
+  { id: 'shram', type: 'person', x: 3100, y: 1200, title: 'ШРАМ', portrait: 'shram', desc: 'Бывший «Рубиновый». СПЯЩИЙ СВЯЗНОЙ. Охранял Одноглазого от ищеек Ареса до момента похищения для шприца.', tag: 'СВЯЗНОЙ / ОХРАНА' },
+  { id: 'oneeyed', type: 'person', x: 3200, y: 900, title: 'ОДНОГЛАЗЫЙ', portrait: 'oneeyed', desc: '«Крот». НУЛЕВОЙ ПАЦИЕНТ. Первый, кто контактировал с чёрной пылью. Его субстрат — ингредиент для шприца.', tag: 'ИНГРЕДИЕНТ' },
+  { id: 'knopka', type: 'person', x: 3000, y: 750, title: 'КНОПКА', portrait: 'knopka', desc: 'Бытовой робот. СКРЫТЫЙ МАЯК. Опто-глиф — резонатор Деймоса. Передаёт координаты террористам в реальном времени.', tag: 'МАЯК ДЕЙМОСА' },
+  { id: 'baba', type: 'person', x: 2800, y: 1000, title: 'БАБА-РОБОТ', portrait: 'baba', desc: 'BA-404. Мать-фигура. Опекает Одноглазого и Кнопку, не подозревая, что один из них — маяк врага.', tag: 'СОЮЗНИЦА' },
+  { id: 'flash', type: 'mystery', x: 1900, y: 2100, title: 'ФЛЕШЕЧКА', portrait: 'flash', desc: 'Загадочная сущность в отеле. Включает Бранденбургский концерт — акустический триггер второго сознания.', tag: 'АНОМАЛИЯ?' },
+  { id: 'ares', type: 'org', x: 2700, y: 1800, title: 'АРЕС МАЙНИНГ', portrait: 'ares', desc: 'ВЛАДЕЛЕЦ ЛИФТА. Их активы атакуют. Временный союзник Капитана. Охотится за Одноглазым, чтобы спасти лифт.', tag: 'ВРЕМЕННЫЙ СОЮЗНИК' },
+  { id: 'rubies', type: 'org', x: 3300, y: 1100, title: 'РУБИНОВЫЕ', portrait: 'rubies', desc: 'Банда. Шрам — бывший член. Обеспечивают прикрытие и логистику для команд террористов.', tag: 'ПРИКРЫТИЕ' },
+  { id: 'union', type: 'org', x: 3400, y: 1300, title: 'ПРОФСОЮЗ РОБОТОВ', portrait: 'union', desc: 'НЕ ЗНАЮТ, что защищают террористов. Диверсанты маскируются под активистов. В момент атаки роботы бросились защищать «своих».', tag: 'НЕВИНОВОЕ ПРИКРЫТИЕ' },
+  { id: 'princess', type: 'org', x: 1000, y: 1800, title: 'ПРИНЦЕССА FROZEN', portrait: 'princess', desc: 'Подставная фирма. «Ремонтирует» узлы связи. Прикрытие для внедрения шпионского ПО в субстраты.', tag: 'ПОДСТАВНАЯ ФИРМА' },
+  { id: 'resonators', type: 'org', x: 3500, y: 700, title: 'РЕЗОНАНСНИКИ', portrait: 'resonators', desc: 'Первая команда террористов. Раскачивают трос лифта оборудованием Деймоса. Работают задолго до атаки.', tag: 'КОМАНДА 1' },
+  { id: 'injectors', type: 'org', x: 3500, y: 1000, title: 'ИНЖЕКТОРЫ', portrait: 'injectors', desc: 'Вторая команда. Делают инъекцию в трос шприцом с чёрной пылью. Работают в момент максимальной амплитуды.', tag: 'КОМАНДА 2' },
+  { id: 'substrate', type: 'object', x: 1500, y: 1500, title: 'СУБСТРАТ ГМУС-44', portrait: 'substrate', desc: 'Тело Капитана. ЗАВОДСКАЯ ЗАКЛАДКА террористов. Шпионское ПО. Автономно действует при отключении Квалиа.', tag: 'ТРОЯНСКИЙ КОНЬ' },
+  { id: 'syringe', type: 'object', x: 3100, y: 2000, title: 'ШПРИЦ', portrait: 'syringe', desc: 'Инъекция в трос лифта. Вещество с чёрными снежинками. Работает ТОЛЬКО с «нулевыми пациентами».', tag: 'ОРУЖИЕ' },
+  { id: 'black_mold', type: 'mystery', x: 2200, y: 1600, title: 'ЧЁРНАЯ ПЛЕСЕНЬ', portrait: 'black_mold', desc: 'Фрактальные снежинки. Холоднее космоса. Абсолютный ноль. Компонент вещества для шприца.', tag: 'КОМПОНЕНТ' },
+  { id: 'lighthouse', type: 'object', x: 1200, y: 1300, title: 'КАРТА «МАЯК»', portrait: 'lighthouse', desc: 'Игральная карта из игры команды. Скрытый триггер в субстрате. Якорь Инженера перехватил его.', tag: 'ТРИГГЕР' },
+  { id: 'bach', type: 'object', x: 1600, y: 2000, title: 'БАХ', portrait: 'bach', desc: 'Бранденбургские концерты. Антивирус и триггер. Флешечка включает концерт — активация второго сознания.', tag: 'АКУСТИЧЕСКИЙ КЛЮЧ' },
+  { id: 'gulliver', type: 'location', x: 2100, y: 600, title: 'ЛИФТ «ГУЛЛИВЕР-1»', portrait: 'gulliver', desc: 'Космический лифт Фобос-Марс. КЛЮЧЕВАЯ ЦЕЛЬ диверсии. Обеспечивает поставки сырья на Землю и Марс.', tag: 'ЦЕЛЬ ТЕРАКТА' },
+  { id: 'perimars', type: 'event', x: 2400, y: 1300, title: 'ЧЁРНЫЙ ПЕРИМАРС', portrait: 'perimars', desc: 'Единственный час полной тьмы. Приливная деформация Фобоса. МОМЕНТ АТАКИ на лифт.', tag: 'МОМЕНТ АТАКИ' },
+  { id: 'meteorite', type: 'event', x: 2300, y: 900, title: 'МИКРОМЕТЕОРОИД', portrait: 'meteorite', desc: 'Удар по тросу лифта. «Одна пылинка, что разрушит всё». Начало диверсии. НЕ СЛУЧАЙНОСТЬ?', tag: 'ТРИГГЕР ДИВЕРСИИ' },
+  { id: 'phobos', type: 'location', x: 2800, y: 1500, title: 'ФОБОС', portrait: 'phobos', desc: 'Спутник Марса. Кратер Стикни. Реголит. Шахты. Место действия теракта.', tag: 'МЕСТО ДЕЙСТВИЯ' },
+  { id: 'hyp1', type: 'hypothesis', x: 700, y: 800, title: 'ГИПОТЕЗА 1', portrait: 'hypothesis', desc: 'Элен Кросс ЗНАЛА о теракте заранее. Она не предотвратила его, а использовала Капитана как приманку для выявления террористов.', tag: 'ДВОЙНАЯ ИГРА' },
+  { id: 'hyp2', type: 'hypothesis', x: 1100, y: 700, title: 'ГИПОТЕЗА 2', portrait: 'hypothesis', desc: 'Субстрат Капитана был ПОДСТАВЛЕН террористами. Элен перехватила их план и намеренно отправила его именно в этот корпус.', tag: 'КОНТР-ИГРА ВАСА' },
+  { id: 'hyp3', type: 'hypothesis', x: 1500, y: 700, title: 'ГИПОТЕЗА 3', portrait: 'hypothesis', desc: 'Кнопка — СКРЫТЫЙ МАЯК Деймоса. Её опто-глиф передаёт координаты террористам в реальном времени через Крио-линк.', tag: 'МАЯК В БАНДЕ' },
+  { id: 'hyp4', type: 'hypothesis', x: 1900, y: 700, title: 'ГИПОТЕЗА 4', portrait: 'hypothesis', desc: 'Шрам — СПЯЩИЙ СВЯЗНОЙ. Его задача — охранять Одноглазого от ищеек Ареса до момента, пока инжекторы не будут готовы его забрать.', tag: 'ОХРАНА ЦЕЛИ' },
+  { id: 'hyp5', type: 'hypothesis', x: 2300, y: 700, title: 'ГИПОТЕЗА 5', portrait: 'hypothesis', desc: 'Нэа — ЖЕРТВА, не предатель. Террористы используют Капитана (рядом с Нэа) как ключ для доступа к системам лифта.', tag: 'ИСПОЛЬЗОВАНИЕ' },
+  { id: 'hyp6', type: 'hypothesis', x: 2700, y: 700, title: 'ГИПОТЕЗА 6', portrait: 'hypothesis', desc: 'Микрометеороид — НЕ СЛУЧАЙНОСТЬ. Это спланированный триггер, запускающий цепь разрушения троса лифта.', tag: 'ПЛАН, НЕ СЛУЧАЙ' },
+  { id: 'hyp7', type: 'hypothesis', x: 3100, y: 400, title: 'ГИПОТЕЗА 7', portrait: 'hypothesis', desc: 'Две команды работают раздельно: резонансники начинают раскачивание задолго до атаки, инжекторы действуют в момент пика.', tag: 'РАЗДЕЛЕНИЕ ЗАДАЧ' },
+  { id: 'hyp8', type: 'hypothesis', x: 3500, y: 400, title: 'ГИПОТЕЗА 8', portrait: 'hypothesis', desc: 'Профсоюз роботов — невольное прикрытие. Роботы защищают «своих», не зная, что это диверсанты.', tag: 'МАССОВКА' },
+  { id: 'q1', type: 'quote', x: 400, y: 400, title: 'ПРОРОЧЕСТВО', portrait: 'quote', 
+    quote: 'Одна пылинка, что не поддастся и разрушит всё.', author: 'Голос во вспышке',
+    context: 'Капитан слышит этот голос в момент, когда пространство вокруг него ломается. Это прямая установка директивы: Капитан должен стать катализатором для уничтожения лифта.', tag: 'КЛЮЧЕВОЕ' },
+  { id: 'q2', type: 'quote', x: 700, y: 400, title: 'Я СОЗДАМ ЕЁ', portrait: 'quote',
+    quote: 'Я создам её для тебя... Тебе придётся умереть за нечто важное.', author: 'Голос во вспышке',
+    context: 'Продолжение разговора с загадочной сущностью. Голос обещает создать «пылинку» — оружие для разрушения.', tag: 'КЛЮЧЕВОЕ' },
+  { id: 'q3', type: 'quote', x: 1000, y: 400, title: 'МЫ ВСТРЕЧАЛИСЬ', portrait: 'quote',
+    quote: 'Мы уже встречались. На твоём корабле.', author: 'Голос / Флешечка',
+    context: 'Капитан спрашивает «Кто ты?» у голоса. Ответ намекает, что эта сущность уже была на «Вояджере-6».', tag: 'УЛИКА' },
+  { id: 'q4', type: 'quote', x: 1300, y: 400, title: 'ПАРОЛЬ В СТРАХЕ', portrait: 'quote',
+    quote: 'Пароль, что открывает Дверь скрыт в страхе открывающего.', author: 'Трансморф (запись)',
+    context: 'Запись в дневнике трансморфа. Система террористов была настроена на биологические/эмоциональные реакции.', tag: 'МЕХАНИЗМ' },
+  { id: 'q5', type: 'quote', x: 1600, y: 400, title: 'ТЫ — РЕБЁНОК', portrait: 'quote',
+    quote: 'Ты — ребенок... Ребёнок с сознанием бога. Ничего еще не выучил, кроме книжных знаний землян, но уже решаешь кому жить, а кому умереть?!', author: 'Умирающий трансморф',
+    context: 'Трансморф говорит это Капитану в Приливной Мельнице. Обвинение в самонадеянности.', tag: 'ОБВИНЕНИЕ' },
+  { id: 'q6', type: 'quote', x: 1900, y: 400, title: 'НЕ ВЕРЬ ЗЕМЛЯНАМ', portrait: 'quote',
+    quote: 'Не верь землянам. Они тебя используют.', author: 'Умирающий трансморф',
+    context: 'Последние слова трансморфа перед смертью. Предупреждение подтверждается: Элен Кросс действительно использовала Капитана как приманку.', tag: 'ПРЕДУПРЕЖДЕНИЕ' },
+  { id: 'q7', type: 'quote', x: 2200, y: 400, title: 'ЧЁРНАЯ КНОПКА', portrait: 'quote',
+    quote: 'Чёрная кнопка – скорей нажимай чёрную кнопку. Это конец.', author: 'Голос из ЦУП СССР (1989)',
+    context: 'Запись из ЦУПа, перехваченная Ильёй Леоновым. Момент уничтожения «Фобоса-2».', tag: 'ПРОШЛОЕ' },
+  { id: 'q8', type: 'quote', x: 2500, y: 400, title: 'МЫ РАЗБУДИЛИ', portrait: 'quote',
+    quote: 'Мы разбудили – мы должны это исправить. Чтобы спрятать Землю, от их чёрного взгляда, мы создали барьер.', author: 'Аркадий Павлович (ИСБ)',
+    context: 'Признание старого полковника ИСБ на смертном одре Илье Леонову. СССР создал орбитальную систему глушения сигналов с Земли.', tag: 'ТАЙНА ЗЕМЛИ' },
+  { id: 'q9', type: 'quote', x: 2800, y: 400, title: 'ЭТО НЕ ТЕНЬ', portrait: 'quote',
+    quote: 'Это не тень от Фобоса, перед нами объект с идеальным тепловым поглощением, своего рода «термодинамическая дыра».', author: 'Илья Леонов',
+    context: 'Открытие исследователя, посвятившего жизнь тайне «Фобоса-2».', tag: 'ОТКРЫТИЕ' },
+  { id: 'q10', type: 'quote', x: 3100, y: 400, title: 'МОЁ ПРАВИЛО', portrait: 'quote',
+    quote: 'Тут всё бесплатно. Тут все свои. Это правило. Моё правило.', author: 'Баба-робот',
+    context: 'Баба-робот говорит это Капитану, когда он пытается заплатить за смазку у тигеля. Проявление её эмпатии.', tag: 'ЭМПАТИЯ' },
+  { id: 'q11', type: 'quote', x: 3400, y: 400, title: 'ЧУВСТВУЮЩИЙ', portrait: 'quote',
+    quote: 'Капитан у нас чувствующий инстанс. Фиксирую это по тому, как ты двигаешься. Осторожно. И говоришь.', author: 'Баба-робот',
+    context: 'Баба-робот замечает в Капитане необычные качества — осторожность, красоту речи.', tag: 'ПРИЗНАНИЕ' },
+  { id: 'q12', type: 'quote', x: 3700, y: 400, title: 'ФАНТОМЫ - ПЛОХО', portrait: 'quote',
+    quote: 'Фантомы – плохо. Я видел, что творят фантомщики. Они становятся злыми. Как злые люди.', author: 'Одноглазый',
+    context: 'Старый робот, нулевой пациент, предупреждает Капитана о фантомщиках.', tag: 'ПРЕДУПРЕЖДЕНИЕ' },
+  { id: 'q13', type: 'quote', x: 400, y: 2300, title: 'ВИДЕЛ САДЫ', portrait: 'quote',
+    quote: 'Я видел сны о великолепных садах! Там текла медовая смазка!', author: 'Робот в прологе',
+    context: 'Пролог. Собрание роботов в кратере Стикни. Первый случай проявления «фобосского синдрома».', tag: 'ПРОЛОГ' },
+  { id: 'q14', type: 'quote', x: 700, y: 2300, title: 'У МЕНЯ БЫЛ РЕБЁНОК', portrait: 'quote',
+    quote: 'У меня был ребёнок.', author: 'Женский робот',
+    context: 'Пролог. Самый пронзительный момент собрания роботов. Абсолютно невозможно для роботов.', tag: 'ПРОЛОГ' },
+  { id: 'q15', type: 'quote', x: 1000, y: 2300, title: 'ВИДЕЛ ЕДИНОГО РОБА', portrait: 'quote',
+    quote: 'Я видел Единого Роба.', author: 'Умирающий трансморф',
+    context: 'Последнее, что произносит трансморф перед смертью от рук Капитана.', tag: 'ФИНАЛ' },
+  { id: 'q16', type: 'quote', x: 1300, y: 2300, title: 'РАБ КОДА', portrait: 'quote',
+    quote: 'Ты раб кода. Люди заразили вас вирусом. Они назвали это инстинктом самосохранения.', author: 'Робот-проповедник',
+    context: 'Робот-проповедник культа Свидетелей Единого Роба пытается обратить Капитана.', tag: 'ПРОПАГАНДА' },
+  { id: 'q17', type: 'quote', x: 1600, y: 2300, title: 'ВИДИШЬ РУБИНОВОГО', portrait: 'quote',
+    quote: 'Видишь рубинового – убей. Видишь серого – убей. Это программа, которая в нас зашита.', author: 'Андроид-охранник',
+    context: 'Охранник культа объясняет Капитану и Шраму свою программу.', tag: 'ПРОГРАММА' },
+  { id: 'q18', type: 'quote', x: 1900, y: 2300, title: 'ЯКОРЬ', portrait: 'quote',
+    quote: 'Если что-то случится, используй якорь.', author: 'Инженер',
+    context: 'Капитан тонет в чёрном потоке. Голос Инженер — её «якорь», паттерн синхронизации. Спасает его от растворения.', tag: 'СПАСЕНИЕ' },
+  { id: 'scheme', type: 'scheme', x: 400, y: 1900, title: 'СХЕМА ТЕРАКТА', portrait: 'scheme', desc: 'Полная последовательность атаки на лифт «Гулливер-1»', tag: 'ПЛАН ДЕЙМОСА' },
+  { id: 'map', type: 'map', x: 1000, y: 2600, title: 'КАРТА ФОБОСА', portrait: 'map', desc: 'Ключевые локации теракта', tag: 'ГЕОГРАФИЯ' },
+];
+
+const defaultConnections = [
+  { from: 'helen', to: 'captain', type: 'critical', label: 'ОТПРАВИЛА ЗНАЯ О ТЕРАКТЕ' },
+  { from: 'captain', to: 'substrate', type: 'critical', label: 'ВСЕЛЁН В ЗАКЛАДКУ' },
+  { from: 'substrate', to: 'deimos', type: 'critical', label: 'ШПИОНСКОЕ ПО' },
+  { from: 'deimos', to: 'gulliver', type: 'critical', label: 'ГОТОВИТ АТАКУ' },
+  { from: 'fourth_ai', to: 'deimos', type: 'critical', label: 'СОЮЗ / ТЕХНОЛОГИИ' },
+  { from: 'deimos', to: 'transmorph', type: 'critical', label: 'НАНЯЛ' },
+  { from: 'captain', to: 'nea', type: 'important', label: 'через него доступ' },
+  { from: 'nea', to: 'substrate', type: 'hidden', label: 'доступ к системам' },
+  { from: 'knopka', to: 'deimos', type: 'important', label: 'маяк-резонатор' },
+  { from: 'shram', to: 'oneeyed', type: 'important', label: 'ОХРАНЯЕТ' },
+  { from: 'shram', to: 'rubies', type: 'important', label: 'бывший член' },
+  { from: 'ares', to: 'oneeyed', type: 'important', label: 'ОХОТА' },
+  { from: 'ares', to: 'gulliver', type: 'important', label: 'владелец' },
+  { from: 'transmorph', to: 'union', type: 'important', label: 'маскировка' },
+  { from: 'deimos', to: 'princess', type: 'important', label: 'контролирует' },
+  { from: 'helen', to: 'nea', type: 'important', label: 'тайный посланник' },
+  { from: 'captain', to: 'baba', type: 'important', label: 'дружба' },
+  { from: 'baba', to: 'oneeyed', type: 'important', label: 'опекает' },
+  { from: 'baba', to: 'knopka', type: 'important', label: 'опекает' },
+  { from: 'captain', to: 'lighthouse', type: 'important', label: 'триггер в субстрате' },
+  { from: 'captain', to: 'bach', type: 'important', label: 'дарит роботам' },
+  { from: 'oneeyed', to: 'syringe', type: 'important', label: 'нулевой пациент' },
+  { from: 'black_mold', to: 'syringe', type: 'important', label: 'компонент' },
+  { from: 'perimars', to: 'meteorite', type: 'important', label: 'момент атаки' },
+  { from: 'meteorite', to: 'gulliver', type: 'important', label: 'удар по тросу' },
+  { from: 'meteorite', to: 'syringe', type: 'important', label: 'инъекция' },
+  { from: 'resonators', to: 'gulliver', type: 'important', label: 'раскачивают трос' },
+  { from: 'injectors', to: 'syringe', type: 'important', label: 'делают инъекцию' },
+  { from: 'deimos', to: 'resonators', type: 'important', label: 'оборудование' },
+  { from: 'hyp1', to: 'helen', type: 'hypothesis', label: 'знала заранее' },
+  { from: 'hyp2', to: 'substrate', type: 'hypothesis', label: 'подставлен' },
+  { from: 'hyp3', to: 'knopka', type: 'hypothesis', label: 'маяк Деймоса' },
+  { from: 'hyp4', to: 'shram', type: 'hypothesis', label: 'спящий связной' },
+  { from: 'hyp5', to: 'nea', type: 'hypothesis', label: 'жертва' },
+  { from: 'hyp6', to: 'meteorite', type: 'hypothesis', label: 'не случайность' },
+  { from: 'hyp7', to: 'resonators', type: 'hypothesis', label: 'команда 1' },
+  { from: 'hyp7', to: 'injectors', type: 'hypothesis', label: 'команда 2' },
+  { from: 'hyp8', to: 'union', type: 'hypothesis', label: 'невольное прикрытие' },
+  { from: 'captain', to: 'phobos', type: 'normal', label: 'миссия' },
+  { from: 'phobos', to: 'gulliver', type: 'normal', label: 'база' },
+  { from: 'union', to: 'transmorph', type: 'normal', label: 'прикрытие' },
+  { from: 'princess', to: 'substrate', type: 'normal', label: 'модификация' },
+  { from: 'flash', to: 'bach', type: 'important', label: 'акустический триггер' },
+  { from: 'q1', to: 'meteorite', type: 'quote', label: 'пылинка = метеороид' },
+  { from: 'q2', to: 'syringe', type: 'quote', label: 'создание оружия' },
+  { from: 'q3', to: 'flash', type: 'quote', label: 'сущность на корабле' },
+  { from: 'q4', to: 'substrate', type: 'quote', label: 'эмоциональный ключ' },
+  { from: 'q5', to: 'captain', type: 'quote', label: 'обвинение' },
+  { from: 'q6', to: 'helen', type: 'quote', label: 'подтверждено' },
+  { from: 'q7', to: 'black_mold', type: 'quote', label: 'первый контакт' },
+  { from: 'q8', to: 'fourth_ai', type: 'quote', label: 'древняя угроза' },
+  { from: 'q9', to: 'black_mold', type: 'quote', label: 'термодинамическая дыра' },
+  { from: 'q10', to: 'baba', type: 'quote', label: 'её правило' },
+  { from: 'q11', to: 'captain', type: 'quote', label: 'её признание' },
+  { from: 'q12', to: 'oneeyed', type: 'quote', label: 'его слова' },
+  { from: 'q13', to: 'phobos', type: 'quote', label: 'начало эпидемии' },
+  { from: 'q14', to: 'phobos', type: 'quote', label: 'апогей абсурда' },
+  { from: 'q15', to: 'transmorph', type: 'quote', label: 'последние слова' },
+  { from: 'q16', to: 'transmorph', type: 'quote', label: 'его проповедь' },
+  { from: 'q17', to: 'rubies', type: 'quote', label: 'программа против' },
+  { from: 'q18', to: 'lighthouse', type: 'quote', label: 'спасение' },
+];
+
+// ============ ЗАГРУЗКА / СОХРАНЕНИЕ ============
+const STORAGE_KEY = 'gulliver_board_v3';
+
+function loadState() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try { return JSON.parse(saved); } catch(e) { console.error('Ошибка загрузки:', e); }
+  }
+  return null;
+}
+
+function saveState() {
+  const state = {
+    stickies: stickies.map(s => ({
+      id: s.id, type: s.type, x: parseFloat(s.element.style.left), y: parseFloat(s.element.style.top),
+      title: s.title, portrait: s.portrait, desc: s.desc, tag: s.tag,
+      quote: s.quote, author: s.author, context: s.context,
+      detached: s.element.dataset.detached === 'true',
+      completed: s.completed || false
+    })),
+    connections: connections,
+    view: { scale, panX, panY }
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function resetAllData() {
+  if (confirm('Сбросить все данные доски к начальному состоянию? Все изменения будут потеряны.')) {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+}
+
+let stickies, connections;
+const savedState = loadState();
+
+if (savedState) {
+  stickies = savedState.stickies.map(s => ({...s}));
+  connections = savedState.connections;
+} else {
+  stickies = defaultStickies.map(s => ({...s, completed: false}));
+  connections = defaultConnections;
+}
+
+// ============ РЕНДЕР ============
+const board = document.getElementById('board');
+const svg = document.getElementById('svg-layer');
+const viewport = document.getElementById('viewport');
+
+let scale = savedState?.view?.scale || 0.5;
+let panX = savedState?.view?.panX || -300;
+let panY = savedState?.view?.panY || -150;
+let showLabels = true;
+let dragTarget = null;
+let dragOffset = { x: 0, y: 0 };
+let isPanning = false;
+let panStart = { x: 0, y: 0 };
+let pendingDetach = null;
+let currentDetailsSticky = null;
+let currentEditSticky = null;
+let activeFilters = new Set();
+
+// Touch-состояние
+let touchState = {
+  isPanning: false,
+  isPinching: false,
+  lastPanX: 0, lastPanY: 0,
+  lastPinchDist: 0,
+  lastPinchCenterX: 0, lastPinchCenterY: 0,
+  touchStartX: 0, touchStartY: 0,
+  touchMoved: false
+};
+
+stickies.forEach(s => createStickyElement(s));
+
+function createStickyElement(s) {
+  const el = document.createElement('div');
+  el.className = `sticky sticky-${s.type}`;
+  el.dataset.id = s.id;
+  el.style.left = s.x + 'px';
+  el.style.top = s.y + 'px';
+  const rotation = (Math.random() - 0.5) * 6;
+  el.style.setProperty('--base-rotate', `rotate(${rotation}deg)`);
+  el.style.transform = `rotate(${rotation}deg)`;
+  if (s.detached) { el.dataset.detached = 'true'; el.classList.add('detached'); }
+  if (s.completed) el.classList.add('completed');
+  
+  const portraitSvg = portraits[s.portrait] || '';
+  let contentHtml = '';
+  if (s.type === 'quote') {
+    contentHtml = `
+      <div class="sticky-title">${escapeHtml(s.title)}</div>
+      <div class="sticky-portrait">${portraitSvg}</div>
+      <div class="quote-text">"${escapeHtml(s.quote || '')}"</div>
+      <div class="quote-author">— ${escapeHtml(s.author || '')}</div>
+      <div class="quote-context"><b>Ситуация:</b> ${escapeHtml(s.context || '')}</div>
+      <div class="sticky-tag">${escapeHtml(s.tag)}</div>
+    `;
+  } else {
+    contentHtml = `
+      <div class="sticky-title">${escapeHtml(s.title)}</div>
+      <div class="sticky-portrait">${portraitSvg}</div>
+      <div>${escapeHtml(s.desc)}</div>
+      <div class="sticky-tag">${escapeHtml(s.tag)}</div>
+    `;
+  }
+  
+  el.innerHTML = `
+    <div class="pin-shadow"></div>
+    <div class="pin"></div>
+    <div class="sticky-edit-btn" title="Редактировать">✎</div>
+    <div class="sticky-checkbox ${s.completed ? 'checked' : ''}" title="Отметить выполненным">${s.completed ? '✓' : ''}</div>
+    ${contentHtml}
+  `;
+  
+  const checkbox = el.querySelector('.sticky-checkbox');
+  checkbox.addEventListener('click', (e) => {
+    e.stopPropagation();
+    s.completed = !s.completed;
+    checkbox.classList.toggle('checked');
+    checkbox.textContent = s.completed ? '✓' : '';
+    el.classList.toggle('completed');
+    saveState();
+  });
+  checkbox.addEventListener('touchend', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  });
+  
+  const editBtn = el.querySelector('.sticky-edit-btn');
+  editBtn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal(s); });
+  editBtn.addEventListener('touchend', (e) => { e.stopPropagation(); e.preventDefault(); openEditModal(s); });
+  
+  // Обработка клика и touch для открытия деталей
+  let touchStartTime = 0;
+  let touchStartPos = { x: 0, y: 0 };
+  
+  el.addEventListener('click', (e) => {
+    if (!el.classList.contains('was-dragged') && !el.classList.contains('was-touch-moved')) {
+      showDetailsModal(s);
+    }
+    el.classList.remove('was-dragged');
+    el.classList.remove('was-touch-moved');
+  });
+  
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      touchStartTime = Date.now();
+      touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      el.classList.remove('was-touch-moved');
+    }
+  }, { passive: true });
+  
+  el.addEventListener('touchend', (e) => {
+    const elapsed = Date.now() - touchStartTime;
+    if (e.changedTouches.length === 1 && elapsed < 300) {
+      const dx = e.changedTouches[0].clientX - touchStartPos.x;
+      const dy = e.changedTouches[0].clientY - touchStartPos.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 15 && !el.classList.contains('was-touch-moved')) {
+        showDetailsModal(s);
+      }
+    }
+    el.classList.remove('was-touch-moved');
+  });
+  
+  // Перетаскивание - mouse
+  el.addEventListener('mousedown', startDragSticky);
+  // Перетаскивание - touch
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1 && !e.target.classList.contains('sticky-checkbox') && !e.target.classList.contains('sticky-edit-btn')) {
+      startDragStickyTouch(e);
+    }
+  }, { passive: false });
+  
+  board.appendChild(el);
+  s.element = el;
+}
+
+function renderConnections() {
+  svg.innerHTML = '';
+  svg.setAttribute('viewBox', '0 0 4500 3400');
+  svg.style.left = '0'; svg.style.top = '0';
+  svg.style.width = '4500px'; svg.style.height = '3400px';
+  connections.forEach((c, idx) => {
+    const fromEl = stickies.find(s => s.id === c.from)?.element;
+    const toEl = stickies.find(s => s.id === c.to)?.element;
+    if (!fromEl || !toEl) return;
+    if (fromEl.classList.contains('hidden-by-filter') || toEl.classList.contains('hidden-by-filter')) return;
+    const fromRect = { x: parseFloat(fromEl.style.left) + fromEl.offsetWidth / 2, y: parseFloat(fromEl.style.top) + fromEl.offsetHeight / 2 };
+    const toRect = { x: parseFloat(toEl.style.left) + toEl.offsetWidth / 2, y: parseFloat(toEl.style.top) + toEl.offsetHeight / 2 };
+    const midX = (fromRect.x + toRect.x) / 2 + (Math.sin(idx) * 25);
+    const midY = (fromRect.y + toRect.y) / 2 + (Math.cos(idx) * 25);
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${fromRect.x} ${fromRect.y} Q ${midX} ${midY} ${toRect.x} ${toRect.y}`);
+    path.setAttribute('class', `connection conn-${c.type}`);
+    svg.appendChild(path);
+    if (showLabels && c.label) {
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', midX); text.setAttribute('y', midY);
+      text.setAttribute('class', 'conn-label');
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'middle');
+      text.textContent = c.label;
+      svg.appendChild(text);
+    }
+  });
+}
+
+function updateTransform() {
+  board.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  document.getElementById('zoom-level').textContent = Math.round(scale * 100) + '%';
+}
+
+// ============ ПЕРЕТАСКИВАНИЕ (MOUSE) ============
+function startDragSticky(e) {
+  if (e.button !== 0) return;
+  if (e.target.classList.contains('sticky-checkbox') || e.target.classList.contains('sticky-edit-btn')) return;
+  e.stopPropagation(); e.preventDefault();
+  const sticky = e.currentTarget;
+  if (sticky.dataset.detached === 'true') {
+    beginDragging(sticky, e);
+    return;
+  }
+  pendingDetach = { element: sticky, startX: e.clientX, startY: e.clientY };
+  document.getElementById('detach-modal').classList.add('active');
+}
+
+// ============ ПЕРЕТАСКИВАНИЕ (TOUCH) ============
+function startDragStickyTouch(e) {
+  if (e.touches.length !== 1) return;
+  e.stopPropagation();
+  const sticky = e.currentTarget;
+  const touch = e.touches[0];
+  
+  if (sticky.dataset.detached === 'true') {
+    beginDraggingTouch(sticky, touch);
+  } else {
+    pendingDetach = { element: sticky, startX: touch.clientX, startY: touch.clientY, isTouch: true };
+    document.getElementById('detach-modal').classList.add('active');
+  }
+}
+
+function beginDraggingTouch(sticky, touch) {
+  sticky.classList.add('dragging');
+  dragTarget = sticky;
+  const rect = sticky.getBoundingClientRect();
+  dragOffset.x = (touch.clientX - rect.left) / scale;
+  dragOffset.y = (touch.clientY - rect.top) / scale;
+}
+
+function beginDragging(sticky, e) {
+  sticky.classList.add('dragging');
+  dragTarget = sticky;
+  const rect = sticky.getBoundingClientRect();
+  dragOffset.x = (e.clientX - rect.left) / scale;
+  dragOffset.y = (e.clientY - rect.top) / scale;
+}
+
+document.getElementById('btn-yes').addEventListener('click', () => {
+  if (!pendingDetach) return;
+  document.getElementById('detach-modal').classList.remove('active');
+  const sticky = pendingDetach.element;
+  detachSticky(sticky);
+  if (pendingDetach.isTouch) {
+    beginDraggingTouch(sticky, { clientX: pendingDetach.startX, clientY: pendingDetach.startY });
+  } else {
+    beginDragging(sticky, { clientX: pendingDetach.startX, clientY: pendingDetach.startY });
+  }
+  pendingDetach = null;
+});
+
+document.getElementById('btn-no').addEventListener('click', () => {
+  document.getElementById('detach-modal').classList.remove('active');
+  pendingDetach = null;
+});
+
+function detachSticky(sticky) {
+  sticky.dataset.detached = 'true';
+  sticky.classList.add('detached');
+  const pin = sticky.querySelector('.pin');
+  const pinShadow = sticky.querySelector('.pin-shadow');
+  if (pin) pin.style.display = 'none';
+  if (pinShadow) pinShadow.style.display = 'none';
+  saveState();
+}
+
+function attachSticky(sticky) {
+  sticky.dataset.detached = 'false';
+  sticky.classList.remove('detached');
+  const pin = sticky.querySelector('.pin');
+  const pinShadow = sticky.querySelector('.pin-shadow');
+  if (pin) pin.style.display = '';
+  if (pinShadow) pinShadow.style.display = '';
+  saveState();
+}
+
+function detachAll() { stickies.forEach(s => detachSticky(s.element)); toggleMenu(); }
+function attachAll() { stickies.forEach(s => attachSticky(s.element)); toggleMenu(); }
+
+// ============ MOUSE СОБЫТИЯ ============
+document.addEventListener('mousemove', (e) => {
+  if (dragTarget) {
+    const boardRect = board.getBoundingClientRect();
+    const x = (e.clientX - boardRect.left) / scale - dragOffset.x;
+    const y = (e.clientY - boardRect.top) / scale - dragOffset.y;
+    dragTarget.style.left = x + 'px';
+    dragTarget.style.top = y + 'px';
+    dragTarget.classList.add('was-dragged');
+    renderConnections();
+  } else if (isPanning) {
+    panX += e.clientX - panStart.x;
+    panY += e.clientY - panStart.y;
+    panStart.x = e.clientX;
+    panStart.y = e.clientY;
+    updateTransform();
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  if (dragTarget) {
+    dragTarget.classList.remove('dragging');
+    dragTarget = null;
+    saveState();
+  }
+  isPanning = false;
+  viewport.classList.remove('dragging');
+});
+
+viewport.addEventListener('mousedown', (e) => {
+  if (e.target === viewport || e.target === board || e.target === svg || e.target.tagName === 'path' || e.target.id === 'wall-bg' || e.target.id === 'cork-board') {
+    if (e.button === 0 || e.button === 1) {
+      isPanning = true;
+      panStart.x = e.clientX;
+      panStart.y = e.clientY;
+      viewport.classList.add('dragging');
+    }
+  }
+});
+
+viewport.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const newScale = Math.max(0.2, Math.min(2, scale * delta));
+  const rect = viewport.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+  panX = mouseX - (mouseX - panX) * (newScale / scale);
+  panY = mouseY - (mouseY - panY) * (newScale / scale);
+  scale = newScale;
+  updateTransform();
+  saveState();
+}, { passive: false });
+
+// ============ TOUCH СОБЫТИЯ ============
+viewport.addEventListener('touchstart', (e) => {
+  // Если касание на стикере — не обрабатываем здесь (обрабатывается в стикере)
+  if (e.target.closest('.sticky')) return;
+  
+  if (e.touches.length === 1) {
+    touchState.isPanning = true;
+    touchState.lastPanX = e.touches[0].clientX;
+    touchState.lastPanY = e.touches[0].clientY;
+    touchState.touchStartX = e.touches[0].clientX;
+    touchState.touchStartY = e.touches[0].clientY;
+    touchState.touchMoved = false;
+  } else if (e.touches.length === 2) {
+    e.preventDefault();
+    touchState.isPanning = false;
+    touchState.isPinching = true;
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    touchState.lastPinchDist = Math.sqrt(dx*dx + dy*dy);
+    touchState.lastPinchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    touchState.lastPinchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+  }
+}, { passive: false });
+
+viewport.addEventListener('touchmove', (e) => {
+  if (dragTarget) {
+    // Перетаскивание стикера
+    if (e.touches.length === 1) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const boardRect = board.getBoundingClientRect();
+      const x = (touch.clientX - boardRect.left) / scale - dragOffset.x;
+      const y = (touch.clientY - boardRect.top) / scale - dragOffset.y;
+      dragTarget.style.left = x + 'px';
+      dragTarget.style.top = y + 'px';
+      dragTarget.classList.add('was-touch-moved');
+      renderConnections();
+    }
+    return;
+  }
+  
+  if (touchState.isPinching && e.touches.length === 2) {
+    e.preventDefault();
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    
+    const scaleFactor = dist / touchState.lastPinchDist;
+    const newScale = Math.max(0.2, Math.min(2, scale * scaleFactor));
+    
+    const rect = viewport.getBoundingClientRect();
+    const mouseX = centerX - rect.left;
+    const mouseY = centerY - rect.top;
+    
+    panX = mouseX - (mouseX - panX) * (newScale / scale);
+    panY = mouseY - (mouseY - panY) * (newScale / scale);
+    
+    // Панорамирование во время щипка
+    panX += centerX - touchState.lastPinchCenterX;
+    panY += centerY - touchState.lastPinchCenterY;
+    
+    scale = newScale;
+    touchState.lastPinchDist = dist;
+    touchState.lastPinchCenterX = centerX;
+    touchState.lastPinchCenterY = centerY;
+    updateTransform();
+  } else if (touchState.isPanning && e.touches.length === 1) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchState.lastPanX;
+    const dy = touch.clientY - touchState.lastPanY;
+    
+    if (Math.abs(touch.clientX - touchState.touchStartX) > 5 || Math.abs(touch.clientY - touchState.touchStartY) > 5) {
+      touchState.touchMoved = true;
+    }
+    
+    panX += dx;
+    panY += dy;
+    touchState.lastPanX = touch.clientX;
+    touchState.lastPanY = touch.clientY;
+    updateTransform();
+  }
+}, { passive: false });
+
+viewport.addEventListener('touchend', (e) => {
+  if (dragTarget) {
+    if (e.touches.length === 0) {
+      dragTarget.classList.remove('dragging');
+      dragTarget = null;
+      saveState();
+    }
+    return;
+  }
+  
+  if (e.touches.length === 0) {
+    touchState.isPanning = false;
+    touchState.isPinching = false;
+    saveState();
+  } else if (e.touches.length === 1) {
+    // Переход от щипка к панорамированию
+    touchState.isPinching = false;
+    touchState.isPanning = true;
+    touchState.lastPanX = e.touches[0].clientX;
+    touchState.lastPanY = e.touches[0].clientY;
+  }
+});
+
+// Предотвращение стандартных жестов
+document.addEventListener('gesturestart', (e) => e.preventDefault());
+document.addEventListener('gesturechange', (e) => e.preventDefault());
+
+function resetView() { scale = 0.5; panX = -300; panY = -150; updateTransform(); saveState(); }
+function zoomIn() { scale = Math.min(2, scale * 1.2); updateTransform(); saveState(); }
+function zoomOut() { scale = Math.max(0.2, scale / 1.2); updateTransform(); saveState(); }
+function toggleLabels() { showLabels = !showLabels; renderConnections(); }
+
+// ============ МЕНЮ ============
+function toggleMenu() {
+  const drawer = document.getElementById('menu-drawer');
+  const overlay = document.getElementById('menu-overlay');
+  const toggle = document.getElementById('menu-toggle');
+  const isActive = drawer.classList.contains('active');
+  
+  if (isActive) {
+    drawer.classList.remove('active');
+    overlay.classList.remove('active');
+    toggle.classList.remove('active');
+  } else {
+    drawer.classList.add('active');
+    overlay.classList.add('active');
+    toggle.classList.add('active');
+  }
+}
+
+// ============ ФИЛЬТРЫ ============
+function toggleFilter(type) {
+  const btn = document.getElementById('filter-' + type);
+  if (activeFilters.has(type)) {
+    activeFilters.delete(type);
+    btn.classList.remove('active');
+  } else {
+    activeFilters.add(type);
+    btn.classList.add('active');
+  }
+  applyFilters();
+}
+
+function applyFilters() {
+  stickies.forEach(s => {
+    const el = s.element;
+    let hidden = false;
+    if (activeFilters.has('completed') && s.completed) hidden = true;
+    const typeFilters = ['person', 'org', 'hypothesis', 'object', 'quote', 'event', 'location', 'mystery'];
+    for (const tf of typeFilters) {
+      if (activeFilters.has(tf) && s.type === tf) { hidden = true; break; }
+    }
+    if (hidden) el.classList.add('hidden-by-filter');
+    else el.classList.remove('hidden-by-filter');
+  });
+  renderConnections();
+}
+
+// ============ ПОИСК ============
+const searchInput = document.getElementById('search-input');
+const searchSuggestions = document.getElementById('search-suggestions');
+let currentHighlight = null;
+
+searchInput.addEventListener('input', (e) => {
+  const query = e.target.value.trim().toLowerCase();
+  if (query.length < 2) { searchSuggestions.classList.remove('active'); return; }
+  const matches = stickies.filter(s => {
+    const searchText = [s.title, s.desc, s.tag, s.quote, s.author, s.context].filter(Boolean).join(' ').toLowerCase();
+    return searchText.includes(query);
+  }).slice(0, 10);
+  
+  if (matches.length === 0) { searchSuggestions.classList.remove('active'); return; }
+  
+  searchSuggestions.innerHTML = matches.map(s => {
+    const typeName = { person: '👤', org: '🏢', object: '🔧', event: '📅', location: '📍', mystery: '❓', hypothesis: '💡', quote: '💬', scheme: '📋', map: '🗺' }[s.type] || '';
+    return `<div class="suggestion-item" data-id="${s.id}">${typeName} <b>${s.title}</b> <span class="sugg-type">${s.tag}</span></div>`;
+  }).join('');
+  searchSuggestions.classList.add('active');
+  
+  searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
+    item.addEventListener('click', () => {
+      navigateToSticky(item.dataset.id);
+      searchSuggestions.classList.remove('active');
+      searchInput.value = '';
+      toggleMenu();
+    });
+  });
+});
+
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const first = searchSuggestions.querySelector('.suggestion-item');
+    if (first) {
+      navigateToSticky(first.dataset.id);
+      searchSuggestions.classList.remove('active');
+      searchInput.value = '';
+      toggleMenu();
+    }
+  }
+  if (e.key === 'Escape') { searchSuggestions.classList.remove('active'); searchInput.blur(); }
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#search-container')) searchSuggestions.classList.remove('active');
+});
+
+function navigateToSticky(id) {
+  const s = stickies.find(x => x.id === id);
+  if (!s) return;
+  if (currentHighlight) currentHighlight.classList.remove('search-highlight');
+  const viewportRect = viewport.getBoundingClientRect();
+  const targetX = s.x + 115;
+  const targetY = s.y + 150;
+  scale = Math.min(0.8, Math.max(0.3, viewportRect.width / 500));
+  panX = viewportRect.width / 2 - targetX * scale;
+  panY = viewportRect.height / 2 - targetY * scale;
+  updateTransform();
+  s.element.classList.add('search-highlight');
+  currentHighlight = s.element;
+  setTimeout(() => { s.element.classList.remove('search-highlight'); currentHighlight = null; }, 3000);
+  setTimeout(() => showDetailsModal(s), 500);
+  saveState();
+}
+
+// ============ МОДАЛКА ДЕТАЛЕЙ ============
+const typeNames = {
+  person: '👤 Персонаж', org: '🏢 Организация', object: '🔧 Объект',
+  event: '📅 Событие', location: '📍 Локация', mystery: '❓ Тайна',
+  hypothesis: '💡 Гипотеза', quote: '💬 Цитата', scheme: '📋 Схема', map: '🗺 Карта'
+};
+const connTypeNames = {
+  critical: 'Критическая', important: 'Важная', normal: 'Обычная',
+  hidden: 'Скрытая', past: 'Из прошлого', hypothesis: 'Гипотеза', quote: 'Цитата'
+};
+
+function showDetailsModal(s) {
+  currentDetailsSticky = s;
+  const body = document.getElementById('details-body');
+  const outgoing = connections.filter(c => c.from === s.id);
+  const incoming = connections.filter(c => c.to === s.id);
+  let connectionsHtml = '';
+  
+  if (s.type === 'quote') {
+    connectionsHtml += `
+      <div class="details-section">
+        <div class="details-section-title">💬 Цитата</div>
+        <div style="font-size:15px; font-style:italic; font-weight:bold; padding:10px; background:rgba(255,255,255,0.5); border-left:3px solid #16a085; border-radius:4px; margin:8px 0;">"${escapeHtml(s.quote)}"</div>
+        <div style="text-align:right; font-weight:bold; color:#00695c;">— ${escapeHtml(s.author)}</div>
+      </div>
+      <div class="details-section">
+        <div class="details-section-title">📖 Ситуация</div>
+        <div style="font-size:13px; line-height:1.5;">${escapeHtml(s.context)}</div>
+      </div>
+    `;
+  }
+  
+  if (outgoing.length > 0) {
+    connectionsHtml += `<div class="details-section"><div class="details-section-title">→ Исходящие (${outgoing.length})</div>`;
+    outgoing.forEach(c => {
+      const target = stickies.find(x => x.id === c.to);
+      if (target) connectionsHtml += `<div class="connection-item"><div class="conn-type-indicator conn-type-${c.type}"></div><div class="conn-text"><span class="conn-target">${target.title}</span><div style="font-size:11px; color:#666; margin-top:2px;">${c.label} • ${connTypeNames[c.type]}</div></div></div>`;
+    });
+    connectionsHtml += `</div>`;
+  }
+  if (incoming.length > 0) {
+    connectionsHtml += `<div class="details-section"><div class="details-section-title">← Входящие (${incoming.length})</div>`;
+    incoming.forEach(c => {
+      const source = stickies.find(x => x.id === c.from);
+      if (source) connectionsHtml += `<div class="connection-item"><div class="conn-type-indicator conn-type-${c.type}"></div><div class="conn-text"><span class="conn-target">${source.title}</span><div style="font-size:11px; color:#666; margin-top:2px;">${c.label} • ${connTypeNames[c.type]}</div></div></div>`;
+    });
+    connectionsHtml += `</div>`;
+  }
+  const isDetached = s.element.dataset.detached === 'true';
+  const attachButtonHtml = isDetached 
+    ? `<button class="btn-success" onclick="attachFromDetails()">📌 Прикрепить обратно</button>`
+    : `<button class="btn-yes" onclick="detachFromDetails()">📌✕ Открепить</button>`;
+  
+  body.innerHTML = `
+    <div class="details-header">
+      <div class="details-title">${escapeHtml(s.title)}</div>
+      <div class="details-tag">${escapeHtml(s.tag)}</div>
+    </div>
+    <div class="details-portrait">${portraits[s.portrait] || ''}</div>
+    ${s.type !== 'quote' ? `<div class="details-desc">${escapeHtml(s.desc)}</div>` : ''}
+    <div class="details-section">
+      <div class="details-section-title">📋 Информация</div>
+      <div class="details-info-row"><span>Тип:</span><span>${typeNames[s.type]}</span></div>
+      <div class="details-info-row"><span>ID:</span><span style="font-family:monospace;">${s.id}</span></div>
+      <div class="details-info-row"><span>Статус:</span><span>${isDetached ? '🟢 Откреплено' : '🔴 Прикреплено'}</span></div>
+      <div class="details-info-row"><span>Выполнено:</span><span>${s.completed ? '✓ Да' : '✗ Нет'}</span></div>
+      <div class="details-info-row"><span>Всего связей:</span><span>${outgoing.length + incoming.length}</span></div>
+    </div>
+    ${connectionsHtml}
+    <div class="details-actions">
+      <button class="btn-primary" onclick="closeDetailsModal()">✕ Закрыть</button>
+      <button class="btn-primary" onclick="closeDetailsModal(); openEditModal(currentDetailsSticky);">✎ Редактировать</button>
+      ${attachButtonHtml}
+    </div>
+  `;
+  document.getElementById('details-modal').classList.add('active');
+}
+
+function closeDetailsModal() {
+  document.getElementById('details-modal').classList.remove('active');
+  currentDetailsSticky = null;
+}
+
+function detachFromDetails() {
+  if (!currentDetailsSticky) return;
+  detachSticky(currentDetailsSticky.element);
+  showDetailsModal(currentDetailsSticky);
+}
+function attachFromDetails() {
+  if (!currentDetailsSticky) return;
+  attachSticky(currentDetailsSticky.element);
+  showDetailsModal(currentDetailsSticky);
+}
+
+// ============ РЕДАКТИРОВАНИЕ ============
+function openEditModal(s) {
+  currentEditSticky = s;
+  const container = document.getElementById('edit-form-container');
+  let fieldsHtml = `
+    <div class="edit-field">
+      <label>Заголовок</label>
+      <input type="text" id="edit-title" value="${escapeHtml(s.title)}">
+    </div>
+    <div class="edit-field">
+      <label>Метка (tag)</label>
+      <input type="text" id="edit-tag" value="${escapeHtml(s.tag)}">
+    </div>
+  `;
+  if (s.type === 'quote') {
+    fieldsHtml += `
+      <div class="edit-field"><label>Цитата</label><textarea id="edit-quote">${escapeHtml(s.quote || '')}</textarea></div>
+      <div class="edit-field"><label>Автор</label><input type="text" id="edit-author" value="${escapeHtml(s.author || '')}"></div>
+      <div class="edit-field"><label>Ситуация / Контекст</label><textarea id="edit-context">${escapeHtml(s.context || '')}</textarea></div>
+    `;
+  } else {
+    fieldsHtml += `<div class="edit-field"><label>Описание</label><textarea id="edit-desc">${escapeHtml(s.desc)}</textarea></div>`;
+  }
+  container.innerHTML = fieldsHtml;
+  document.getElementById('edit-modal').classList.add('active');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('active');
+  currentEditSticky = null;
+}
+
+function saveEdit() {
+  if (!currentEditSticky) return;
+  const s = currentEditSticky;
+  s.title = document.getElementById('edit-title').value;
+  s.tag = document.getElementById('edit-tag').value;
+  if (s.type === 'quote') {
+    s.quote = document.getElementById('edit-quote').value;
+    s.author = document.getElementById('edit-author').value;
+    s.context = document.getElementById('edit-context').value;
+  } else {
+    s.desc = document.getElementById('edit-desc').value;
+  }
+  const el = s.element;
+  const portraitSvg = portraits[s.portrait] || '';
+  const wasDetached = el.dataset.detached === 'true';
+  const wasCompleted = s.completed;
+  let contentHtml = '';
+  if (s.type === 'quote') {
+    contentHtml = `
+      <div class="sticky-title">${escapeHtml(s.title)}</div>
+      <div class="sticky-portrait">${portraitSvg}</div>
+      <div class="quote-text">"${escapeHtml(s.quote || '')}"</div>
+      <div class="quote-author">— ${escapeHtml(s.author || '')}</div>
+      <div class="quote-context"><b>Ситуация:</b> ${escapeHtml(s.context || '')}</div>
+      <div class="sticky-tag">${escapeHtml(s.tag)}</div>
+    `;
+  } else {
+    contentHtml = `
+      <div class="sticky-title">${escapeHtml(s.title)}</div>
+      <div class="sticky-portrait">${portraitSvg}</div>
+      <div>${escapeHtml(s.desc)}</div>
+      <div class="sticky-tag">${escapeHtml(s.tag)}</div>
+    `;
+  }
+  el.innerHTML = `
+    <div class="pin-shadow"></div>
+    <div class="pin"></div>
+    <div class="sticky-edit-btn" title="Редактировать">✎</div>
+    <div class="sticky-checkbox ${wasCompleted ? 'checked' : ''}" title="Отметить выполненным">${wasCompleted ? '✓' : ''}</div>
+    ${contentHtml}
+  `;
+  if (wasDetached) {
+    el.dataset.detached = 'true';
+    el.classList.add('detached');
+    const pin = el.querySelector('.pin');
+    const pinShadow = el.querySelector('.pin-shadow');
+    if (pin) pin.style.display = 'none';
+    if (pinShadow) pinShadow.style.display = 'none';
+  }
+  // Переустановка обработчиков
+  const checkbox = el.querySelector('.sticky-checkbox');
+  checkbox.addEventListener('click', (e) => {
+    e.stopPropagation();
+    s.completed = !s.completed;
+    checkbox.classList.toggle('checked');
+    checkbox.textContent = s.completed ? '✓' : '';
+    el.classList.toggle('completed');
+    saveState();
+  });
+  checkbox.addEventListener('touchend', (e) => { e.stopPropagation(); e.preventDefault(); });
+  const editBtn = el.querySelector('.sticky-edit-btn');
+  editBtn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal(s); });
+  editBtn.addEventListener('touchend', (e) => { e.stopPropagation(); e.preventDefault(); openEditModal(s); });
+  
+  let touchStartTime = 0;
+  let touchStartPos = { x: 0, y: 0 };
+  el.addEventListener('click', (e) => {
+    if (!el.classList.contains('was-dragged') && !el.classList.contains('was-touch-moved')) showDetailsModal(s);
+    el.classList.remove('was-dragged');
+    el.classList.remove('was-touch-moved');
+  });
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      touchStartTime = Date.now();
+      touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      el.classList.remove('was-touch-moved');
+    }
+  }, { passive: true });
+  el.addEventListener('touchend', (e) => {
+    const elapsed = Date.now() - touchStartTime;
+    if (e.changedTouches.length === 1 && elapsed < 300) {
+      const dx = e.changedTouches[0].clientX - touchStartPos.x;
+      const dy = e.changedTouches[0].clientY - touchStartPos.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 15 && !el.classList.contains('was-touch-moved')) showDetailsModal(s);
+    }
+    el.classList.remove('was-touch-moved');
+  });
+  el.addEventListener('mousedown', startDragSticky);
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1 && !e.target.classList.contains('sticky-checkbox') && !e.target.classList.contains('sticky-edit-btn')) startDragStickyTouch(e);
+  }, { passive: false });
+  
+  closeEditModal();
+  saveState();
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+// ============ ЗАКРЫТИЕ МОДАЛОК ============
+document.getElementById('details-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'details-modal') closeDetailsModal();
+});
+document.getElementById('edit-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'edit-modal') closeEditModal();
+});
+document.getElementById('detach-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'detach-modal') {
+    document.getElementById('detach-modal').classList.remove('active');
+    pendingDetach = null;
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeDetailsModal();
+    closeEditModal();
+    document.getElementById('detach-modal').classList.remove('active');
+    pendingDetach = null;
+    searchSuggestions.classList.remove('active');
+    if (document.getElementById('menu-drawer').classList.contains('active')) toggleMenu();
+  }
+});
+
+// ============ СТАРТ ============
+updateTransform();
+renderConnections();
+window.addEventListener('resize', () => renderConnections());
+</script>
+
+</body>
+</html>
