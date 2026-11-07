@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#05060b">
+<title>Артём Вольнов — научная фантастика</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ---------- ТОКЕНЫ ---------- */
+:root{
+  --bg:#05060b;
+  --ink:#eaedfb;
+  --muted:#8b93b8;
+  --line:rgba(255,255,255,.09);
+  --v:#7c5cff;
+  --c:#22d3ee;
+  --p:#ff4ecd;
+  --max:1180px;
+  --r:22px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Manrope",system-ui,-apple-system,sans-serif;
+  font-size:18px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:"Unbounded",sans-serif;font-weight:700;letter-spacing:-.02em;margin:0}
+p{margin:0}
+
+.wrap{width:min(100% - 40px, var(--max));margin-inline:auto}
+
+/* ---------- ФОН ---------- */
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.bg .glow{position:absolute;border-radius:50%;will-change:transform}
+.g1{width:75vmax;height:75vmax;left:-22vmax;top:-28vmax;background:radial-gradient(circle at center,rgba(124,92,255,.30),rgba(124,92,255,0) 62%);animation:fl1 26s ease-in-out infinite}
+.g2{width:62vmax;height:62vmax;right:-20vmax;top:18vmax;background:radial-gradient(circle at center,rgba(34,211,238,.20),rgba(34,211,238,0) 62%);animation:fl2 34s ease-in-out infinite}
+.g3{width:58vmax;height:58vmax;left:22vmax;bottom:-28vmax;background:radial-gradient(circle at center,rgba(255,78,205,.16),rgba(255,78,205,0) 62%);animation:fl3 40s ease-in-out infinite}
+@keyframes fl1{50%{transform:translate3d(6vmax,4vmax,0) scale(1.08)}}
+@keyframes fl2{50%{transform:translate3d(-5vmax,6vmax,0) scale(1.12)}}
+@keyframes fl3{50%{transform:translate3d(4vmax,-5vmax,0) scale(1.06)}}
+
+/* ---------- ХЕДЕР ---------- */
+.site-header{position:fixed;inset:0 0 auto 0;z-index:60;transition:background .3s ease,border-color .3s ease;border-bottom:1px solid transparent;}
+.site-header.stuck{background:rgba(5,6,11,.94);border-bottom-color:var(--line)}
+.nav{width:min(100% - 32px,var(--max));margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:20px;height:68px;}
+.logo{display:flex;align-items:center;gap:12px;font-weight:700}
+.logo-mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-family:"Unbounded",sans-serif;font-size:.82rem;font-weight:800;letter-spacing:.02em;color:#05060b;background:linear-gradient(135deg,var(--v),var(--c));box-shadow:0 8px 24px -10px rgba(124,92,255,.9);}
+.logo-text{font-size:.95rem;letter-spacing:.01em}
+.menu{display:flex;align-items:center;gap:30px;list-style:none;margin:0;padding:0}
+.menu a{position:relative;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);transition:color .25s;}
+.menu a::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--v),var(--c));transform:scaleX(0);transform-origin:left;transition:transform .3s ease;}
+.menu a:hover{color:#fff}
+.menu a:hover::after{transform:scaleX(1)}
+.burger{display:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);flex-direction:column;justify-content:center;align-items:center;gap:5px;cursor:pointer;padding:0}
+.burger span{display:block;width:18px;height:2px;border-radius:2px;background:var(--ink);transition:transform .28s ease}
+body.menu-open .burger span:first-child{transform:translateY(3.5px) rotate(45deg)}
+body.menu-open .burger span:last-child{transform:translateY(-3.5px) rotate(-45deg)}
+
+/* ---------- ГЕРОЙ ---------- */
+.hero {position: relative; min-height: 100vh; display: flex; align-items: center; padding: 80px 0 40px; overflow: hidden; background: #05060b;}
+
+/* Панорамный фон */
+.hero-bg {position: absolute; inset: 0; z-index: 0; overflow: hidden; perspective: 1000px;}
+.hero-bg-img {position: absolute; top: -20%; left: -100%; width: 300%; height: 140%; background-image: url('https://assets.science.nasa.gov/dynamicimage/assets/science/missions/chandra/2026/galaxies_ngc4631.jpg?w=4336&h=2794&fit=clip&crop=faces%2Cfocalpoint'); background-size: cover; background-position: center center; background-repeat: no-repeat; opacity: 0.8; will-change: transform; transform-origin: center center;}
+.hero-bg::after {content:"";position:absolute;inset:0;background: linear-gradient(180deg, rgba(5,6,11,0.2) 0%, rgba(5,6,11,0.7) 60%, var(--bg) 100%);z-index: 1;}
+
+/* Курсор-подсветка */
+.hero-spotlight {position: absolute; width: 800px; height: 800px; border-radius: 50%; background: radial-gradient(circle, rgba(124,92,255,0.15) 0%, transparent 60%); pointer-events: none; z-index: 2; transform: translate(-50%, -50%); will-change: left, top; transition: opacity 0.3s ease; opacity: 0;}
+
+.hero .wrap {position: relative; z-index: 3; display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 20px; width: min(100% - 40px, var(--max)); margin-inline: auto;}
+
+/* Текст (смещен к центру) */
+.hero-text {will-change: transform; padding-left: 5%;}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:.76rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;}
+.eyebrow::before{content:"";width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,var(--v),var(--c));box-shadow:0 0 16px rgba(124,92,255,.9);}
+h1{font-size:clamp(2.2rem,5vw,4rem);font-weight:800;line-height:1.05;letter-spacing:-.035em;margin-bottom:20px;text-shadow: 0 4px 20px rgba(0,0,0,0.5);}
+.lead{max-width:500px;font-size:clamp(1rem,1.2vw,1.15rem);color:#b9c0dd;line-height:1.5;text-shadow: 0 2px 10px rgba(0,0,0,0.5);}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+
+.grad{background:linear-gradient(100deg,#a78bfa 0%,#22d3ee 55%,#ff4ecd 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.grad-live{background-size:220% 100%;animation:shift 12s linear infinite;}
+@keyframes shift{to{background-position:220% 0}}
+
+/* Кнопки (компактнее) */
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:100px;font-weight:700;font-size:0.95rem;letter-spacing:.01em;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease,background .25s ease;will-change:transform;}
+.btn-primary{color:#04060f;background:linear-gradient(100deg,var(--v),var(--c));box-shadow:0 12px 34px -14px rgba(124,92,255,.95);}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 20px 44px -16px rgba(124,92,255,1)}
+.btn-ghost{color:var(--ink);border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.03);backdrop-filter: blur(5px);}
+.btn-ghost:hover{transform:translateY(-3px);border-color:rgba(124,92,255,.65);background:rgba(124,92,255,.10)}
+
+/* ---------- 3D КНИГА И ПОДСВЕТКА ---------- */
+.hero-book-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1200px;
+  will-change: transform;
+  position: relative;
+  margin-top: -70px; /* Поднимаем книгу выше */
+  transform: scale(0.85); /* Чуть уменьшаем */
+}
+
+/* Свечение снизу */
+.book-glow {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 50px;
+  background: radial-gradient(ellipse at center, rgba(124,92,255,0.7) 0%, rgba(34,211,238,0.3) 40%, transparent 70%);
+  filter: blur(20px);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+}
+
+.book-scene {
+  width: 240px;
+  height: 360px;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: bookFloat 8s ease-in-out infinite;
+  z-index: 1;
+  filter: drop-shadow(0 20px 30px rgba(0,0,0,0.6));
+}
+.book {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform-style: preserve-3d;
+  animation: spinBook 16s linear infinite;
+  transform: rotateX(15deg) rotateY(0deg);
+}
+@keyframes spinBook {
+  0% { transform: rotateX(15deg) rotateY(0deg); }
+  100% { transform: rotateX(15deg) rotateY(360deg); }
+}
+@keyframes bookFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+/* Общие настройки для граней */
+.book-face {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  backface-visibility: hidden;
+}
+
+/* 1. Передняя обложка */
+.book-front {
+  width: 240px; height: 360px;
+  transform: translate(-50%, -50%) translateZ(18px);
+  background: linear-gradient(135deg, #141a4a, #0a0c1a);
+  border: 1px solid rgba(124,92,255,0.4);
+  border-radius: 2px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 30px 20px;
+  box-shadow: inset 0 0 30px rgba(124,92,255,0.25);
+}
+.book-front::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 70% 20%, rgba(124,92,255,0.4), transparent 60%);
+  border-radius: 2px;
+}
+.book-title {font-family: "Unbounded", sans-serif; font-size: 1.4rem; font-weight: 700; color: #fff; line-height: 1.2; position: relative; z-index: 1;}
+.book-author {font-family: "Manrope", sans-serif; font-size: 0.8rem; color: #a78bfa; letter-spacing: 0.1em; text-transform: uppercase; position: relative; z-index: 1;}
+
+/* 2. Задняя обложка */
+.book-back {
+  width: 240px; height: 360px;
+  transform: translate(-50%, -50%) translateZ(-18px) rotateY(180deg);
+  background: linear-gradient(135deg, #0a0c1a, #141a4a);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 2px;
+}
+
+/* 3. Корешок */
+.book-spine {
+  width: 36px; height: 360px;
+  transform: translate(-50%, -50%) translateX(-120px) rotateY(-90deg);
+  background: linear-gradient(to right, #060814, #1a2050 50%, #060814);
+  border-left: 1px solid rgba(124,92,255,0.2);
+  border-right: 1px solid rgba(124,92,255,0.2);
+}
+
+/* 4. Правый торец страниц */
+.book-pages-right {
+  width: 36px; height: 360px;
+  transform: translate(-50%, -50%) translateX(120px) rotateY(90deg);
+  background: repeating-linear-gradient(90deg, #f4f4f4, #f4f4f4 1px, #d0d0d0 1px, #d0d0d0 2px);
+  box-shadow: inset 10px 0 15px rgba(0,0,0,0.5);
+}
+
+/* 5. Верхний торец страниц */
+.book-pages-top {
+  width: 240px; height: 36px;
+  transform: translate(-50%, -50%) translateY(-180px) rotateX(90deg);
+  background: repeating-linear-gradient(0deg, #f4f4f4, #f4f4f4 1px, #d0d0d0 1px, #d0d0d0 2px);
+  box-shadow: inset 0 -10px 15px rgba(0,0,0,0.5);
+}
+
+/* 6. Нижний торец страниц */
+.book-pages-bottom {
+  width: 240px; height: 36px;
+  transform: translate(-50%, -50%) translateY(180px) rotateX(-90deg);
+  background: repeating-linear-gradient(0deg, #f4f4f4, #f4f4f4 1px, #d0d0d0 1px, #d0d0d0 2px);
+  box-shadow: inset 0 10px 15px rgba(0,0,0,0.5);
+}
+
+/* ---------- БЕГУЩАЯ СТРОКА ---------- */
+.ticker{padding:20px 0; overflow:hidden; border-top:1px solid var(--line); border-bottom:1px solid var(--line); background: var(--bg); position: relative; z-index: 5; -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent); mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);}
+.ticker-track{display:flex;width:max-content;animation:marquee 30s linear infinite;will-change:transform}
+.ticker-group{display:flex;align-items:center;gap:34px;padding-right:34px}
+.ticker-group span{font-family:"Unbounded",sans-serif;font-weight:500;font-size:clamp(.85rem,1.8vw,1.15rem);letter-spacing:.12em;text-transform:uppercase;color:#6f78a0;white-space:nowrap;}
+.ticker-group i{color:var(--v);font-style:normal;font-size:.8rem}
+@keyframes marquee{to{transform:translateX(-50%)}}
+
+/* ---------- ОСТАЛЬНЫЕ СЕКЦИИ ---------- */
+.section{padding:110px 0;scroll-margin-top:90px}
+.sec-head{max-width:760px;margin-bottom:56px}
+.kicker{font-size:.76rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;}
+h2{font-size:clamp(1.9rem,5.2vw,3.5rem);font-weight:800;line-height:1.05;letter-spacing:-.03em;}
+.sec-sub{margin-top:18px;color:var(--muted);font-size:1.05rem}
+
+.grid{display:grid;gap:24px}
+.books{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.games{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.notes{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+
+.card{position:relative;border-radius:var(--r);overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));border:1px solid var(--line);transition:transform .38s cubic-bezier(.2,.7,.3,1),border-color .38s ease,box-shadow .38s ease;will-change:transform;}
+.card:hover{transform:translateY(-6px);border-color:rgba(124,92,255,.55);box-shadow:0 26px 60px -34px rgba(124,92,255,.9);}
+.card-body{padding:26px}
+
+.cover{position:relative;aspect-ratio:4/5;display:flex;flex-direction:column;justify-content:space-between;padding:24px;overflow:hidden;background:radial-gradient(120% 82% at 76% 6%,var(--h1),transparent 62%),linear-gradient(160deg,var(--h2),#070b16);}
+.cover::after{content:"";position:absolute;right:-18%;top:-12%;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 65%);}
+.cover-year{font-size:.75rem;letter-spacing:.2em;color:rgba(255,255,255,.65);font-weight:700}
+.cover-title{font-family:"Unbounded",sans-serif;font-weight:700;font-size:1.35rem;line-height:1.15;letter-spacing:-.02em;position:relative;z-index:1;}
+.c1{--h1:#7c5cff;--h2:#141a4a} .c2{--h1:#22d3ee;--h2:#07243a} .c3{--h1:#ff4ecd;--h2:#2a0f33}
+
+.card h3{font-size:1.18rem;margin-bottom:10px;line-height:1.25}
+.card p{color:var(--muted);font-size:.96rem;line-height:1.6}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+.tags span{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:#9aa3c7;background:rgba(255,255,255,.03);}
+.link{display:inline-flex;align-items:center;gap:8px;margin-top:20px;font-weight:700;font-size:.92rem;color:#c9cfea;transition:color .25s ease,gap .25s ease;}
+.link:hover{color:#fff;gap:14px}
+
+.game{padding:34px;display:flex;flex-direction:column;gap:16px;min-height:270px;justify-content:flex-end;position:relative;overflow:hidden}
+.game::before{content:"";position:absolute;inset:0;opacity:.85;background:radial-gradient(110% 90% at 88% 0%,var(--h1),transparent 58%);}
+.game > *{position:relative;z-index:1}
+.g1c{--h1:rgba(124,92,255,.42)} .g2c{--h1:rgba(34,211,238,.32)}
+.game .num{font-family:"Unbounded",sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.2em;color:rgba(255,255,255,.55);text-transform:uppercase;}
+.game h3{font-size:1.5rem;line-height:1.15}
+.game p{max-width:46ch}
+
+.note{padding:32px 28px;border-radius:var(--r);border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));transition:transform .35s ease,border-color .35s ease;}
+.note:hover{transform:translateY(-5px);border-color:rgba(34,211,238,.45)}
+.note .n{font-family:"Unbounded",sans-serif;font-weight:800;font-size:1.9rem;letter-spacing:-.03em;line-height:1;margin-bottom:20px;background:linear-gradient(120deg,var(--v),var(--c));-webkit-background-clip:text;background-clip:text;color:transparent;display:block;}
+.note h3{font-size:1.06rem;margin-bottom:10px;line-height:1.3}
+.note p{color:var(--muted);font-size:.94rem}
+
+.posts{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
+.post{display:grid;grid-template-columns:150px 1fr 40px;gap:24px;align-items:center;padding:28px 8px;border-bottom:1px solid var(--line);transition:padding-left .3s ease,background .3s ease;}
+.post:hover{padding-left:20px;background:rgba(255,255,255,.025)}
+.post-date{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.post-title{font-family:"Unbounded",sans-serif;font-weight:500;font-size:clamp(1rem,2.2vw,1.3rem);line-height:1.3;letter-spacing:-.02em}
+.post-arrow{font-size:1.3rem;text-align:right;color:var(--muted);transition:transform .3s ease,color .3s ease;}
+.post:hover .post-arrow{transform:translateX(6px);color:var(--c)}
+
+.about{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:start}
+.about p{color:#b0b8d6;margin-bottom:20px;font-size:1.05rem}
+.about p strong{color:#fff}
+.portrait{border-radius:var(--r);aspect-ratio:1;position:relative;overflow:hidden;border:1px solid var(--line);background:radial-gradient(90% 70% at 30% 20%,rgba(124,92,255,.55),transparent 60%),radial-gradient(80% 80% at 80% 90%,rgba(34,211,238,.45),transparent 60%),linear-gradient(160deg,#0d1230,#070b16);display:grid;place-items:center;}
+.portrait span{font-family:"Unbounded",sans-serif;font-weight:800;font-size:clamp(3rem,9vw,5.5rem);letter-spacing:-.05em;background:linear-gradient(135deg,#fff,#a78bfa 55%,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:36px}
+.stat{padding:22px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.stat b{display:block;font-family:"Unbounded",sans-serif;font-weight:800;font-size:clamp(1.5rem,4vw,2.1rem);line-height:1;letter-spacing:-.03em;background:linear-gradient(120deg,var(--v),var(--c));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:8px;}
+.stat small{color:var(--muted);font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+
+footer{padding:70px 0 50px;border-top:1px solid var(--line);margin-top:40px}
+.foot{display:flex;flex-wrap:wrap;gap:32px;justify-content:space-between;align-items:flex-start}
+.foot h3{font-size:clamp(1.5rem,4vw,2.2rem);line-height:1.1;margin-bottom:16px;max-width:16ch}
+.foot-links{display:flex;flex-wrap:wrap;gap:26px}
+.foot-links a{font-size:.85rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);transition:color .25s}
+.foot-links a:hover{color:#fff}
+.copy{margin-top:56px;font-size:.82rem;color:#5c6485}
+
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- АДАПТИВ ---------- */
+@media (max-width: 900px) {
+  .hero .wrap {grid-template-columns: 1fr;text-align: center;gap: 60px;}
+  .hero-text {display: flex; flex-direction: column; align-items: center; padding-left: 0;}
+  .eyebrow { justify-content: center; }
+  .lead { margin-inline: auto; }
+  .cta { justify-content: center; }
+  .hero-book-wrap {margin-top: 0; transform: scale(0.75);}
+  .about{grid-template-columns:1fr;gap:36px}
+  .portrait{max-width:340px}
+  .menu{position:absolute;top:100%;left:0;right:0;display:none;flex-direction:column;align-items:stretch;gap:4px;padding:14px 20px 24px;background:rgba(5,6,11,.97);border-bottom:1px solid var(--line);}
+  body.menu-open .menu{display:flex}
+  .menu a{display:block;padding:14px 4px;font-size:.86rem;border-bottom:1px solid rgba(255,255,255,.05)}
+  .menu a::after{display:none}
+  .burger{display:flex}
+  .section{padding:80px 0}
+  .post{grid-template-columns:1fr 32px;gap:8px 16px}
+  .post-date{grid-column:1 / -1}
+}
+@media (max-width:560px){
+  body{font-size:17px}
+  .hero { padding-top: 120px; }
+  .card-body{padding:22px}
+  .game{padding:26px;min-height:230px}
+  .stats{grid-template-columns:1fr}
+  .cta .btn{width:100%;justify-content:center}
+  .hero-book-wrap { transform: scale(0.65); margin-top: -20px; }
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- фоновые градиенты -->
+<div class="bg" aria-hidden="true">
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
+  <div class="glow g3"></div>
+</div>
+
+<!-- ХЕДЕР -->
+<header class="site-header" id="top">
+  <nav class="nav">
+    <a class="logo" href="#top">
+      <span class="logo-mark">АВ</span>
+      <span class="logo-text">Артём Вольнов</span>
+    </a>
+    <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false" aria-controls="menu">
+      <span></span><span></span>
+    </button>
+    <ul class="menu" id="menu">
+      <li><a href="#books">Книги</a></li>
+      <li><a href="#games">Игры</a></li>
+      <li><a href="#writers">Для писателей</a></li>
+      <li><a href="#blog">Блог</a></li>
+      <li><a href="#about">Обо мне</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <!-- ГЕРОЙ -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <div class="hero-bg-img" id="hero-bg-img"></div>
+    </div>
+    <div class="hero-spotlight" id="hero-spotlight"></div>
+
+    <div class="wrap">
+      <div class="hero-text" id="hero-text">
+        <p class="eyebrow reveal">Научная фантастика · Космос · Будущее</p>
+        <h1 class="reveal">
+          Космос<br>
+          начинается<br>
+          <span class="grad grad-live">со слова</span>
+        </h1>
+        <p class="lead reveal">
+          Пишу твёрдую научную фантастику о дальних мирах, людях и технологиях,
+          которые ещё не изобрели. Шесть романов, две игры и один очень большой
+          телескоп в голове.
+        </p>
+        <div class="cta reveal">
+          <a class="btn btn-primary" href="#books">Смотреть книги</a>
+          <a class="btn btn-ghost" href="#about">Обо мне</a>
+        </div>
+      </div>
+
+      <!-- 3D КНИГА -->
+      <div class="hero-book-wrap reveal" id="hero-book">
+        <!-- Подсветка снизу -->
+        <div class="book-glow"></div>
+        
+        <div class="book-scene">
+          <div class="book">
+            <div class="book-face book-back"></div>
+            <div class="book-face book-spine"></div>
+            <div class="book-face book-pages-right"></div>
+            <div class="book-face book-pages-top"></div>
+            <div class="book-face book-pages-bottom"></div>
+            <div class="book-face book-front">
+              <div class="book-title">Тихий океан<br>Титана</div>
+              <div class="book-author">А. Вольнов</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- БЕГУЩАЯ СТРОКА -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <div class="ticker-group">
+        <span>Тихий океан Титана</span><i>✦</i>
+        <span>Соль и вакуум</span><i>✦</i>
+        <span>Дети Юпитера</span><i>✦</i>
+        <span>Последний горизонт</span><i>✦</i>
+      </div>
+      <div class="ticker-group">
+        <span>Тихий океан Титана</span><i>✦</i>
+        <span>Соль и вакуум</span><i>✦</i>
+        <span>Дети Юпитера</span><i>✦</i>
+        <span>Последний горизонт</span><i>✦</i>
+      </div>
+    </div>
+  </div>
+
+  <!-- КНИГИ -->
+  <section class="section" id="books">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="kicker">01 — Книги</p>
+        <h2>Романы и <span class="grad">повести</span></h2>
+        <p class="sec-sub">Твёрдая НФ: физика работает, люди ошибаются.</p>
+      </div>
+      <div class="grid books">
+        <article class="card reveal">
+          <div class="cover c1"><span class="cover-year">2024</span><span class="cover-title">Тихий океан<br>Титана</span></div>
+          <div class="card-body">
+            <h3>Тихий океан Титана</h3>
+            <p>Экспедиция под ледяную кору спутника находит не воду, а следы цивилизации, которая считала время иначе. Первый контакт без единого слова.</p>
+            <div class="tags"><span>твёрдая НФ</span><span>первый контакт</span></div>
+            <a class="link" href="#">Подробнее →</a>
+          </div>
+        </article>
+        <article class="card reveal">
+          <div class="cover c2"><span class="cover-year">2022</span><span class="cover-title">Соль<br>и вакуум</span></div>
+          <div class="card-body">
+            <h3>Соль и вакуум</h3>
+            <p>Колония на астероиде живёт за счёт переработки собственного мусора. Когда цепочка ломается, инженеру приходится стать политиком.</p>
+            <div class="tags"><span>колонии</span><span>выживание</span></div>
+            <a class="link" href="#">Подробнее →</a>
+          </div>
+        </article>
+        <article class="card reveal">
+          <div class="cover c3"><span class="cover-year">2020</span><span class="cover-title">Дети<br>Юпитера</span></div>
+          <div class="card-body">
+            <h3>Дети Юпитера</h3>
+            <p>Поколение, родившееся в невесомости, возвращается на Землю — и обнаруживает, что дом больше не узнаёт их.</p>
+            <div class="tags"><span>драма</span><span>ближний космос</span></div>
+            <a class="link" href="#">Подробнее →</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ИГРЫ -->
+  <section class="section" id="games">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="kicker">02 — Игры</p>
+        <h2>Истории, в которых <span class="grad">выбираете вы</span></h2>
+        <p class="sec-sub">Нарративные проекты на стыке текста и физики.</p>
+      </div>
+      <div class="grid games">
+        <article class="card game g1c reveal">
+          <span class="num">Нарративная стратегия · 2025</span>
+          <h3>Орбита</h3>
+          <p>Вы управляете станцией на орбите Европы: каждый выбор меняет не только сюжет, но и расчёт топлива. Ошибаться можно, но дорого.</p>
+          <a class="link" href="#">Играть →</a>
+        </article>
+        <article class="card game g2c reveal">
+          <span class="num">Текстовый квест · 2023</span>
+          <h3>Эхо Титана</h3>
+          <p>Дневник связиста, который слышит сигнал с погибшего зонда. Восемь концовок, ни одна не объясняет всё.</p>
+          <a class="link" href="#">Играть →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ДЛЯ ПИСАТЕЛЕЙ -->
+  <section class="section" id="writers">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="kicker">03 — Для писателей</p>
+        <h2>Инструменты, <span class="grad">которыми пользуюсь сам</span></h2>
+        <p class="sec-sub">Всё бесплатно, без подписок и «секретных знаний».</p>
+      </div>
+      <div class="grid notes">
+        <div class="note reveal">
+          <span class="n">01</span>
+          <h3>Карта мира</h3>
+          <p>Шаблон для проверки физики вашего мира: гравитация, энергия, транспорт, экономика. Одна страница, которая спасает роман.</p>
+        </div>
+        <div class="note reveal">
+          <span class="n">02</span>
+          <h3>Чек-лист правдоподобия</h3>
+          <p>37 вопросов, которые стоит задать сцене до того, как её прочитает физик. Или очень внимательный читатель.</p>
+        </div>
+        <div class="note reveal">
+          <span class="n">03</span>
+          <h3>Разборы и рецензии</h3>
+          <p>Бесплатные разборы первых глав в жанре НФ. Честно, по делу, в течение двух недель.</p>
+        </div>
+        <div class="note reveal">
+          <span class="n">04</span>
+          <h3>Научная консультация</h3>
+          <p>Куда написать, чтобы проверить расчёты: список исследователей и сообществ, которые отвечают авторам.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- БЛОГ -->
+  <section class="section" id="blog">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="kicker">04 — Блог</p>
+        <h2>Заметки <span class="grad">с орбиты</span></h2>
+      </div>
+      <div class="posts">
+        <a class="post reveal" href="#">
+          <span class="post-date">12.04.2026</span>
+          <span class="post-title">Как я считаю орбиты, чтобы не соврать в романе</span>
+          <span class="post-arrow">→</span>
+        </a>
+        <a class="post reveal" href="#">
+          <span class="post-date">28.03.2026</span>
+          <span class="post-title">Почему инопланетяне не должны говорить по-английски</span>
+          <span class="post-arrow">→</span>
+        </a>
+        <a class="post reveal" href="#">
+          <span class="post-date">05.03.2026</span>
+          <span class="post-title">Четыре книги о вакууме, которые изменили мой язык</span>
+          <span class="post-arrow">→</span>
+        </a>
+        <a class="post reveal" href="#">
+          <span class="post-date">17.02.2026</span>
+          <span class="post-title">Черновик, который я выбросил: 40 000 слов впустую</span>
+          <span class="post-arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ОБО МНЕ -->
+  <section class="section" id="about">
+    <div class="wrap">
+      <div class="about">
+        <div class="reveal">
+          <p class="kicker">05 — Обо мне</p>
+          <h2 style="margin-bottom:28px">Физик, который <span class="grad">не удержался</span></h2>
+          <p>Меня зовут Артём Вольнов. Пятнадцать лет я занимался динамикой космических аппаратов, а потом начал писать о людях, которые эти аппараты запускают.</p>
+          <p><strong>Мой принцип прост:</strong> фантастика начинается там, где заканчиваются справочники, но не там, где заканчивается логика. Если в моей книге что-то взрывается — у этого есть причина, расчёт и виновный.</p>
+          <p>Живу в Новосибирске, пишу по утрам, отвечаю на письма читателей и начинающих авторов.</p>
+          <div class="stats">
+            <div class="stat"><b>6</b><small>романов</small></div>
+            <div class="stat"><b>2</b><small>игры</small></div>
+            <div class="stat"><b>15</b><small>лет в космонавтике</small></div>
+            <div class="stat"><b>40+</b><small>публикаций</small></div>
+          </div>
+        </div>
+        <div class="portrait reveal" aria-hidden="true"><span>АВ</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ФУТЕР -->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <h3>Есть идея<br>для истории?</h3>
+        <a class="btn btn-primary" href="mailto:hello@example.com">Написать мне</a>
+      </div>
+      <nav class="foot-links" aria-label="Навигация в подвале">
+        <a href="#books">Книги</a>
+        <a href="#games">Игры</a>
+        <a href="#writers">Для писателей</a>
+        <a href="#blog">Блог</a>
+        <a href="#about">Обо мне</a>
+      </nav>
+    </div>
+    <p class="copy">© 2026 Артём Вольнов. Все тексты — авторские. Сайт сделан без единой тяжёлой библиотеки.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var burger = document.getElementById('burger');
+  var menu = document.getElementById('menu');
+  burger.addEventListener('click', function () {
+    var open = document.body.classList.toggle('menu-open');
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  menu.addEventListener('click', function (e) {
+    if (e.target.tagName === 'A') {
+      document.body.classList.remove('menu-open');
+      burger.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  var header = document.querySelector('.site-header');
+  var ticking = false;
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      header.classList.toggle('stuck', window.scrollY > 20);
+      ticking = false;
+    });
+  }, { passive: true });
+
+  var items = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].isIntersecting) {
+          entries[i].target.classList.add('in');
+          io.unobserve(entries[i].target);
+        }
+      }
+    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+    items.forEach(function (el) { io.observe(el); });
+  } else {
+    items.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  var hero = document.getElementById('hero');
+  var bgImg = document.getElementById('hero-bg-img');
+  var text = document.getElementById('hero-text');
+  var book = document.getElementById('hero-book');
+  var spotlight = document.getElementById('hero-spotlight');
+  
+  var reqId = null;
+  var mouseX = 0, mouseY = 0;
+
+  hero.addEventListener('mousemove', function(e) {
+    var rect = hero.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var y = e.clientY - rect.top;
+    
+    mouseX = (x / rect.width) * 2 - 1;
+    mouseY = (y / rect.height) * 2 - 1;
+
+    spotlight.style.left = x + 'px';
+    spotlight.style.top = y + 'px';
+    spotlight.style.opacity = '1';
+
+    if (!reqId) {
+      reqId = requestAnimationFrame(updateParallax);
+    }
+  });
+
+  hero.addEventListener('mouseleave', function() {
+    mouseX = 0;
+    mouseY = 0;
+    spotlight.style.opacity = '0';
+    if (!reqId) {
+      reqId = requestAnimationFrame(updateParallax);
+    }
+  });
+
+  function updateParallax() {
+    var maxShift = window.innerWidth * 0.6;
+    var bgTranslateX = mouseX * -maxShift; 
+    var bgTranslateY = mouseY * -60; 
+    var bgRotateY = mouseX * 3;
+    var bgRotateX = mouseY * -3;
+
+    bgImg.style.transform = `translate3d(${bgTranslateX}px, ${bgTranslateY}px, 0) rotateX(${bgRotateX}deg) rotateY(${bgRotateY}deg) scale(1.05)`;
+
+    var textTranslateX = mouseX * 20;
+    var textTranslateY = mouseY * 10;
+    text.style.transform = `translate3d(${textTranslateX}px, ${textTranslateY}px, 0)`;
+
+    var bookTranslateX = mouseX * -35;
+    var bookTranslateY = mouseY * -20;
+    var bookRotateX = mouseY * -12;
+    var bookRotateY = mouseX * 15;
+    
+    book.style.transform = `translate3d(${bookTranslateX}px, ${bookTranslateY}px, 0) rotateX(${bookRotateX}deg) rotateY(${bookRotateY}deg)`;
+
+    reqId = null;
+  }
+})();
+</script>
+</body>
+</html>
